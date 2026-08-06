@@ -3683,11 +3683,15 @@
                     }
                 });
 
-                // Higienizar e preparar listas globais cruzáveis
-                rawSb1Dataset = sb1All.map(p => ({
-                    ...p,
-                    Codigo: String(p.Codigo).trim()
-                }));
+                // DEDUPLICAR CATÁLOGO DE PRODUTOS POR CÓDIGO (Garantir 1 linha por código)
+                const uniqueSb1Map = {};
+                sb1All.forEach(p => {
+                    const cod = String(p.Codigo).trim();
+                    if (!uniqueSb1Map[cod]) {
+                        uniqueSb1Map[cod] = { ...p, Codigo: cod };
+                    }
+                });
+                rawSb1Dataset = Object.values(uniqueSb1Map);
                 
                 // Em Indústria ou Comércio, preservamos a filial original formatada para permitir visualização completa
                 rawSaldoDataset = saldoAll.map(s => {
