@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Consumo de EPIs (Luvas) - Amazon Aço</title>
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else { document.documentElement.classList.remove('dark'); }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: {} } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/common.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .touch-active:active { transform: scale(0.97); }
+        .dark body { background-color: #0f172a !important; color: #ffffff !important; }
+        .dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+        .dark .text-slate-900, .dark .text-slate-800 { color: #ffffff !important; }
+        .dark .text-slate-500, .dark .text-slate-400 { color: #cbd5e1 !important; }
+        .dark .bg-slate-50, .dark .bg-slate-100 { background-color: #334155 !important; border-color: #475569 !important; color: #ffffff !important; }
+        .dark .border-slate-200, .dark .border-slate-300 { border-color: #334155 !important; }
+        .dark input, .dark select, .dark textarea { background-color: #334155 !important; color: #ffffff !important; border-color: #475569 !important; }
+        .dark table th { background-color: #334155 !important; color: #cbd5e1 !important; }
+        .dark table tr:hover { background-color: #334155 !important; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col relative pb-20 md:pb-10 bg-[#f8fafc]">
+
+    <div id="globalLoader" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+        <div class="flex flex-col items-center p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl">
+            <svg class="animate-spin h-12 w-12 text-[#002f6c] dark:text-blue-400 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-slate-800 dark:text-white font-bold text-sm animate-pulse">Carregando EPIs...</span>
+        </div>
+    </div>
+
+    <div id="feedbackAlert" class="hidden z-[200] fixed top-5 right-4 sm:right-6">
+        <div id="alertContainer" class="p-4 rounded-2xl border flex items-center justify-between shadow-2xl transition-all duration-300 min-w-[320px] max-w-md">
+            <div class="flex items-center space-x-3">
+                <i id="alertIcon" data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                <p id="alertMessage" class="text-xs font-bold leading-snug mr-2"></p>
+            </div>
+            <button onclick="hideAlert()" class="p-1 hover:bg-slate-200/50 rounded-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+    </div>
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('index.html')">
+                <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" class="h-10 w-auto flex-shrink-0 object-contain">
+                <div class="border-l border-slate-200 pl-3 hidden sm:block">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portal de Controle de Estoques</p>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-2">
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                    <button onclick="navigateTo('index.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="home" class="w-3.5 h-3.5"></i><span>Início</span></button>
+                    <button onclick="navigateTo('inventario.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="boxes" class="w-3.5 h-3.5"></i><span>Inventário</span></button>
+                    <button onclick="navigateTo('kardex.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="history" class="w-3.5 h-3.5"></i><span>Kardex</span></button>
+                    <button onclick="navigateTo('validade.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i><span>Validade</span></button>
+                    <button onclick="navigateTo('vendas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="line-chart" class="w-3.5 h-3.5"></i><span>SD2</span></button>
+                </div>
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                    <button onclick="navigateTo('luvas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black bg-white text-[#002f6c] shadow-sm inline-flex items-center space-x-1.5"><i data-lucide="shield" class="w-3.5 h-3.5"></i><span>EPIs</span></button>
+                    <button onclick="navigateTo('minutas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span>Minutas</span></button>
+                </div>
+                <div class="flex items-center bg-amber-500/10 p-1 rounded-2xl border border-amber-500/20">
+                    <button onclick="navigateTo('admin.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-amber-700 hover:text-amber-900 inline-flex items-center space-x-1.5"><i data-lucide="settings" class="w-3.5 h-3.5"></i><span>Admin</span></button>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div class="flex flex-col text-right">
+                    <span id="headerUserName" class="text-xs font-black text-slate-900">Usuário</span>
+                    <span id="headerUserFilial" class="text-[10px] font-bold text-[#9c0e25] uppercase">Filial</span>
+                </div>
+                <button onclick="toggleDarkMode()" class="bg-slate-100 p-2.5 rounded-xl border border-slate-200"><i data-lucide="moon" class="w-4 h-4"></i></button>
+                <button onclick="confirmLogout()" class="bg-slate-100 p-2.5 rounded-xl border border-slate-200"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-grow space-y-6 w-full flex flex-col">
+        <!-- BANNER DE CABEÇALHO LUVAS -->
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-2xl bg-teal-50 text-teal-700 border border-teal-200">
+                    <i data-lucide="shield" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight">Consumo de EPIs (Luvas & Equipamentos)</h2>
+                    <p class="text-xs font-bold text-slate-500">Controle de entregas por colaborador, setor e vigência de custos.</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 w-full md:w-auto">
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200 flex-1 md:flex-initial">
+                    <button id="luvasSectorComercioBtn" onclick="switchLuvasSector('COMERCIO')" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center">Comércio</button>
+                    <button id="luvasSectorIndustriaBtn" onclick="switchLuvasSector('INDUSTRIA')" class="px-4 py-2 rounded-xl text-xs font-black transition-all text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center">Indústria</button>
+                </div>
+                <button onclick="openPriceModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl font-bold text-xs flex items-center gap-1"><i data-lucide="tag" class="w-4 h-4"></i><span>Tabela de Preços</span></button>
+                <button onclick="openNewLuvasModal()" class="bg-[#002f6c] hover:bg-[#00204a] text-white px-4 py-2.5 rounded-2xl font-black text-xs uppercase shadow-md flex items-center space-x-1.5 whitespace-nowrap"><i data-lucide="plus-circle" class="w-4 h-4"></i><span>+ Lançar EPI</span></button>
+            </div>
+        </div>
+
+        <!-- KPIS DAS LUVAS -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Total Retirado</p>
+                <p id="kpiTotalQty" class="text-2xl font-black text-[#002f6c] mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Custo Total (R$)</p>
+                <p id="kpiTotalCost" class="text-2xl font-black text-emerald-600 mt-1">R$ 0,00</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Setor Destaque</p>
+                <p id="kpiTopSegment" class="text-lg font-black text-slate-900 mt-1 truncate">-</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Média Mensal (Pares)</p>
+                <p id="kpiAverage" class="text-2xl font-black text-amber-600 mt-1">0</p>
+            </div>
+        </div>
+
+        <!-- GRÁFICOS DO DASHBOARD -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3">Consumo por Setor</h3>
+                <div class="h-64 relative"><canvas id="chartSegmento"></canvas></div>
+            </div>
+            <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3">Evolução Temporal de Consumo</h3>
+                <div class="h-64 relative"><canvas id="chartLinhaConsumo"></canvas></div>
+            </div>
+        </div>
+
+        <!-- TABELA DE RETIRADAS -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-5 space-y-3">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Histórico de Lançamentos de EPIs</h3>
+                <input type="text" id="luvasSearchInput" onkeyup="applyLuvasFilters()" placeholder="Buscar colaborador, matricula ou EPI..." class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 w-full sm:w-64">
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                            <th class="px-4 py-3">Data</th>
+                            <th class="px-4 py-3">Matrícula</th>
+                            <th class="px-4 py-3">Colaborador</th>
+                            <th class="px-4 py-3">Setor</th>
+                            <th class="px-4 py-3">EPI / Modelo</th>
+                            <th class="px-4 py-3 text-right">Qtd</th>
+                            <th class="px-4 py-3 text-right">Custo Estimado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="luvasTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 px-2 py-1.5 shadow-lg flex items-center justify-around">
+        <button onclick="navigateTo('index.html')" class="flex-1 text-center text-slate-400"><i data-lucide="home" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Início</span></button>
+        <button onclick="navigateTo('inventario.html')" class="flex-1 text-center text-slate-400"><i data-lucide="boxes" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Estoque</span></button>
+        <button onclick="navigateTo('luvas.html')" class="flex-1 text-center text-[#002f6c]"><i data-lucide="shield" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">EPIs</span></button>
+        <button onclick="navigateTo('minutas.html')" class="flex-1 text-center text-slate-400"><i data-lucide="file-text" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Minutas</span></button>
+    </nav>
+
+    <script>
+        let currentLuvasSector = 'COMERCIO';
+        let rawLuvasDataset = [];
+        let filteredLuvasDataset = [];
+        let chartInstances = {};
+
+        function switchLuvasSector(sector) {
+            currentLuvasSector = sector;
+            const comBtn = document.getElementById('luvasSectorComercioBtn');
+            const indBtn = document.getElementById('luvasSectorIndustriaBtn');
+            if (sector === 'COMERCIO') {
+                if (comBtn) comBtn.className = "px-4 py-2 rounded-xl text-xs font-black bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center";
+                if (indBtn) indBtn.className = "px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center";
+            } else {
+                if (indBtn) indBtn.className = "px-4 py-2 rounded-xl text-xs font-black bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center";
+                if (comBtn) comBtn.className = "px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center";
+            }
+            loadLuvasData();
+        }
+
+        async function loadLuvasData() {
+            showGlobalLoader();
+            try {
+                if (!supabaseClient) initSupabase();
+                const table = currentLuvasSector === 'INDUSTRIA' ? 'luvas_industria' : 'luvas_comercio';
+                const { data, error } = await supabaseClient.from(table).select('*').order('data_retirada', { ascending: false });
+                if (error) throw error;
+                rawLuvasDataset = data || [];
+                applyLuvasFilters();
+            } catch (err) {
+                showAlert(`Erro ao carregar EPIs: ${err.message}`, "error");
+            } finally {
+                hideGlobalLoader();
+            }
+        }
+
+        function applyLuvasFilters() {
+            const term = document.getElementById('luvasSearchInput') ? document.getElementById('luvasSearchInput').value.toLowerCase().trim() : '';
+            filteredLuvasDataset = rawLuvasDataset.filter(i => {
+                if (!term) return true;
+                const cName = String(i.nome_colaborador || '').toLowerCase();
+                const cMat = String(i.matricula || '').toLowerCase();
+                const gType = String(i.tipo_luva || '').toLowerCase();
+                return cName.includes(term) || cMat.includes(term) || gType.includes(term);
+            });
+            renderLuvasKPIs();
+            renderLuvasTable();
+        }
+
+        function renderLuvasKPIs() {
+            const totalQty = filteredLuvasDataset.reduce((sum, item) => sum + (item.quantidade || 0), 0);
+            const elQty = document.getElementById('kpiTotalQty');
+            if (elQty) elQty.innerText = totalQty.toLocaleString('pt-BR');
+        }
+
+        function renderLuvasTable() {
+            const tbody = document.getElementById('luvasTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (filteredLuvasDataset.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum registro localizado.</td></tr>`;
+                return;
+            }
+            filteredLuvasDataset.slice(0, 200).forEach(i => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 text-xs text-slate-700 font-medium";
+                let dtStr = i.data_retirada || '-';
+                if (dtStr.includes('T')) dtStr = dtStr.split('T')[0];
+                if (dtStr.includes('-')) { const p = dtStr.split('-'); if (p.length === 3) dtStr = `${p[2]}/${p[1]}/${p[0]}`; }
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-bold text-slate-800">${dtStr}</td>
+                    <td class="px-4 py-3 font-mono text-slate-600">${i.matricula || '-'}</td>
+                    <td class="px-4 py-3 font-bold text-slate-900">${i.nome_colaborador || '-'}</td>
+                    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">${i.setor || 'OUTROS'}</span></td>
+                    <td class="px-4 py-3 font-bold text-[#002f6c]">${i.tipo_luva || '-'}</td>
+                    <td class="px-4 py-3 text-right font-black">${i.quantidade || 1}</td>
+                    <td class="px-4 py-3 text-right text-emerald-700 font-bold">R$ --</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        window.onload = async function() {
+            initSupabase();
+            if (checkPageAuth()) {
+                if (currentUser) {
+                    document.getElementById('headerUserName').innerText = currentUser.nome;
+                    document.getElementById('headerUserFilial').innerText = getFilialDisplayName(currentUser.filial_atual);
+                }
+                await loadLuvasData();
+            }
+        };
+    </script>
+</body>
+</html>

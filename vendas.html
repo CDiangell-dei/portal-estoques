@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Movimentações SD2 & Vendas - Amazon Aço</title>
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else { document.documentElement.classList.remove('dark'); }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: {} } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/common.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .touch-active:active { transform: scale(0.97); }
+        .dark body { background-color: #0f172a !important; color: #ffffff !important; }
+        .dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+        .dark .text-slate-900, .dark .text-slate-800 { color: #ffffff !important; }
+        .dark .text-slate-500, .dark .text-slate-400 { color: #cbd5e1 !important; }
+        .dark .bg-slate-50, .dark .bg-slate-100 { background-color: #334155 !important; border-color: #475569 !important; color: #ffffff !important; }
+        .dark .border-slate-200, .dark .border-slate-300 { border-color: #334155 !important; }
+        .dark input, .dark select, .dark textarea { background-color: #334155 !important; color: #ffffff !important; border-color: #475569 !important; }
+        .dark table th { background-color: #334155 !important; color: #cbd5e1 !important; }
+        .dark table tr:hover { background-color: #334155 !important; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col relative pb-20 md:pb-10 bg-[#f8fafc]">
+
+    <div id="globalLoader" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+        <div class="flex flex-col items-center p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl">
+            <svg class="animate-spin h-12 w-12 text-[#002f6c] dark:text-blue-400 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-slate-800 dark:text-white font-bold text-sm animate-pulse">Carregando Dados SD2...</span>
+        </div>
+    </div>
+
+    <div id="feedbackAlert" class="hidden z-[200] fixed top-5 right-4 sm:right-6">
+        <div id="alertContainer" class="p-4 rounded-2xl border flex items-center justify-between shadow-2xl transition-all duration-300 min-w-[320px] max-w-md">
+            <div class="flex items-center space-x-3">
+                <i id="alertIcon" data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                <p id="alertMessage" class="text-xs font-bold leading-snug mr-2"></p>
+            </div>
+            <button onclick="hideAlert()" class="p-1 hover:bg-slate-200/50 rounded-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+    </div>
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('index.html')">
+                <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" class="h-10 w-auto flex-shrink-0 object-contain">
+                <div class="border-l border-slate-200 pl-3 hidden sm:block">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portal de Controle de Estoques</p>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-2">
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                    <button onclick="navigateTo('index.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="home" class="w-3.5 h-3.5"></i><span>Início</span></button>
+                    <button onclick="navigateTo('inventario.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="boxes" class="w-3.5 h-3.5"></i><span>Inventário</span></button>
+                    <button onclick="navigateTo('kardex.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="history" class="w-3.5 h-3.5"></i><span>Kardex</span></button>
+                    <button onclick="navigateTo('validade.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i><span>Validade</span></button>
+                    <button onclick="navigateTo('vendas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black bg-white text-[#002f6c] shadow-sm inline-flex items-center space-x-1.5"><i data-lucide="line-chart" class="w-3.5 h-3.5"></i><span>SD2</span></button>
+                </div>
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                    <button onclick="navigateTo('luvas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="shield" class="w-3.5 h-3.5"></i><span>EPIs</span></button>
+                    <button onclick="navigateTo('minutas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span>Minutas</span></button>
+                </div>
+                <div class="flex items-center bg-amber-500/10 p-1 rounded-2xl border border-amber-500/20">
+                    <button onclick="navigateTo('admin.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-amber-700 hover:text-amber-900 inline-flex items-center space-x-1.5"><i data-lucide="settings" class="w-3.5 h-3.5"></i><span>Admin</span></button>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div class="flex flex-col text-right">
+                    <span id="headerUserName" class="text-xs font-black text-slate-900">Usuário</span>
+                    <span id="headerUserFilial" class="text-[10px] font-bold text-[#9c0e25] uppercase">Filial</span>
+                </div>
+                <button onclick="toggleDarkMode()" class="bg-slate-100 p-2.5 rounded-xl border border-slate-200"><i data-lucide="moon" class="w-4 h-4"></i></button>
+                <button onclick="confirmLogout()" class="bg-slate-100 p-2.5 rounded-xl border border-slate-200"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-grow space-y-6 w-full flex flex-col">
+        <!-- BANNER SD2 -->
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-2xl bg-blue-50 text-[#002f6c] border border-blue-200">
+                    <i data-lucide="line-chart" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight">Movimentações de Saída SD2 & Remanejamento</h2>
+                    <p class="text-xs font-bold text-slate-500">Histórico de saídas de notas fiscais (SD2) e simulação de cobertura inter-filiais.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 w-full md:w-auto">
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200 flex-1 md:flex-initial">
+                    <button id="sd2SectorComercioBtn" onclick="switchSd2Sector('COMERCIO')" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center">Comércio</button>
+                    <button id="sd2SectorIndustriaBtn" onclick="switchSd2Sector('INDUSTRIA')" class="px-4 py-2 rounded-xl text-xs font-black transition-all text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center">Indústria</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIS DO SD2 -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Linhas Registradas</p>
+                <p id="sd2KpiTotalRows" class="text-2xl font-black text-[#002f6c] mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Qtd Movimentada</p>
+                <p id="sd2KpiTotalQty" class="text-2xl font-black text-slate-900 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Faturamento Total</p>
+                <p id="sd2KpiTotalFat" class="text-2xl font-black text-emerald-600 mt-1">R$ 0,00</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Produtos Únicos</p>
+                <p id="sd2KpiUniqueProds" class="text-2xl font-black text-amber-600 mt-1">0</p>
+            </div>
+        </div>
+
+        <!-- TABELA SD2 -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-5 space-y-3">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Lançamentos de Saída SD2</h3>
+                <input type="text" id="sd2SearchInput" onkeyup="renderSd2TableAndFilters()" placeholder="Buscar por código ou descrição..." class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 w-full sm:w-64">
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                            <th class="px-4 py-3">Emissão</th>
+                            <th class="px-4 py-3">Filial</th>
+                            <th class="px-4 py-3">Armazém</th>
+                            <th class="px-4 py-3">Produto</th>
+                            <th class="px-4 py-3 text-right">Quantidade</th>
+                            <th class="px-4 py-3 text-right">Vlr. Unitário</th>
+                            <th class="px-4 py-3 text-right">Vlr. Total</th>
+                            <th class="px-4 py-3 text-center">TES</th>
+                            <th class="px-4 py-3 text-center">Nº NF</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sd2TableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 px-2 py-1.5 shadow-lg flex items-center justify-around">
+        <button onclick="navigateTo('index.html')" class="flex-1 text-center text-slate-400"><i data-lucide="home" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Início</span></button>
+        <button onclick="navigateTo('inventario.html')" class="flex-1 text-center text-slate-400"><i data-lucide="boxes" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Estoque</span></button>
+        <button onclick="navigateTo('vendas.html')" class="flex-1 text-center text-[#002f6c]"><i data-lucide="line-chart" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">SD2</span></button>
+        <button onclick="navigateTo('minutas.html')" class="flex-1 text-center text-slate-400"><i data-lucide="file-text" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Minutas</span></button>
+    </nav>
+
+    <script>
+        let currentSd2Sector = 'COMERCIO';
+        let rawVendas = [];
+        let rawSb1Dataset = [];
+
+        function switchSd2Sector(sector) {
+            currentSd2Sector = sector;
+            const comBtn = document.getElementById('sd2SectorComercioBtn');
+            const indBtn = document.getElementById('sd2SectorIndustriaBtn');
+            if (sector === 'COMERCIO') {
+                if (comBtn) comBtn.className = "px-4 py-2 rounded-xl text-xs font-black bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center";
+                if (indBtn) indBtn.className = "px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center";
+            } else {
+                if (indBtn) indBtn.className = "px-4 py-2 rounded-xl text-xs font-black bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center";
+                if (comBtn) comBtn.className = "px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center";
+            }
+            loadSd2Data();
+        }
+
+        async function loadSd2Data() {
+            showGlobalLoader();
+            try {
+                if (!supabaseClient) initSupabase();
+                const table = currentSd2Sector === 'INDUSTRIA' ? 'sd2_industria' : 'sd2_comercio';
+                const sb1Table = currentSd2Sector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
+                
+                const { data: vData } = await supabaseClient.from(table).select('*').limit(500);
+                const { data: pData } = await supabaseClient.from(sb1Table).select('Codigo, "Descr.Espec."');
+                
+                rawVendas = vData || [];
+                rawSb1Dataset = pData || [];
+                
+                renderSd2TableAndFilters();
+            } catch (err) {
+                showAlert(`Erro ao carregar SD2: ${err.message}`, "error");
+            } finally {
+                hideGlobalLoader();
+            }
+        }
+
+        function renderSd2TableAndFilters() {
+            const tbody = document.getElementById('sd2TableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const term = document.getElementById('sd2SearchInput') ? document.getElementById('sd2SearchInput').value.toLowerCase().trim() : '';
+            const filtered = rawVendas.filter(v => {
+                if (!term) return true;
+                const code = String(v.produto || '').toLowerCase();
+                return code.includes(term);
+            });
+
+            const totalQty = filtered.reduce((acc, curr) => acc + (parseFloat(curr.quantidade || 0) || 0), 0);
+            const totalFat = filtered.reduce((acc, curr) => acc + (parseFloat(curr.vlr_total || 0) || 0), 0);
+            const uniqueProds = new Set(filtered.map(f => String(f.produto).trim())).size;
+
+            if (document.getElementById('sd2KpiTotalRows')) document.getElementById('sd2KpiTotalRows').innerText = filtered.length.toLocaleString('pt-BR');
+            if (document.getElementById('sd2KpiTotalQty')) document.getElementById('sd2KpiTotalQty').innerText = totalQty.toLocaleString('pt-BR');
+            if (document.getElementById('sd2KpiTotalFat')) document.getElementById('sd2KpiTotalFat').innerText = totalFat.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            if (document.getElementById('sd2KpiUniqueProds')) document.getElementById('sd2KpiUniqueProds').innerText = uniqueProds.toLocaleString('pt-BR');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum registro de movimentação SD2 localizado.</td></tr>`;
+                return;
+            }
+
+            filtered.slice(0, 200).forEach(i => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 text-xs text-slate-700 font-medium";
+                let dtStr = i.emissao || '-';
+                if (dtStr.includes('-')) { const p = dtStr.split('-'); if (p.length === 3) dtStr = `${p[2]}/${p[1]}/${p[0]}`; }
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-bold text-slate-800">${dtStr}</td>
+                    <td class="px-4 py-3 font-bold text-slate-600">${getFilialDisplayName(i.filial)}</td>
+                    <td class="px-4 py-3 text-slate-500">Armazém ${i.armazem || '01'}</td>
+                    <td class="px-4 py-3 font-black text-[#002f6c]">${i.produto}</td>
+                    <td class="px-4 py-3 text-right font-black text-slate-900">${(parseFloat(i.quantidade) || 0).toLocaleString('pt-BR')}</td>
+                    <td class="px-4 py-3 text-right text-slate-600">${(parseFloat(i.vlr_unitario) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                    <td class="px-4 py-3 text-right font-black text-emerald-700">${(parseFloat(i.vlr_total) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                    <td class="px-4 py-3 text-center"><span class="px-2 py-0.5 rounded bg-blue-50 text-blue-800 font-bold text-[10px]">${i.tipo_saida || i.TES || '-'}</span></td>
+                    <td class="px-4 py-3 text-center font-bold text-slate-700">${i.num_documento || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        window.onload = async function() {
+            initSupabase();
+            if (checkPageAuth()) {
+                if (currentUser) {
+                    document.getElementById('headerUserName').innerText = currentUser.nome;
+                    document.getElementById('headerUserFilial').innerText = getFilialDisplayName(currentUser.filial_atual);
+                }
+                await loadSd2Data();
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<!-- Build Timestamp: 2026-08-06 14:36:00 -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal de Controle de Estoques - Amazon Aço</title>
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f8fafc">
+    <link rel="apple-touch-icon" href="https://www.amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: {} } }</script>
+    
+    <!-- Google Fonts & Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Common Shared JS -->
+    <script src="js/common.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; -webkit-tap-highlight-color: transparent; }
+        .touch-active:active { transform: scale(0.97); }
+        .dark body { background-color: #0f172a !important; color: #ffffff !important; }
+        .dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+        .dark .bg-[#f8fafc] { background-color: #0f172a !important; }
+        .dark .text-slate-900, .dark .text-slate-800 { color: #ffffff !important; }
+        .dark .text-slate-500, .dark .text-slate-400 { color: #cbd5e1 !important; }
+        .dark .bg-slate-50, .dark .bg-slate-100 { background-color: #334155 !important; border-color: #475569 !important; color: #ffffff !important; }
+        .dark .border-slate-200, .dark .border-slate-300 { border-color: #334155 !important; }
+        .dark input, .dark select, .dark textarea { background-color: #334155 !important; color: #ffffff !important; border-color: #475569 !important; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col relative pb-20 md:pb-10 bg-[#f8fafc]">
+
+    <!-- Spinner Loader Global -->
+    <div id="globalLoader" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="flex flex-col items-center p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl">
+            <svg class="animate-spin h-12 w-12 text-[#002f6c] dark:text-blue-400 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-slate-800 dark:text-white font-bold text-sm animate-pulse">Autenticando...</span>
+        </div>
+    </div>
+
+    <!-- FEEDBACK ALERT (TOAST) -->
+    <div id="feedbackAlert" class="hidden z-[200] fixed top-5 right-4 sm:right-6">
+        <div id="alertContainer" class="p-4 rounded-2xl border flex items-center justify-between shadow-2xl transition-all duration-300 min-w-[320px] max-w-md">
+            <div class="flex items-center space-x-3">
+                <i id="alertIcon" data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                <p id="alertMessage" class="text-xs font-bold leading-snug mr-2"></p>
+            </div>
+            <button onclick="hideAlert()" class="p-1 hover:bg-slate-200/50 rounded-lg">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- TELA DE LOGIN -->
+    <div id="loginScreen" class="fixed inset-0 z-[100] bg-[#f8fafc] flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="bg-white w-full max-w-md rounded-3xl border border-slate-200 p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#002f6c] via-[#9c0e25] to-[#002f6c]"></div>
+            
+            <div title="Status da Conexão com o Servidor" class="absolute top-4 right-4 p-2 bg-slate-100 rounded-2xl flex items-center gap-1">
+                <span id="loginStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            </div>
+
+            <div class="text-center mb-8 mt-2">
+                <div class="flex items-center justify-center mb-3">
+                    <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" fetchpriority="high" class="h-14 w-auto object-contain drop-shadow-sm">
+                </div>
+                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1 pt-2 border-t border-slate-100">Portal de Controle de Estoques</p>
+            </div>
+
+            <!-- FORMULÁRIO DE LOGIN -->
+            <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Matrícula</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="loginMatricula" required placeholder="Sua matrícula corporativa..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] transition-all">
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Senha</label>
+                        <button type="button" onclick="toggleAuthMode('RESET')" class="text-[10px] font-bold text-[#9c0e25] hover:underline">Esqueceu a senha?</button>
+                    </div>
+                    <div class="relative">
+                        <i data-lucide="lock" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
+                        <input type="password" id="loginSenha" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] transition-all">
+                    </div>
+                </div>
+
+                <button type="submit" id="btnLoginSubmit" class="w-full bg-[#002f6c] hover:bg-[#00204a] text-white py-3.5 rounded-xl font-black text-sm tracking-wider uppercase shadow-md transition-all flex items-center justify-center space-x-2 touch-active mt-2">
+                    <span>Acessar Sistema</span>
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                </button>
+
+                <div class="text-center pt-4 border-t border-slate-100 mt-6">
+                    <p class="text-xs text-slate-500 font-semibold">
+                        Não possui acesso? <button type="button" onclick="toggleAuthMode('REGISTER')" class="text-[#002f6c] font-bold hover:underline">Solicitar Conta</button>
+                    </p>
+                </div>
+            </form>
+
+            <!-- FORMULÁRIO DE REGISTRO -->
+            <form id="formRegister" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Matrícula</label>
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="regMatricula" required placeholder="Apenas números..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Filial / Unidade</label>
+                        <select id="regFilial" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900">
+                            <option value="" disabled selected>Carregando filiais...</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nome de Exibição</label>
+                    <input type="text" id="regNome" required placeholder="Nome e Sobrenome" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Crie uma Senha</label>
+                    <input type="password" id="regSenha" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900">
+                </div>
+                <div class="flex items-center space-x-2.5 p-3 bg-slate-50 rounded-xl border border-slate-200 mt-2">
+                    <input type="checkbox" id="regEhAlmoxarife" class="w-4 h-4 text-[#002f6c] border-slate-300 rounded">
+                    <label for="regEhAlmoxarife" class="text-xs font-bold text-slate-700">Solicitar acesso como Almoxarife</label>
+                </div>
+                <button type="submit" id="btnRegSubmit" class="w-full bg-[#9c0e25] hover:bg-[#800b1d] text-white py-3 rounded-xl font-black text-sm tracking-wider uppercase shadow-md touch-active mt-2">Enviar Solicitação</button>
+                <div class="text-center pt-2">
+                    <button type="button" onclick="toggleAuthMode('LOGIN')" class="text-xs text-slate-500 font-bold hover:text-slate-800">Voltar para Login</button>
+                </div>
+            </form>
+
+            <!-- FORMULÁRIO DE RESET DE SENHA -->
+            <form id="formReset" onsubmit="handleResetPassword(event)" class="space-y-4 hidden">
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl mb-2">
+                    <p class="text-[10px] font-bold text-amber-800">A redefinição de senha requer aprovação de um Administrador.</p>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Matrícula a redefinir</label>
+                    <input type="text" inputmode="numeric" id="resetTargetMatricula" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nova Senha</label>
+                    <input type="password" id="resetNewSenha" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900">
+                </div>
+                <button type="submit" id="btnResetSubmit" class="w-full bg-amber-600 text-white py-3 rounded-xl font-black text-xs uppercase shadow-md">Redefinir Senha</button>
+                <div class="text-center pt-2">
+                    <button type="button" onclick="toggleAuthMode('LOGIN')" class="text-xs text-slate-500 font-bold hover:text-slate-800">Voltar para Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTAINER DA APLICAÇÃO -->
+    <div id="appContainer" class="hidden flex-col flex-1 min-h-screen">
+        
+        <!-- HEADER PRINCIPAL -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('index.html')">
+                    <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" class="h-10 w-auto flex-shrink-0 object-contain">
+                    <div class="border-l border-slate-200 pl-3 hidden sm:block">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portal de Controle de Estoques</p>
+                    </div>
+                </div>
+
+                <!-- NAVEGAÇÃO DESKTOP -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                        <button onclick="navigateTo('index.html')" class="px-3 py-1.5 rounded-xl text-xs font-black bg-white text-[#002f6c] shadow-sm inline-flex items-center space-x-1.5"><i data-lucide="home" class="w-3.5 h-3.5"></i><span>Início</span></button>
+                        <button onclick="navigateTo('inventario.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="boxes" class="w-3.5 h-3.5"></i><span>Inventário</span></button>
+                        <button onclick="navigateTo('kardex.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="history" class="w-3.5 h-3.5"></i><span>Kardex</span></button>
+                        <button onclick="navigateTo('validade.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i><span>Validade</span></button>
+                        <button onclick="navigateTo('vendas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="line-chart" class="w-3.5 h-3.5"></i><span>SD2</span></button>
+                    </div>
+
+                    <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                        <button onclick="navigateTo('luvas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="shield" class="w-3.5 h-3.5"></i><span>EPIs</span></button>
+                        <button onclick="navigateTo('minutas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span>Minutas</span></button>
+                    </div>
+
+                    <div class="flex items-center bg-amber-500/10 p-1 rounded-2xl border border-amber-500/20">
+                        <button onclick="navigateTo('admin.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-amber-700 hover:text-amber-900 inline-flex items-center space-x-1.5"><i data-lucide="settings" class="w-3.5 h-3.5"></i><span>Admin</span></button>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <div title="Status da Conexão" class="p-2 bg-slate-100 rounded-xl flex items-center space-x-1">
+                        <span id="appStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    </div>
+                    <div class="flex flex-col text-right">
+                        <span id="headerUserName" class="text-xs font-black text-slate-900">Usuário</span>
+                        <span id="headerUserFilial" class="text-[10px] font-bold text-[#9c0e25] uppercase">Filial</span>
+                    </div>
+                    <button onclick="toggleDarkMode()" class="bg-slate-100 p-2.5 rounded-xl border border-slate-200"><i data-lucide="moon" class="w-4 h-4"></i></button>
+                    <button onclick="confirmLogout()" class="bg-slate-100 p-2.5 rounded-xl border border-slate-200"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTEÚDO DA HOME HUB -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-grow space-y-6 w-full flex flex-col">
+            <!-- HERO BANNER -->
+            <div class="bg-gradient-to-r from-[#002f6c] via-[#002454] to-[#001738] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i data-lucide="boxes" class="w-64 h-64 text-white"></i>
+                </div>
+
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="space-y-1.5">
+                        <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/15">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span id="homeUserFilialBadge" class="text-blue-100 font-extrabold uppercase">Carregando unidade...</span>
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-black tracking-tight">
+                            Olá, <span id="homeUserName" class="text-amber-400">Usuário</span>! 👋
+                        </h2>
+                        <p class="text-xs sm:text-sm text-blue-100/80 font-semibold max-w-xl">
+                            Selecione o módulo operacional abaixo para acessar os controles da sua unidade.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULOS DE ACESSO RÁPIDO -->
+            <div class="space-y-3">
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider">Módulos Operacionais</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- INVENTÁRIO -->
+                    <button onclick="navigateTo('inventario.html')" class="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <div class="w-12 h-12 rounded-xl bg-teal-500/10 group-hover:bg-teal-500 transition-colors flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="boxes" class="w-6 h-6 text-teal-600 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">Inventário Rotativo</h3>
+                            <p class="text-[11px] text-slate-500 font-bold">Contagens físicas e acuracidade</p>
+                        </div>
+                    </button>
+
+                    <!-- KARDEX -->
+                    <button onclick="navigateTo('kardex.html')" class="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 group-hover:bg-indigo-500 transition-colors flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="history" class="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">Kardex de Contagem</h3>
+                            <p class="text-[11px] text-slate-500 font-bold">Histórico cronológico de lançamentos</p>
+                        </div>
+                    </button>
+
+                    <!-- VALIDADE -->
+                    <button onclick="navigateTo('validade.html')" class="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 group-hover:bg-amber-500 transition-colors flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="calendar-clock" class="w-6 h-6 text-amber-600 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">Controle de Validade</h3>
+                            <p class="text-[11px] text-slate-500 font-bold">Ano/Mês, alertas e Vencidos</p>
+                        </div>
+                    </button>
+
+                    <!-- VENDAS SD2 -->
+                    <button onclick="navigateTo('vendas.html')" class="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 group-hover:bg-blue-600 transition-colors flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="line-chart" class="w-6 h-6 text-blue-600 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">Vendas & Movimentações SD2</h3>
+                            <p class="text-[11px] text-slate-500 font-bold">Saídas de notas e remanejamento</p>
+                        </div>
+                    </button>
+
+                    <!-- EPIS -->
+                    <button onclick="navigateTo('luvas.html')" class="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <div class="w-12 h-12 rounded-xl bg-[#002f6c]/10 group-hover:bg-[#002f6c] transition-colors flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="shield" class="w-6 h-6 text-[#002f6c] group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">Consumo de EPIs</h3>
+                            <p class="text-[11px] text-slate-500 font-bold">Entrega de luvas e equipamentos</p>
+                        </div>
+                    </button>
+
+                    <!-- MINUTAS -->
+                    <button onclick="navigateTo('minutas.html')" class="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <div class="w-12 h-12 rounded-xl bg-amber-600/10 group-hover:bg-amber-600 transition-colors flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="file-text" class="w-6 h-6 text-amber-700 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">Minutas & Recebimento</h3>
+                            <p class="text-[11px] text-slate-500 font-bold">Registro de NFs e conferência</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- BOTTOM NAV (MOBILE) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 px-2 py-1.5 shadow-lg flex items-center justify-around">
+        <button onclick="navigateTo('index.html')" class="flex-1 text-center text-[#002f6c]"><i data-lucide="home" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Início</span></button>
+        <button onclick="navigateTo('inventario.html')" class="flex-1 text-center text-slate-400"><i data-lucide="boxes" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Estoque</span></button>
+        <button onclick="navigateTo('validade.html')" class="flex-1 text-center text-slate-400"><i data-lucide="calendar-clock" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Validade</span></button>
+        <button onclick="navigateTo('minutas.html')" class="flex-1 text-center text-slate-400"><i data-lucide="file-text" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Minutas</span></button>
+    </nav>
+
+    <script>
+        async function handleLogin(e) {
+            e.preventDefault();
+            const matRaw = document.getElementById('loginMatricula').value.trim();
+            const pwd = document.getElementById('loginSenha').value.trim();
+
+            if (!matRaw || !pwd) { showAlert("Preencha a matrícula e a senha.", "warning"); return; }
+            if (!supabaseClient) initSupabase();
+
+            const btnSubmit = document.getElementById('btnLoginSubmit');
+            const originalText = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = "Autenticando..."; btnSubmit.disabled = true;
+
+            try {
+                const matNum = parseInt(matRaw, 10) || 0;
+                let { data, error } = await supabaseClient.rpc('login_usuario', { p_matricula: matNum, p_senha: pwd });
+
+                if (error || !data || data.length === 0) {
+                    showAlert("Matrícula ou senha incorretos.", "error");
+                    btnSubmit.innerHTML = originalText; btnSubmit.disabled = false;
+                    return;
+                }
+
+                const matchedUser = data[0];
+                if (matchedUser.status !== true) {
+                    showAlert("Conta inativa ou pendente de aprovação.", "warning");
+                    btnSubmit.innerHTML = originalText; btnSubmit.disabled = false;
+                    return;
+                }
+
+                currentUser = matchedUser;
+                saveUserSession(currentUser);
+
+                setupAppUI();
+            } catch (err) {
+                showAlert(`Falha no login: ${err.message || err}`, "error");
+            } finally {
+                btnSubmit.innerHTML = originalText; btnSubmit.disabled = false;
+            }
+        }
+
+        function toggleAuthMode(mode) {
+            const formLogin = document.getElementById('formLogin');
+            const formRegister = document.getElementById('formRegister');
+            const formReset = document.getElementById('formReset');
+
+            if (formLogin) formLogin.classList.add('hidden');
+            if (formRegister) formRegister.classList.add('hidden');
+            if (formReset) formReset.classList.add('hidden');
+
+            if (mode === 'REGISTER' && formRegister) formRegister.classList.remove('hidden');
+            else if (mode === 'RESET' && formReset) formReset.classList.remove('hidden');
+            else if (formLogin) formLogin.classList.remove('hidden');
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const mat = document.getElementById('regMatricula').value.trim();
+            const filial = document.getElementById('regFilial').value;
+            const nome = document.getElementById('regNome').value.trim().toUpperCase();
+            const senha = document.getElementById('regSenha').value.trim();
+            const ehAlmox = document.getElementById('regEhAlmoxarife') ? document.getElementById('regEhAlmoxarife').checked : false;
+
+            if (!mat || !nome || !senha || !filial) return;
+            try {
+                const { error } = await supabaseClient.rpc('register_usuario', {
+                    p_matricula: parseInt(mat, 10),
+                    p_nome: nome,
+                    p_senha: senha,
+                    p_filial: filial,
+                    p_eh_almoxarife: ehAlmox
+                });
+                if (error) throw error;
+                showAlert("Solicitação enviada com sucesso!", "success");
+                toggleAuthMode('LOGIN');
+            } catch (err) { showAlert(`Erro: ${err.message}`, "error"); }
+        }
+
+        async function handleResetPassword(e) {
+            e.preventDefault();
+            const targetMat = document.getElementById('resetTargetMatricula').value.trim();
+            const newPwd = document.getElementById('resetNewSenha').value.trim();
+            if (!targetMat || !newPwd) return;
+            showAlert("Solicitação enviada ao Administrador.", "info");
+            toggleAuthMode('LOGIN');
+        }
+
+        function setupAppUI() {
+            document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+                document.getElementById('appContainer').classList.add('flex');
+            }, 300);
+
+            if (currentUser) {
+                document.getElementById('headerUserName').innerText = currentUser.nome;
+                document.getElementById('headerUserFilial').innerText = getFilialDisplayName(currentUser.filial_atual);
+                document.getElementById('homeUserName').innerText = currentUser.nome;
+                document.getElementById('homeUserFilialBadge').innerText = getFilialDisplayName(currentUser.filial_atual);
+            }
+        }
+
+        async function loadMasterData() {
+            try {
+                const { data } = await supabaseClient.from('filiais').select('*').order('num_filial');
+                if (data) {
+                    knownFiliais = data;
+                    const regFilial = document.getElementById('regFilial');
+                    if (regFilial) {
+                        let html = '<option value="" disabled selected>Selecione a Filial...</option>';
+                        data.forEach(f => { html += `<option value="${f.num_filial}">${f.num_filial} - ${f.nome_filial}</option>`; });
+                        regFilial.innerHTML = html;
+                    }
+                }
+            } catch(e){}
+        }
+
+        window.onload = async function() {
+            initSupabase();
+            await loadMasterData();
+            currentUser = getStoredUser();
+            if (currentUser) {
+                setupAppUI();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            }
+        };
+    </script>
+</body>
+</html>

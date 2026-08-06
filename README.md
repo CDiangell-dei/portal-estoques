@@ -1,2 +1,2 @@
-# portal-estoques
-Portal de Controle de Estoques e Inventario - Amazon Aco
+# projeto-amazon-aco-almoxarifado
+Local onde eu vou preparar meu projeto de uso interno do Almoxarifado Alvorada

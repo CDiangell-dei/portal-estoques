@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kardex de Contagem - Amazon Aço</title>
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else { document.documentElement.classList.remove('dark'); }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: {} } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/common.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .touch-active:active { transform: scale(0.97); }
+        .dark body { background-color: #0f172a !important; color: #ffffff !important; }
+        .dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+        .dark .text-slate-900, .dark .text-slate-800 { color: #ffffff !important; }
+        .dark .text-slate-500, .dark .text-slate-400 { color: #cbd5e1 !important; }
+        .dark .bg-slate-50, .dark .bg-slate-100 { background-color: #334155 !important; border-color: #475569 !important; color: #ffffff !important; }
+        .dark .border-slate-200, .dark .border-slate-300 { border-color: #334155 !important; }
+        .dark input, .dark select, .dark textarea { background-color: #334155 !important; color: #ffffff !important; border-color: #475569 !important; }
+        .dark table th { background-color: #334155 !important; color: #cbd5e1 !important; }
+        .dark table tr:hover { background-color: #334155 !important; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col relative pb-20 md:pb-10 bg-[#f8fafc]">
+
+    <div id="globalLoader" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+        <div class="flex flex-col items-center p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl">
+            <svg class="animate-spin h-12 w-12 text-[#002f6c] dark:text-blue-400 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-slate-800 dark:text-white font-bold text-sm animate-pulse">Carregando Kardex...</span>
+        </div>
+    </div>
+
+    <div id="feedbackAlert" class="hidden z-[200] fixed top-5 right-4 sm:right-6">
+        <div id="alertContainer" class="p-4 rounded-2xl border flex items-center justify-between shadow-2xl transition-all duration-300 min-w-[320px] max-w-md">
+            <div class="flex items-center space-x-3">
+                <i id="alertIcon" data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                <p id="alertMessage" class="text-xs font-bold leading-snug mr-2"></p>
+            </div>
+            <button onclick="hideAlert()" class="p-1 hover:bg-slate-200/50 rounded-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+    </div>
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('index.html')">
+                <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" class="h-10 w-auto flex-shrink-0 object-contain">
+                <div class="border-l border-slate-200 pl-3 hidden sm:block">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portal de Controle de Estoques</p>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-2">
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                    <button onclick="navigateTo('index.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="home" class="w-3.5 h-3.5"></i><span>Início</span></button>
+                    <button onclick="navigateTo('inventario.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="boxes" class="w-3.5 h-3.5"></i><span>Inventário</span></button>
+                    <button onclick="navigateTo('kardex.html')" class="px-3 py-1.5 rounded-xl text-xs font-black bg-white text-[#002f6c] shadow-sm inline-flex items-center space-x-1.5"><i data-lucide="history" class="w-3.5 h-3.5"></i><span>Kardex</span></button>
+                    <button onclick="navigateTo('validade.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i><span>Validade</span></button>
+                    <button onclick="navigateTo('vendas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="line-chart" class="w-3.5 h-3.5"></i><span>SD2</span></button>
+                </div>
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                    <button onclick="navigateTo('luvas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="shield" class="w-3.5 h-3.5"></i><span>EPIs</span></button>
+                    <button onclick="navigateTo('minutas.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 inline-flex items-center space-x-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span>Minutas</span></button>
+                </div>
+                <div class="flex items-center bg-amber-500/10 p-1 rounded-2xl border border-amber-500/20">
+                    <button onclick="navigateTo('admin.html')" class="px-3 py-1.5 rounded-xl text-xs font-black text-amber-700 hover:text-amber-900 inline-flex items-center space-x-1.5"><i data-lucide="settings" class="w-3.5 h-3.5"></i><span>Admin</span></button>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div class="flex flex-col text-right">
+                    <span id="headerUserName" class="text-xs font-black text-slate-900">Usuário</span>
+                    <span id="headerUserFilial" class="text-[10px] font-bold text-[#9c0e25] uppercase">Filial</span>
+                </div>
+                <button onclick="toggleDarkMode()" class="bg-slate-100 p-2.5 rounded-xl border border-slate-200"><i data-lucide="moon" class="w-4 h-4"></i></button>
+                <button onclick="confirmLogout()" class="bg-slate-100 p-2.5 rounded-xl border border-slate-200"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-grow space-y-6 w-full flex flex-col">
+        <!-- BANNER KARDEX -->
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-2xl bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    <i data-lucide="history" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight">Kardex de Contagem Física</h2>
+                    <p class="text-xs font-bold text-slate-500">Histórico detalhado e auditável de todos os lançamentos por produto e armazém.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 w-full md:w-auto">
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200 flex-1 md:flex-initial">
+                    <button id="kardexSectorComercioBtn" onclick="switchKardexSector('COMERCIO')" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center">Comércio</button>
+                    <button id="kardexSectorIndustriaBtn" onclick="switchKardexSector('INDUSTRIA')" class="px-4 py-2 rounded-xl text-xs font-black transition-all text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center">Indústria</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTROS KARDEX -->
+        <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="relative w-full md:w-80">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+                <input type="text" id="kardexSearchInput" onkeyup="applyKardexFilters()" placeholder="Buscar por código, produto ou conferente..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+            </div>
+        </div>
+
+        <!-- TABELA KARDEX -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-5 space-y-3">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                            <th class="px-4 py-3">Data / Hora</th>
+                            <th class="px-4 py-3">Filial</th>
+                            <th class="px-4 py-3">Armazém</th>
+                            <th class="px-4 py-3">Código</th>
+                            <th class="px-4 py-3">Conferente / Responsável</th>
+                            <th class="px-4 py-3 text-right">Qtd Contada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kardexTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 px-2 py-1.5 shadow-lg flex items-center justify-around">
+        <button onclick="navigateTo('index.html')" class="flex-1 text-center text-slate-400"><i data-lucide="home" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Início</span></button>
+        <button onclick="navigateTo('inventario.html')" class="flex-1 text-center text-slate-400"><i data-lucide="boxes" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Estoque</span></button>
+        <button onclick="navigateTo('kardex.html')" class="flex-1 text-center text-[#002f6c]"><i data-lucide="history" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Kardex</span></button>
+        <button onclick="navigateTo('minutas.html')" class="flex-1 text-center text-slate-400"><i data-lucide="file-text" class="w-5 h-5 mx-auto"></i><span class="text-[9px] font-black uppercase block">Minutas</span></button>
+    </nav>
+
+    <script>
+        let currentKardexSector = 'COMERCIO';
+        let rawKardexDataset = [];
+
+        function switchKardexSector(sector) {
+            currentKardexSector = sector;
+            const comBtn = document.getElementById('kardexSectorComercioBtn');
+            const indBtn = document.getElementById('kardexSectorIndustriaBtn');
+            if (sector === 'COMERCIO') {
+                if (comBtn) comBtn.className = "px-4 py-2 rounded-xl text-xs font-black bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center";
+                if (indBtn) indBtn.className = "px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center";
+            } else {
+                if (indBtn) indBtn.className = "px-4 py-2 rounded-xl text-xs font-black bg-[#002f6c] text-white shadow-sm flex-1 md:flex-initial text-center";
+                if (comBtn) comBtn.className = "px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:text-slate-900 flex-1 md:flex-initial text-center";
+            }
+            loadKardexData();
+        }
+
+        async function loadKardexData() {
+            showGlobalLoader();
+            try {
+                if (!supabaseClient) initSupabase();
+                const table = currentKardexSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
+                const targetFilial = currentUser ? String(currentUser.filial_atual) : '01';
+                const { data, error } = await supabaseClient.from(table).select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                rawKardexDataset = data || [];
+                applyKardexFilters();
+            } catch (err) {
+                showAlert(`Erro ao carregar Kardex: ${err.message}`, "error");
+            } finally {
+                hideGlobalLoader();
+            }
+        }
+
+        function applyKardexFilters() {
+            const term = document.getElementById('kardexSearchInput') ? document.getElementById('kardexSearchInput').value.toLowerCase().trim() : '';
+            const filtered = rawKardexDataset.filter(k => {
+                if (!term) return true;
+                const prod = String(k.produto || '').toLowerCase();
+                const conf = String(k.quem_contou || '').toLowerCase();
+                return prod.includes(term) || conf.includes(term);
+            });
+            renderKardexTable(filtered);
+        }
+
+        function renderKardexTable(dataset) {
+            const tbody = document.getElementById('kardexTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (dataset.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum lançamento no Kardex.</td></tr>`;
+                return;
+            }
+            dataset.slice(0, 250).forEach(i => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 text-xs text-slate-700 font-medium";
+                let dtStr = i.created_at ? new Date(i.created_at).toLocaleString('pt-BR') : '-';
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-bold text-slate-800">${dtStr}</td>
+                    <td class="px-4 py-3 font-bold text-slate-500">${i.filial || '01'}</td>
+                    <td class="px-4 py-3 font-bold text-slate-600">Armazém ${i.armazem_contagem || i.armazem || '01'}</td>
+                    <td class="px-4 py-3 font-black text-[#002f6c]">${i.produto}</td>
+                    <td class="px-4 py-3 font-bold text-slate-900">${i.quem_contou || 'SISTEMA'}</td>
+                    <td class="px-4 py-3 text-right font-black text-emerald-700">${parseFloat(i.quantidade_contada || 0).toLocaleString('pt-BR')}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        window.onload = async function() {
+            initSupabase();
+            if (checkPageAuth()) {
+                if (currentUser) {
+                    document.getElementById('headerUserName').innerText = currentUser.nome;
+                    document.getElementById('headerUserFilial').innerText = getFilialDisplayName(currentUser.filial_atual);
+                }
+                await loadKardexData();
+            }
+        };
+    </script>
+</body>
+</html>
