@@ -63,8 +63,8 @@ function clearUserSession() {
 
 function checkPageAuth() {
     currentUser = getStoredUser();
-    const path = window.location.pathname;
-    const isIndex = path.endsWith('index.html') || path.endsWith('/') || path === '';
+    const path = window.location.pathname.toLowerCase();
+    const isIndex = path.endsWith('index.html') || path.endsWith('/') || path === '' || !path.includes('.html');
     
     if (!currentUser && !isIndex) {
         window.location.href = 'index.html';
