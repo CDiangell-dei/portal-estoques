@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -1896,9 +1896,11 @@
                     
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Código / Material</label>
-                        <select id="valInputProduto" required onchange="onValidadeProductSelectChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <option value="" disabled selected>Selecione o produto...</option>
-                        </select>
+                        <div class="relative">
+                            <input type="text" id="valInputCodigo" list="valProductsDatalist" required oninput="onValidadeCodeInput()" placeholder="Digite o código do material ou busque na lista..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <datalist id="valProductsDatalist"></datalist>
+                        </div>
+                        <div id="valProductPreviewLabel" class="mt-1.5 text-[11px] font-bold min-h-[18px] transition-all"></div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -6850,29 +6852,31 @@ function renderArmazemChart() {
 
         function openNewValidadeModal(codigo = '', armazem = '01') {
             const modal = document.getElementById('newValidadeModal');
-            const selProd = document.getElementById('valInputProduto');
+            const inpCodigo = document.getElementById('valInputCodigo');
             const title = document.getElementById('newValidadeModalTitle');
 
             if (title) title.innerText = "Lançamento de Validade de Produto";
             document.getElementById('valEditId').value = '';
+            if (inpCodigo) inpCodigo.value = codigo || '';
             document.getElementById('valInputArmazem').value = armazem || '01';
             document.getElementById('valInputQuantidade').value = '';
             document.getElementById('valInputFabricacao').value = '';
             document.getElementById('valInputValidade').value = '';
             document.getElementById('valInputObservacao').value = '';
 
-            // Populate Products Dropdown
-            if (selProd) {
-                let html = '<option value="" disabled selected>Selecione o produto...</option>';
-                const sorted = [...rawSb1Dataset].sort((a,b) => a.Codigo.localeCompare(b.Codigo, undefined, {numeric:true}));
+            // Populate Datalist Suggestions for fast autocomplete
+            const datalist = document.getElementById('valProductsDatalist');
+            if (datalist && rawSb1Dataset) {
+                let html = '';
+                const sorted = [...rawSb1Dataset].sort((a,b) => String(a.Codigo).localeCompare(String(b.Codigo), undefined, {numeric:true}));
                 sorted.forEach(p => {
                     const desc = p['Descr.Espec.'] || '-';
-                    const isSel = p.Codigo === codigo ? 'selected' : '';
-                    html += `<option value="${p.Codigo}" ${isSel}>${p.Codigo} - ${desc}</option>`;
+                    html += `<option value="${p.Codigo}">${p.Codigo} - ${desc}</option>`;
                 });
-                selProd.innerHTML = html;
+                datalist.innerHTML = html;
             }
 
+            onValidadeCodeInput();
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
         }
 
@@ -6881,14 +6885,31 @@ function renderArmazemChart() {
             if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
         }
 
-        function onValidadeProductSelectChange() {
-            // Callback opcional ao selecionar produto no modal
+        function onValidadeCodeInput() {
+            const inp = document.getElementById('valInputCodigo');
+            const preview = document.getElementById('valProductPreviewLabel');
+            if (!inp || !preview) return;
+
+            const val = inp.value.trim().toUpperCase();
+            if (!val) {
+                preview.innerHTML = `<span class="text-slate-400">Digite um código ou selecione da lista para buscar...</span>`;
+                return;
+            }
+
+            const match = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === val) : null;
+            if (match) {
+                preview.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 inline"></i> ${match['Descr.Espec.'] || 'Produto Localizado'}</span>`;
+            } else {
+                preview.innerHTML = `<span class="text-amber-600 dark:text-amber-400 flex items-center gap-1 font-bold"><i data-lucide="info" class="w-3.5 h-3.5 inline"></i> Código ${val} (Produto Novo / Personalizado)</span>`;
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         async function saveValidadeEntry(e) {
             if (e) e.preventDefault();
             const editId = document.getElementById('valEditId').value;
-            const produto = document.getElementById('valInputProduto').value;
+            const produtoInput = document.getElementById('valInputCodigo');
+            const produto = produtoInput ? produtoInput.value.trim().toUpperCase() : '';
             const armazem = document.getElementById('valInputArmazem').value;
             const quantidade = parseFloat(document.getElementById('valInputQuantidade').value || 0);
             const fabricacao = document.getElementById('valInputFabricacao').value;
@@ -6896,7 +6917,7 @@ function renderArmazemChart() {
             const obs = document.getElementById('valInputObservacao').value.trim();
 
             if (!produto) {
-                showAlert("Por favor, selecione o produto.", "warning");
+                showAlert("Por favor, digite ou informe o código do produto.", "warning");
                 return;
             }
             if (!validade) {
