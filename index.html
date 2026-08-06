@@ -1909,7 +1909,12 @@
                             <select id="valInputArmazem" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
                                 <option value="01">Armazém 01</option>
                                 <option value="02">Armazém 02</option>
-                                <option value="99">Armazém 99 (Vencidos)</option>
+                                <option value="03">Armazém 03</option>
+                                <option value="04">Armazém 04</option>
+                                <option value="05">Armazém 05</option>
+                                <option value="06">Armazém 06</option>
+                                <option value="50">Armazém 50 (Vencidos / Avariados)</option>
+                                <option value="99">Armazém 99 (Outros)</option>
                             </select>
                         </div>
                         <div>
@@ -1962,7 +1967,7 @@
                     
                     <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs space-y-1">
                         <p class="font-black text-slate-900" id="valTransferProdDesc">Produto...</p>
-                        <p class="text-slate-500 font-bold" id="valTransferInfo">Armazém 01 → Armazém 99</p>
+                        <p class="text-slate-500 font-bold" id="valTransferInfo">Armazém 01 → Armazém 50</p>
                     </div>
 
                     <div class="p-3 bg-blue-50 rounded-2xl border border-blue-200 text-[11px] text-blue-900 font-bold">
@@ -1973,9 +1978,14 @@
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Armazém Destino de Vencidos</label>
                         <select id="valTransferDestinoArmazem" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <option value="99" selected>Armazém 99 (Vencidos / Avariados)</option>
-                            <option value="02">Armazém 02</option>
+                            <option value="50" selected>Armazém 50 (Vencidos / Avariados)</option>
                             <option value="01">Armazém 01</option>
+                            <option value="02">Armazém 02</option>
+                            <option value="03">Armazém 03</option>
+                            <option value="04">Armazém 04</option>
+                            <option value="05">Armazém 05</option>
+                            <option value="06">Armazém 06</option>
+                            <option value="99">Armazém 99 (Outros)</option>
                         </select>
                     </div>
 
@@ -6972,8 +6982,8 @@ function renderArmazemChart() {
             document.getElementById('valTransferId').value = item.id;
             document.getElementById('valTransferProdDesc').innerText = `${item.produto} - ${sb1Map[item.produto] || '-'}`;
             document.getElementById('valTransferInfo').innerText = `Armazém ${item.armazem} → Armazém Destino (Validade: ${formatAnoMesDisplay(item.data_validade)})`;
-            document.getElementById('valTransferDestinoArmazem').value = '99';
-            document.getElementById('valTransferObs').value = `Transferido do Armazém ${item.armazem} para Armazém de Vencidos`;
+            document.getElementById('valTransferDestinoArmazem').value = '50';
+            document.getElementById('valTransferObs').value = `Transferido do Armazém ${item.armazem} para Armazém 50 (Vencidos)`;
 
             const modal = document.getElementById('transferValidadeModal');
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
