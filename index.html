@@ -3177,7 +3177,7 @@
             }
 
             // Elementos de Inventário, Kardex, Validade e Grupo Estoque Mobile / Desktop (Sempre visíveis para logados)
-            const invElements = ['tabBtnInventario', 'btnHubInventario', 'bottomBtnInventario', 'tabBtnKardex', 'btnHubKardex', 'bottomBtnKardex', 'bottomBtnEstoqueGroup', 'tabBtnValidade', 'btnHubValidade', 'desktopBtnEstoqueGroup'];
+            const invElements = ['tabBtnInventario', 'btnHubInventario', 'bottomBtnInventario', 'tabBtnKardex', 'btnHubKardex', 'bottomBtnKardex', 'bottomBtnEstoqueGroup', 'tabBtnValidade', 'btnHubValidade', 'desktopBtnEstoqueGroup', 'desktopBtnSd2Group'];
             invElements.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -7943,16 +7943,23 @@ function renderArmazemChart() {
             if (menuAlmox) menuAlmox.classList.add('hidden');
         }
 
-        // --- LÓGICA DE SUBMENUS DESKTOP (ESTOQUE & ALMOXARIFADO) ---
+        // --- LÓGICA DE SUBMENUS DESKTOP (ESTOQUE, SD2 & ALMOXARIFADO) ---
         function toggleDesktopSubmenu(group) {
             const menuEstoque = document.getElementById('desktopEstoqueSubmenu');
+            const menuSd2 = document.getElementById('desktopSd2Submenu');
             const menuAlmox = document.getElementById('desktopAlmoxSubmenu');
 
             if (group === 'estoque') {
                 if (menuAlmox) menuAlmox.classList.add('hidden');
+                if (menuSd2) menuSd2.classList.add('hidden');
                 if (menuEstoque) menuEstoque.classList.toggle('hidden');
+            } else if (group === 'sd2') {
+                if (menuEstoque) menuEstoque.classList.add('hidden');
+                if (menuAlmox) menuAlmox.classList.add('hidden');
+                if (menuSd2) menuSd2.classList.toggle('hidden');
             } else if (group === 'almox') {
                 if (menuEstoque) menuEstoque.classList.add('hidden');
+                if (menuSd2) menuSd2.classList.add('hidden');
                 if (menuAlmox) menuAlmox.classList.toggle('hidden');
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -7960,19 +7967,26 @@ function renderArmazemChart() {
 
         function closeDesktopSubmenus() {
             const menuEstoque = document.getElementById('desktopEstoqueSubmenu');
+            const menuSd2 = document.getElementById('desktopSd2Submenu');
             const menuAlmox = document.getElementById('desktopAlmoxSubmenu');
             if (menuEstoque) menuEstoque.classList.add('hidden');
+            if (menuSd2) menuSd2.classList.add('hidden');
             if (menuAlmox) menuAlmox.classList.add('hidden');
         }
 
         document.addEventListener('click', function(e) {
             const btnEst = document.getElementById('desktopBtnEstoqueGroup');
             const menuEst = document.getElementById('desktopEstoqueSubmenu');
+            const btnSd2 = document.getElementById('desktopBtnSd2Group');
+            const menuSd2 = document.getElementById('desktopSd2Submenu');
             const btnAlm = document.getElementById('desktopBtnAlmoxGroup');
             const menuAlm = document.getElementById('desktopAlmoxSubmenu');
 
             if (menuEst && !menuEst.classList.contains('hidden') && btnEst && !btnEst.contains(e.target) && !menuEst.contains(e.target)) {
                 menuEst.classList.add('hidden');
+            }
+            if (menuSd2 && !menuSd2.classList.contains('hidden') && btnSd2 && !btnSd2.contains(e.target) && !menuSd2.contains(e.target)) {
+                menuSd2.classList.add('hidden');
             }
             if (menuAlm && !menuAlm.classList.contains('hidden') && btnAlm && !btnAlm.contains(e.target) && !menuAlm.contains(e.target)) {
                 menuAlm.classList.add('hidden');
