@@ -4810,22 +4810,22 @@ function renderArmazemChart() {
             
             const armMap = {};
             
-            // Registra saldos do sistema
+            // Registra armazéns que possuem saldo real do sistema
             saldosProduto.forEach(s => {
                 const a = String(s.armazem).trim().padStart(2, '0');
                 armMap[a] = (armMap[a] || 0) + (s.quantidade || 0);
             });
 
-            // Registra armazéns que possuem histórico de contagem
+            // Registra armazéns que possuem histórico de contagem prévia
             rawConfDataset.filter(c => String(c.produto).trim() === codigo).forEach(c => {
                 const a = String(c.armazem || '01').trim().padStart(2, '0');
                 if (armMap[a] === undefined) armMap[a] = 0;
             });
 
-            // Garante a presença dos armazéns padrão do sistema para contagem de zerados ou remanejados
-            standardSystemArmazens.forEach(a => {
-                if (armMap[a] === undefined) armMap[a] = 0;
-            });
+            // Se o produto for totalmente zerado e sem histórico prévio, exibe por padrão apenas o Armazém 01
+            if (Object.keys(armMap).length === 0) {
+                armMap['01'] = 0;
+            }
 
             let armazens = Object.keys(armMap).map(a => ({ armazem: a, quantidade: armMap[a] }));
             
