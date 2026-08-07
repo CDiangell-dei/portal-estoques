@@ -9834,6 +9834,7 @@ function renderArmazemChart() {
         let currentSd2SubTab = 'remanejamento';
 
         function switchSd2SubTab(subTab) {
+            buildTargetBranchSelect();
             currentSd2SubTab = subTab;
             const viewRem = document.getElementById('sd2SubViewRemanejamento');
             const viewHist = document.getElementById('sd2SubViewHistorico');
@@ -9854,6 +9855,8 @@ function renderArmazemChart() {
         }
 
         function switchSd2Sector(sector) {
+            currentSd2Sector = sector;
+            buildTargetBranchSelect();
             currentSd2Sector = sector;
             const comBtn = document.getElementById('sd2SectorComercioBtn');
             const indBtn = document.getElementById('sd2SectorIndustriaBtn');
@@ -10246,6 +10249,19 @@ function renderArmazemChart() {
             if (clearBtn) {
                 if (val.length > 0) clearBtn.classList.remove("hidden");
                 else clearBtn.classList.add("hidden");
+            }
+
+            // Atualização dinâmica em tempo real ao digitar
+            if (searchVal.length > 0) {
+                globalSelectedSearchTerm = searchVal;
+                const bannerType = document.getElementById("banner-active-type");
+                const simDesc = document.getElementById("sim-product-desc");
+                if (bannerType) bannerType.innerText = "Busca em Tempo Real";
+                if (simDesc) simDesc.innerText = `PESQUISANDO: "${rawSearch.toUpperCase()}"`;
+                recalculateSimulation();
+            } else {
+                clearGlobalProduct();
+                return;
             }
 
             if (searchVal.length < 1) {
