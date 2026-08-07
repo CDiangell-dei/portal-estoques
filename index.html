@@ -3180,7 +3180,7 @@
             }
 
             // Elementos de Inventário, Kardex, Validade e Grupo Estoque Mobile / Desktop (Sempre visíveis para logados)
-            const invElements = ['tabBtnInventario', 'btnHubInventario', 'bottomBtnInventario', 'tabBtnKardex', 'btnHubKardex', 'bottomBtnKardex', 'bottomBtnEstoqueGroup', 'tabBtnValidade', 'btnHubValidade', 'desktopBtnEstoqueGroup', 'desktopBtnSd2Group'];
+            const invElements = ['tabBtnInventario', 'btnHubInventario', 'bottomBtnInventario', 'tabBtnKardex', 'btnHubKardex', 'bottomBtnKardex', 'bottomBtnEstoqueGroup', 'tabBtnValidade', 'btnHubValidade', 'desktopBtnEstoqueGroup', 'desktopBtnSd2Group', 'btnHubVendas', 'tabBtnVendas', 'desktopVendasBtn'];
             invElements.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -3190,7 +3190,7 @@
             });
 
             // Elementos de Administrador (Admin e Vendas)
-            const adminElements = ['tabBtnAdmin', 'tabBtnAdminContainer', 'btnHubAdmin', 'bottomBtnAdmin', 'tabBtnVendas', 'btnHubVendas', 'mobileVendasBtn', 'desktopBtnAdmin', 'desktopVendasBtn'];
+            const adminElements = ['tabBtnAdmin', 'tabBtnAdminContainer', 'btnHubAdmin', 'bottomBtnAdmin', 'desktopBtnAdmin'];
             adminElements.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -3665,8 +3665,8 @@
                 showAlert("Acesso restrito a Almoxarifes e Administradores.", "warning");
                 tab = 'home';
             }
-            if ((tab === 'admin' || tab === 'vendas') && !isAdmin) {
-                showAlert("Acesso ao Módulo de Vendas restrito a Administradores.", "warning");
+            if (tab === 'admin' && !isAdmin) {
+                showAlert("Acesso ao Módulo Admin restrito a Administradores.", "warning");
                 tab = 'home';
             }
 
