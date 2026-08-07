@@ -9861,6 +9861,10 @@ function renderArmazemChart() {
         function switchSd2Sector(sector) {
             currentSd2Sector = sector;
             buildTargetBranchSelect();
+            const searchInput = document.getElementById("global-product-code");
+            if (searchInput && searchInput.value.trim()) {
+                globalSelectedSearchTerm = searchInput.value.trim().toLowerCase();
+            }
             currentSd2Sector = sector;
             const comBtn = document.getElementById('sd2SectorComercioBtn');
             const indBtn = document.getElementById('sd2SectorIndustriaBtn');
@@ -10467,8 +10471,28 @@ function renderArmazemChart() {
                 return;
             }
 
+            // Preserva o termo digitado pelo usuário
+            const currentTerm = (globalSelectedSearchTerm || globalSelectedProductCode || globalSelectedProductNormalizedDesc).trim();
+            const otherSector = currentSd2Sector === 'COMERCIO' ? 'INDUSTRIA' : 'COMERCIO';
+            const otherSectorName = otherSector === 'INDUSTRIA' ? 'Indústria' : 'Comércio';
+
             let productSaldos = rawSaldos ? rawSaldos.filter(s => matchesGlobalProduct(s)) : [];
             let productVendas = rawVendas ? rawVendas.filter(v => matchesGlobalProduct(v)) : [];
+
+            if (productSaldos.length === 0 && productVendas.length === 0 && currentTerm) {
+                const bannerType = document.getElementById("banner-active-type");
+                const simDesc = document.getElementById("sim-product-desc");
+                if (bannerType) bannerType.innerText = "Busca no Setor Atual";
+                if (simDesc) {
+                    simDesc.innerHTML = `Nenhum material encontrado no setor <span class="uppercase font-black text-[#002f6c]">${currentSd2Sector}</span> para "${currentTerm.toUpperCase()}". <button onclick="switchSd2Sector('${otherSector}')" class="ml-2 px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black transition-all shadow-xs"><i data-lucide="arrow-right-left" class="w-3.5 h-3.5 inline mr-1"></i> Alternar para ${otherSectorName}</button>`;
+                }
+                if (tbodySim) tbodySim.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-400 font-bold">Nenhum resultado no setor ${currentSd2Sector === 'COMERCIO' ? 'Comércio' : 'Indústria'}. Clique no botão acima para pesquisar na ${otherSectorName}.</td></tr>`;
+                if (tbodyFat) tbodyFat.innerHTML = "";
+                if (totalPosEl) totalPosEl.innerText = "0 PC";
+                if (alertBox) alertBox.classList.add("hidden");
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
 
             buildDynamicMonths();
             const analysisMonthsKeys = MONTHS_ANALYSIS.map(m => m.key);
