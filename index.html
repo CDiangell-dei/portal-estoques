@@ -2129,8 +2129,14 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase">Lançamento por Armazém (Preencha apenas o que contou)</label>
-                        <div id="countWarehousesContainer" class="max-h-48 overflow-y-auto pr-2 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase">Lançamento por Armazém</label>
+                            <button type="button" onclick="promptAddExtraWarehouseCard()" class="text-[10px] font-black text-teal-600 hover:text-teal-800 flex items-center gap-1 bg-teal-50 hover:bg-teal-100 px-2 py-0.5 rounded-md border border-teal-200/60 transition-all cursor-pointer">
+                                <i data-lucide="plus-circle" class="w-3 h-3"></i>
+                                <span>+ Outro Armazém</span>
+                            </button>
+                        </div>
+                        <div id="countWarehousesContainer" class="max-h-56 overflow-y-auto pr-2 space-y-2">
                             <!-- Inputs de armazéns gerados dinamicamente via JS -->
                         </div>
                     </div>
@@ -4788,6 +4794,8 @@ function renderArmazemChart() {
             lucide.createIcons();
         }
 
+        const standardSystemArmazens = ['01', '02', '03', '04', '05', '06', '09', '12', '50', '99'];
+
         function openCountModal(codigo, descricao) {
             document.getElementById('countProductCode').value = codigo;
             document.getElementById('countProductName').innerText = `${codigo} - ${descricao}`;
@@ -4800,95 +4808,129 @@ function renderArmazemChart() {
             const container = document.getElementById('countWarehousesContainer');
             container.innerHTML = '';
             
-            let armazens = [];
-            if (saldosProduto.length === 0) {
-                armazens.push({ armazem: '01', quantidade: 0 }); // Fallback visual padronizado
-            } else {
-                const armMap = {};
-                saldosProduto.forEach(s => {
-                    const a = String(s.armazem).trim().padStart(2, '0');
-                    armMap[a] = (armMap[a] || 0) + (s.quantidade || 0);
-                });
-                Object.keys(armMap).forEach(a => {
-                    armazens.push({ armazem: a, quantidade: armMap[a] });
-                });
-            }
+            const armMap = {};
             
-            armazens.sort((a,b) => parseInt(a.armazem, 10) - parseInt(b.armazem, 10)).forEach(s => {
-                // Busca o histórico de contagem deste produto, filial e armazém
-                const historyForArm = rawConfDataset.filter(c => 
-                    String(c.produto).trim() === codigo && 
-                    String(c.armazem).trim().padStart(2, '0') === String(s.armazem).trim().padStart(2, '0') &&
-                    (!c.filial || parseInt(c.filial, 10) === userFilial)
-                );
-                
-                // Ordena do mais recente para o mais antigo
-                historyForArm.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-                const lastCount = historyForArm[0];
-                
-                let lastInfoHtml = '';
-                if (lastCount && lastCount.created_at) {
-                    const dt = new Date(lastCount.created_at);
-                    const dateStr = dt.toLocaleDateString('pt-BR') + ' às ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    const whoStr = lastCount.conferente_nome || 'SISTEMA';
-                    const qtyStr = (lastCount.qtd_contada !== undefined && lastCount.qtd_contada !== null) ? lastCount.qtd_contada.toLocaleString('pt-BR') : '0';
-                    
-                    lastInfoHtml = `
-                        <div class="mt-2 text-[10px] bg-slate-100/80 p-2 rounded-lg border border-slate-200/60 flex flex-wrap items-center justify-between gap-1 text-slate-600">
-                            <span class="flex items-center gap-1 font-bold text-slate-500">
-                                <i data-lucide="history" class="w-3 h-3 text-teal-600"></i> Última contagem:
-                            </span>
-                            <span class="font-black text-slate-800 text-right">
-                                ${qtyStr} un. <span class="text-slate-400 font-normal">|</span> ${whoStr} <span class="text-slate-400 font-normal">|</span> ${dateStr}
-                            </span>
-                        </div>
-                    `;
-                } else {
-                    lastInfoHtml = `
-                        <div class="mt-2 text-[10px] bg-slate-50 p-1.5 rounded-lg border border-slate-100 flex items-center justify-between text-slate-400">
-                            <span class="flex items-center gap-1">
-                                <i data-lucide="history" class="w-3 h-3 text-slate-300"></i> Última contagem:
-                            </span>
-                            <span class="font-bold text-slate-400">Sem registros anteriores</span>
-                        </div>
-                    `;
-                }
+            // Registra saldos do sistema
+            saldosProduto.forEach(s => {
+                const a = String(s.armazem).trim().padStart(2, '0');
+                armMap[a] = (armMap[a] || 0) + (s.quantidade || 0);
+            });
 
-                const sysQtyDisplay = `<span class="text-slate-700">${s.quantidade.toLocaleString('pt-BR')}</span>`;
+            // Registra armazéns que possuem histórico de contagem
+            rawConfDataset.filter(c => String(c.produto).trim() === codigo).forEach(c => {
+                const a = String(c.armazem || '01').trim().padStart(2, '0');
+                if (armMap[a] === undefined) armMap[a] = 0;
+            });
 
-                container.innerHTML += `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Armazém <span class="text-[#002f6c] text-xs">${s.armazem}</span></p>
-                                <p class="text-[10px] font-bold text-slate-400 mt-0.5">Saldo Sis: ${sysQtyDisplay}</p>
-                            </div>
-                            <div class="w-36 text-right">
-                                <input type="number" step="any" min="0" data-armazem="${s.armazem}" data-factor="${factor}" data-mode="peso" id="countInput_${s.armazem}" oninput="updateCountPreview('${s.armazem}')" class="count-warehouse-input w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 text-right" placeholder="Opcional">
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-                            <div class="flex items-center gap-1">
-                                <button type="button" onclick="setCountInputMode('${s.armazem}', 'peso')" id="btnModePeso_${s.armazem}" class="px-2 py-0.5 rounded-md text-[9px] font-black bg-teal-600 text-white transition-all">
-                                    ⚖️ Peso
-                                </button>
-                                <button type="button" onclick="setCountInputMode('${s.armazem}', 'peca')" id="btnModePeca_${s.armazem}" class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
-                                    📦 Peças (Fator: ${factor})
-                                </button>
-                            </div>
-                            <div id="countPreviewCalc_${s.armazem}" class="text-[10px] font-black text-teal-700"></div>
-                        </div>
- 
-                        ${lastInfoHtml}
-                    </div>
-                `;
+            // Garante a presença dos armazéns padrão do sistema para contagem de zerados ou remanejados
+            standardSystemArmazens.forEach(a => {
+                if (armMap[a] === undefined) armMap[a] = 0;
+            });
+
+            let armazens = Object.keys(armMap).map(a => ({ armazem: a, quantidade: armMap[a] }));
+            
+            // Ordena numericamente os armazéns
+            armazens.sort((a,b) => parseInt(a.armazem, 10) - parseInt(b.armazem, 10));
+
+            armazens.forEach(s => {
+                renderWarehouseCountCard(s.armazem, s.quantidade, factor, codigo, userFilial);
             });
 
             document.getElementById('countInputObs').value = '';
             const modal = document.getElementById('countModal');
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function renderWarehouseCountCard(armazemCode, sysQty, factor, codigo, userFilial) {
+            const container = document.getElementById('countWarehousesContainer');
+            if (!container) return;
+
+            // Evita duplicar se já existir
+            if (document.getElementById(`countInput_${armazemCode}`)) return;
+
+            const historyForArm = rawConfDataset.filter(c => 
+                String(c.produto).trim() === codigo && 
+                String(c.armazem).trim().padStart(2, '0') === String(armazemCode).trim().padStart(2, '0') &&
+                (!c.filial || parseInt(c.filial, 10) === userFilial)
+            );
+            
+            historyForArm.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            const lastCount = historyForArm[0];
+            
+            let lastInfoHtml = '';
+            if (lastCount && lastCount.created_at) {
+                const dt = new Date(lastCount.created_at);
+                const dateStr = dt.toLocaleDateString('pt-BR') + ' às ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const whoStr = lastCount.conferente_nome || 'SISTEMA';
+                const qtyStr = (lastCount.qtd_contada !== undefined && lastCount.qtd_contada !== null) ? lastCount.qtd_contada.toLocaleString('pt-BR') : '0';
+                
+                lastInfoHtml = `
+                    <div class="mt-2 text-[10px] bg-slate-100/80 p-2 rounded-lg border border-slate-200/60 flex flex-wrap items-center justify-between gap-1 text-slate-600">
+                        <span class="flex items-center gap-1 font-bold text-slate-500">
+                            <i data-lucide="history" class="w-3 h-3 text-teal-600"></i> Última contagem:
+                        </span>
+                        <span class="font-black text-slate-800 text-right">
+                            ${qtyStr} un. <span class="text-slate-400 font-normal">|</span> ${whoStr} <span class="text-slate-400 font-normal">|</span> ${dateStr}
+                        </span>
+                    </div>
+                `;
+            } else {
+                lastInfoHtml = `
+                    <div class="mt-2 text-[10px] bg-slate-50 p-1.5 rounded-lg border border-slate-100 flex items-center justify-between text-slate-400">
+                        <span class="flex items-center gap-1">
+                            <i data-lucide="history" class="w-3 h-3 text-slate-300"></i> Última contagem:
+                        </span>
+                        <span class="font-bold text-slate-400">Sem registros anteriores</span>
+                    </div>
+                `;
+            }
+
+            const sysQtyDisplay = `<span class="text-slate-700">${sysQty.toLocaleString('pt-BR')}</span>`;
+
+            const cardHtml = `
+                <div id="armCard_${armazemCode}" class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Armazém <span class="text-[#002f6c] text-xs">${armazemCode}</span></p>
+                            <p class="text-[10px] font-bold text-slate-400 mt-0.5">Saldo Sis: ${sysQtyDisplay}</p>
+                        </div>
+                        <div class="w-36 text-right">
+                            <input type="number" step="any" min="0" data-armazem="${armazemCode}" data-factor="${factor}" data-mode="peso" id="countInput_${armazemCode}" oninput="updateCountPreview('${armazemCode}')" class="count-warehouse-input w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 text-right" placeholder="Opcional">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="setCountInputMode('${armazemCode}', 'peso')" id="btnModePeso_${armazemCode}" class="px-2 py-0.5 rounded-md text-[9px] font-black bg-teal-600 text-white transition-all">
+                                ⚖️ Peso
+                            </button>
+                            <button type="button" onclick="setCountInputMode('${armazemCode}', 'peca')" id="btnModePeca_${armazemCode}" class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+                                📦 Peças (Fator: ${factor})
+                            </button>
+                        </div>
+                        <div id="countPreviewCalc_${armazemCode}" class="text-[10px] font-black text-teal-700"></div>
+                    </div>
+
+                    ${lastInfoHtml}
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        }
+
+        function promptAddExtraWarehouseCard() {
+            const inputArm = prompt("Informe o número do armazém (ex: 01, 02, 05, 09, 50...):");
+            if (!inputArm) return;
+            const armCode = inputArm.trim().padStart(2, '0');
+            const codigo = document.getElementById('countProductCode').value;
+            const prodItem = filteredInventoryDataset.find(p => p.codigo === codigo);
+            const factor = (prodItem && prodItem.fatorConv) ? Number(prodItem.fatorConv) : 1;
+            const userFilial = currentUser ? parseInt(currentUser.filial_atual, 10) : 1;
+            
+            renderWarehouseCountCard(armCode, 0, factor, codigo, userFilial);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            const inp = document.getElementById(`countInput_${armCode}`);
+            if (inp) inp.focus();
         }
 
         function setCountInputMode(armazem, mode) {
