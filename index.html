@@ -6,6 +6,19 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <script>
+        // Purga ativa de Service Workers e Caches antigos para atualização imediata
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for (let r of registrations) r.unregister();
+            });
+        }
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                for (let n of names) caches.delete(n);
+            });
+        }
+    </script>
     <title>Portal de Controle de Estoques - Amazon Aço</title>
     <script>
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -270,7 +283,7 @@
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
                     <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" fetchpriority="high" loading="eager" class="h-10 w-auto flex-shrink-0 object-contain drop-shadow-sm">
                     <div class="border-l border-slate-200 pl-3 hidden sm:block">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portal de Controle de Estoques</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><span>Portal de Controle de Estoques</span> <span class="bg-emerald-100 text-emerald-800 text-[9px] px-2 py-0.5 rounded-full font-black border border-emerald-200 shadow-xs">v3.5 (Build 20260807)</span></p>
                     </div>
                 </div>
 
