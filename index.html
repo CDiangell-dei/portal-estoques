@@ -323,6 +323,36 @@
                         </div>
                     </div>
 
+                    <!-- GRUPO MOVIMENTAÇÕES SD2 (DROPDOWN SD2) -->
+                    <div class="relative">
+                        <button onclick="toggleDesktopSubmenu('sd2')" id="desktopBtnSd2Group" class="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 px-3.5 py-2 rounded-2xl text-xs font-black inline-flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer">
+                            <i data-lucide="line-chart" class="w-4 h-4 text-blue-600"></i>
+                            <span>Movimentações (SD2)</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                        </button>
+
+                        <div id="desktopSd2Submenu" class="hidden absolute top-12 left-0 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1 no-print">
+                            <button onclick="switchTab('vendas'); switchSd2SubTab('remanejamento'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                                <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+                                    <i data-lucide="scale-balanced" class="w-3.5 h-3.5"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-black text-slate-800 dark:text-slate-200">Simulador de Remanejamento</p>
+                                    <p class="text-[10px] text-slate-500 font-semibold">Análise de cobertura e giro por filial</p>
+                                </div>
+                            </button>
+                            <button onclick="switchTab('vendas'); switchSd2SubTab('historico'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                                <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                                    <i data-lucide="list-filter" class="w-3.5 h-3.5"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-black text-slate-800 dark:text-slate-200">Histórico de Saídas (SD2)</p>
+                                    <p class="text-[10px] text-slate-500 font-semibold">Lançamentos detalhados com SB1</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- GRUPO ALMOXARIFADO (DROPDOWN ALMOXARIFADO) -->
                     <div id="desktopAlmoxGroupContainer" class="relative hidden">
                         <button onclick="toggleDesktopSubmenu('almox')" id="desktopBtnAlmoxGroup" class="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 px-3.5 py-2 rounded-2xl text-xs font-black inline-flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer">
@@ -577,7 +607,219 @@
                         <!-- ==================================================== -->
             <!-- ABA SD2 - MOVIMENTAÇÕES DE SAÍDA E VENDAS             -->
             <!-- ==================================================== -->
-            <div id="tabContentVendas" class="hidden space-y-5 w-full">
+                        <div id="tabContentVendas" class="hidden space-y-5 w-full">
+                <!-- CABEÇALHO DO MÓDULO SD2 -->
+                <div class="bg-gradient-to-r from-[#002f6c] to-[#004b93] text-white rounded-3xl p-5 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-blue-900/30">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-full bg-blue-400/20 text-blue-200 text-[10px] font-black uppercase tracking-wider border border-blue-300/20">Módulo SD2</span>
+                            <span id="sd2SectorBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-400/20">Setor: Comércio</span>
+                        </div>
+                        <h2 class="text-xl font-black tracking-tight text-white">Movimentações de Saída & Remanejamento</h2>
+                        <p class="text-xs text-blue-100/80 font-medium">Análise de cobertura, giro de saídas SD2 e simulador de transferência entre filiais.</p>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-2 text-right">
+                            <span class="text-[9px] text-blue-200 font-bold uppercase tracking-wider block">Data Mais Recente (SD2)</span>
+                            <span id="latest-sd2-date" class="text-xs font-black text-white"><i class="fa-solid fa-spinner fa-spin text-xs"></i></span>
+                        </div>
+                        <button type="button" onclick="triggerSync(true)" class="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-2xl shadow-md transition-all flex items-center gap-2 touch-active">
+                            <i id="icon-trigger-sync" class="fa-solid fa-rotate-right"></i>
+                            <span>Atualizar Dados</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CONTROLES PRINCIPAIS (SETORES + NAVEGAÇÃO DE SUB-ABAS SD2) -->
+                <div class="bg-white border border-slate-200 p-4 rounded-3xl shadow-sm space-y-4">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+                        <!-- SELETOR DE SUB-ABAS SD2 -->
+                        <div class="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold w-full md:w-auto overflow-x-auto">
+                            <button type="button" id="sd2SubTabRemanejamentoBtn" onclick="switchSd2SubTab('remanejamento')" class="px-4 py-2 rounded-xl transition-all bg-[#002f6c] text-white shadow-sm font-black flex-1 md:flex-none flex items-center justify-center gap-2">
+                                <i data-lucide="scale-balanced" class="w-4 h-4"></i>
+                                <span>Simulador de Remanejamento</span>
+                            </button>
+                            <button type="button" id="sd2SubTabHistoricoBtn" onclick="switchSd2SubTab('historico')" class="px-4 py-2 rounded-xl transition-all text-slate-600 hover:text-slate-900 flex-1 md:flex-none flex items-center justify-center gap-2">
+                                <i data-lucide="list-filter" class="w-4 h-4"></i>
+                                <span>Histórico de Saídas (SD2)</span>
+                            </button>
+                        </div>
+
+                        <!-- TOGGLE DE SETOR (COMÉRCIO vs INDÚSTRIA) -->
+                        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                            <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Setor:</span>
+                            <div class="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 w-full sm:w-auto">
+                                <button type="button" id="sd2SectorComercioBtn" onclick="switchSd2Sector('COMERCIO')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 bg-[#002f6c] text-white shadow-sm flex-1 justify-center">
+                                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                                    <span>Comércio</span>
+                                </button>
+                                <button type="button" id="sd2SectorIndustriaBtn" onclick="switchSd2Sector('INDUSTRIA')" class="px-4 py-2 rounded-lg text-xs font-black transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900 flex-1 justify-center">
+                                    <i data-lucide="factory" class="w-4 h-4"></i>
+                                    <span>Indústria</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PRESETS TEMPORAIS -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Período de Análise SD2:</span>
+                        <div class="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold w-full sm:w-auto overflow-x-auto">
+                            <button type="button" id="sd2Time3mBtn" onclick="setSd2TimeRange('3m')" class="px-3.5 py-1.5 rounded-xl transition-all bg-white text-slate-900 shadow-sm font-black flex-1 sm:flex-none text-center">
+                                3 Meses (Padrão)
+                            </button>
+                            <button type="button" id="sd2Time6mBtn" onclick="setSd2TimeRange('6m')" class="px-3.5 py-1.5 rounded-xl transition-all text-slate-600 hover:text-slate-900 flex-1 sm:flex-none text-center">
+                                6 Meses
+                            </button>
+                            <button type="button" id="sd2Time12mBtn" onclick="setSd2TimeRange('12m')" class="px-3.5 py-1.5 rounded-xl transition-all text-slate-600 hover:text-slate-900 flex-1 sm:flex-none text-center">
+                                12 Meses
+                            </button>
+                            <button type="button" id="sd2TimeAllBtn" onclick="setSd2TimeRange('all')" class="px-3.5 py-1.5 rounded-xl transition-all text-slate-600 hover:text-slate-900 flex-1 sm:flex-none text-center">
+                                Todos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-ABA 1: SIMULADOR DE REMANEJAMENTO E COBERTURA DE FILIAIS -->
+                <div id="sd2SubViewRemanejamento" class="space-y-5">
+                    <!-- BUSCA CONSOLIDADA DE MATERIAL ATIVO -->
+                    <div class="bg-white border border-slate-200 p-5 rounded-3xl shadow-sm space-y-4">
+                        <div class="flex flex-col lg:flex-row items-end gap-4 w-full">
+                            <div class="flex-1 w-full space-y-1.5 relative">
+                                <label class="text-xs font-black text-slate-700 uppercase tracking-wider flex justify-between items-center">
+                                    <span class="flex items-center gap-1.5"><i data-lucide="search" class="w-4 h-4 text-[#002f6c]"></i> Material Ativo (Busca Consolidada)</span>
+                                    <span id="global-um-badge" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold uppercase border border-slate-200">Todos</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="global-product-code" placeholder="Digite o código (ex: 02000006), descrição SB1 ou grupo base..." 
+                                           class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-10 py-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] transition"
+                                           oninput="handleGlobalProductInput(this.value)"
+                                           onkeydown="handleGlobalProductKeyDown(event)">
+                                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+                                    <button id="btn-clear-global-product" onclick="clearGlobalProduct()" class="hidden absolute right-3.5 top-3 text-slate-400 hover:text-slate-600">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                <div id="global-autocomplete-list" class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-slate-100 font-bold text-xs"></div>
+                            </div>
+
+                            <div class="w-full lg:w-auto">
+                                <button onclick="clearGlobalProduct()" class="w-full lg:w-auto px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-black transition flex items-center justify-center gap-2 border border-slate-200 touch-active">
+                                    <i data-lucide="filter-x" class="w-4 h-4"></i> Limpar Filtro de Material
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- BANNER DO MATERIAL SELECIONADO & CONSOLIDAÇÃO -->
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 bg-blue-100 text-[#002f6c] rounded-2xl border border-blue-200 shadow-xs">
+                                        <i data-lucide="layers" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <span id="banner-active-type" class="text-[10px] text-amber-700 uppercase font-black tracking-wider block">Material Ativo para Análise</span>
+                                        <h3 id="sim-product-desc" class="text-xs font-black text-slate-900 mt-0.5">Nenhum material selecionado. Use o campo acima para iniciar.</h3>
+                                    </div>
+                                </div>
+                                <div class="text-[11px] text-slate-500 font-bold italic text-left md:text-right">
+                                    * Consolida saldos e saídas de variações quando uma busca por descrição base é selecionada.
+                                </div>
+                            </div>
+
+                            <!-- Lista interativa de códigos agrupados -->
+                            <div id="banner-subcodes-container" class="hidden pt-3 border-t border-slate-200 space-y-2">
+                                <div class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
+                                    <span><i data-lucide="check-square" class="w-3.5 h-3.5 inline mr-1 text-[#002f6c]"></i> Códigos Incluídos nesta Consolidação (Desmarque para excluir da análise):</span>
+                                    <span id="banner-subcodes-count" class="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full font-black border border-blue-200">0 itens</span>
+                                </div>
+                                <div id="banner-subcodes-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-2 bg-white rounded-2xl border border-slate-200"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FORMULÁRIO DE SIMULAÇÃO DE SOLICITAÇÃO DE REMANEJAMENTO -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+                            <div class="lg:col-span-5 space-y-1.5">
+                                <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <i data-lucide="truck" class="w-4 h-4 text-[#002f6c]"></i> Quantidade a Solicitar
+                                </label>
+                                <input type="number" id="sim-qty" value="0" min="0"
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#002f6c]"
+                                       onchange="sanitizeQuantityInput()" oninput="sanitizeQuantityInputOnInput()">
+                            </div>
+                            <div class="lg:col-span-4 space-y-1.5">
+                                <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <i data-lucide="building" class="w-4 h-4 text-[#002f6c]"></i> Nossa Unidade (Destinatária)
+                                </label>
+                                <select id="sim-target-branch" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#002f6c]" onchange="recalculateSimulation()"></select>
+                            </div>
+                            <div class="lg:col-span-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-center flex flex-col justify-center h-[68px] shadow-xs">
+                                <p class="text-[10px] text-emerald-800 font-bold uppercase tracking-wider">Teremos Saldo Total de</p>
+                                <h4 id="sim-total-saldo-pos" class="text-base font-black text-emerald-700 mt-0.5">0 PC</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTAINER DE ALERTAS DE VIABILIDADE DO REMANEJAMENTO -->
+                    <div id="sim-alert-box" class="hidden bg-white border border-slate-200 rounded-3xl p-5 shadow-sm font-semibold space-y-3">
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i> Análise de Viabilidade do Remanejamento
+                        </h4>
+                        <div id="sim-alerts-container" class="space-y-2"></div>
+                    </div>
+
+                    <!-- TABELA DE COBERTURA DE FILIAIS -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#002f6c]"></span> Simulador de Cobertura de Filiais
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-wider bg-slate-50">
+                                        <th class="py-3 px-4">Filiais</th>
+                                        <th class="py-3 px-3 text-center">ABC</th>
+                                        <th class="py-3 px-3 text-center">Status</th>
+                                        <th class="py-3 px-3 text-center">Cobertura (Mês)</th>
+                                        <th class="py-3 px-3 text-right">Saldo Atual</th>
+                                        <th class="py-3 px-3 text-right bg-slate-100 text-[#002f6c]">Saldo Pós Envio</th>
+                                        <th class="py-3 px-3 text-right">Qtde Vendida</th>
+                                        <th class="py-3 px-3 text-right">Média Mês Qtde</th>
+                                        <th class="py-3 px-3 text-right">Média Mês Fat</th>
+                                        <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sim-tbody" class="divide-y divide-slate-100 text-slate-700">
+                                    <tr><td colspan="10" class="py-6 text-center text-slate-400 font-bold">Selecione um produto na busca acima para visualizar os dados.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TABELA DE ANÁLISE MENSAL FATIADA (QTDE) -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+                        <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Análise Mensal de Saídas Fatiada (Qtde)</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr id="sim-fatiada-thead" class="border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-wider bg-slate-50">
+                                        <th class="py-3 px-4">Filiais</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sim-fatiada-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-ABA 2: HISTÓRICO E LANÇAMENTOS DETALHADOS SD2 -->
+                <div id="sd2SubViewHistorico" class="hidden space-y-5">
                 <!-- CABEÇALHO DO MÓDULO SD2 -->
                 <div class="bg-gradient-to-r from-[#002f6c] to-[#004b93] text-white rounded-3xl p-5 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-blue-900/30">
                     <div class="space-y-1">
@@ -730,7 +972,10 @@
                 </div>
             </div>
 
-<div id="tabContentInventario" class="hidden space-y-6">
+                </div>
+            </div>
+
+            <div id="tabContentInventario" class="hidden space-y-6">
 
                 <!-- HEADER MÓDULO INVENTÁRIO -->
                 <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
@@ -9571,6 +9816,29 @@ function renderArmazemChart() {
             return `${yr}-${mo}-${da}`;
         }
 
+        
+        let currentSd2SubTab = 'remanejamento';
+
+        function switchSd2SubTab(subTab) {
+            currentSd2SubTab = subTab;
+            const viewRem = document.getElementById('sd2SubViewRemanejamento');
+            const viewHist = document.getElementById('sd2SubViewHistorico');
+            const btnRem = document.getElementById('sd2SubTabRemanejamentoBtn');
+            const btnHist = document.getElementById('sd2SubTabHistoricoBtn');
+
+            if (subTab === 'remanejamento') {
+                if (viewRem) viewRem.classList.remove('hidden');
+                if (viewHist) viewHist.classList.add('hidden');
+                if (btnRem) btnRem.className = "px-4 py-2 rounded-xl transition-all bg-[#002f6c] text-white shadow-sm font-black flex-1 md:flex-none flex items-center justify-center gap-2";
+                if (btnHist) btnHist.className = "px-4 py-2 rounded-xl transition-all text-slate-600 hover:text-slate-900 flex-1 md:flex-none flex items-center justify-center gap-2";
+            } else {
+                if (viewRem) viewRem.classList.add('hidden');
+                if (viewHist) viewHist.classList.remove('hidden');
+                if (btnRem) btnRem.className = "px-4 py-2 rounded-xl transition-all text-slate-600 hover:text-slate-900 flex-1 md:flex-none flex items-center justify-center gap-2";
+                if (btnHist) btnHist.className = "px-4 py-2 rounded-xl transition-all bg-[#002f6c] text-white shadow-sm font-black flex-1 md:flex-none flex items-center justify-center gap-2";
+            }
+        }
+
         function switchSd2Sector(sector) {
             currentSd2Sector = sector;
             const comBtn = document.getElementById('sd2SectorComercioBtn');
@@ -9826,3 +10094,505 @@ function renderArmazemChart() {
 
 </body>
 </html>
+
+        // =========================================================================
+        // MOTOR DE CÁLCULO E SIMULADOR DE REMANEJAMENTO & COBERTURA DE FILIAIS
+        // =========================================================================
+
+        const DIC_FILIAIS_NAMES = {
+            1: "01 - Alvorada",
+            2: "02 - Matriz CD",
+            4: "04 - Raiz",
+            5: "05 - Cidade Nova",
+            6: "06 - Jorge Teixeira"
+        };
+
+        let globalSelectedProductCode = "";
+        let globalSelectedProductNormalizedDesc = ""; 
+        let globalSelectedSearchTerm = ""; 
+        let excludedSubCodes = new Set();
+        let MONTHS_ANALYSIS = [];
+
+        function buildDynamicMonths() {
+            let maxDateStr = "";
+            if (rawVendas && rawVendas.length > 0) {
+                rawVendas.forEach(v => {
+                    if (v.Emissao && v.Emissao !== 'Data N/D') {
+                        if (v.Emissao > maxDateStr) maxDateStr = v.Emissao;
+                    }
+                });
+            }
+
+            let baseDate = new Date(); 
+            if (maxDateStr) {
+                const parts = maxDateStr.split('-');
+                if (parts.length >= 2) baseDate = new Date(parts[0], parts[1] - 1, 15);
+            }
+
+            MONTHS_ANALYSIS = [];
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            
+            for (let i = 0; i < 7; i++) {
+                let d = new Date(baseDate);
+                d.setMonth(d.getMonth() - i);
+                const yr = d.getFullYear();
+                const mo = String(d.getMonth() + 1).padStart(2, '0');
+                const moName = monthNames[d.getMonth()] ? monthNames[d.getMonth()].toUpperCase() : mo;
+
+                MONTHS_ANALYSIS.push({
+                    key: `${yr}-${mo}`,
+                    label: moName,
+                    label_full: `${monthNames[d.getMonth()] || mo}/${String(yr).substring(2)}`
+                });
+            }
+        }
+
+        function buildTargetBranchSelect() {
+            const selectEl = document.getElementById("sim-target-branch");
+            if (!selectEl) return;
+            selectEl.innerHTML = "";
+            
+            const filiais = currentSd2Sector === 'INDUSTRIA' ? { 1: "01", 6: "06" } : DIC_FILIAIS_NAMES;
+            Object.keys(filiais).forEach(id => {
+                const opt = document.createElement("option");
+                opt.value = id; opt.innerText = filiais[id];
+                selectEl.appendChild(opt);
+            });
+            
+            const savedBranch = localStorage.getItem('portal_target_branch');
+            if (savedBranch && filiais[savedBranch]) {
+                selectEl.value = savedBranch;
+            } else {
+                selectEl.value = "1";
+            }
+        }
+
+        function sanitizeQuantityInput() {
+            const inputEl = document.getElementById("sim-qty");
+            if (!inputEl) return;
+            let val = inputEl.value.trim();
+            if (val === '') inputEl.value = 0;
+            else {
+                let cleaned = val.replace(/^0+(?=\d)/, '');
+                if (cleaned === '') cleaned = '0';
+                inputEl.value = cleaned;
+            }
+            recalculateSimulation();
+        }
+
+        function sanitizeQuantityInputOnInput() {
+            const inputEl = document.getElementById("sim-qty");
+            if (!inputEl) return;
+            let val = inputEl.value;
+            if (val.length > 1 && val.startsWith('0')) {
+                inputEl.value = val.replace(/^0+(?=\d)/, '');
+            }
+            recalculateSimulation();
+        }
+
+        function matchesGlobalProduct(item) {
+            if (!item) return false;
+            if (globalSelectedProductCode) {
+                return item.Produto === globalSelectedProductCode;
+            } else if (globalSelectedProductNormalizedDesc) {
+                if (excludedSubCodes.has(item.Produto)) return false;
+                return item.NormalizedDesc === globalSelectedProductNormalizedDesc;
+            } else if (globalSelectedSearchTerm) {
+                if (excludedSubCodes.has(item.Produto)) return false;
+                return String(item.Descricao || '').toLowerCase().includes(globalSelectedSearchTerm) || 
+                       String(item.NormalizedDesc || '').toLowerCase().includes(globalSelectedSearchTerm) || 
+                       String(item.Produto || '').toLowerCase().includes(globalSelectedSearchTerm);
+            }
+            return true;
+        }
+
+        function handleGlobalProductInput(val) {
+            const searchVal = val.trim().toLowerCase();
+            const autocompleteList = document.getElementById("global-autocomplete-list");
+            const clearBtn = document.getElementById("btn-clear-global-product");
+            
+            if (clearBtn) {
+                if (val.length > 0) clearBtn.classList.remove("hidden");
+                else clearBtn.classList.add("hidden");
+            }
+
+            if (searchVal.length < 2) {
+                if (autocompleteList) autocompleteList.classList.add("hidden");
+                return;
+            }
+
+            const matchedProducts = new Map();
+            const matchedGroups = new Map();
+
+            if (rawDicionario) {
+                rawDicionario.forEach(d => {
+                    const prodCode = d.Produto;
+                    const desc = d.Descricao || 'SEM DESCRIÇÃO';
+                    const normDesc = d.NormalizedDesc || desc.toUpperCase();
+
+                    if (prodCode.toLowerCase().includes(searchVal) || desc.toLowerCase().includes(searchVal)) {
+                        matchedProducts.set(prodCode, { code: prodCode, desc: desc, norm: normDesc });
+                        if (normDesc) {
+                            if (!matchedGroups.has(normDesc)) matchedGroups.set(normDesc, { norm: normDesc, codes: new Set() });
+                            matchedGroups.get(normDesc).codes.add(prodCode);
+                        }
+                    }
+                });
+            }
+
+            let html = "";
+            let count = 0;
+
+            matchedGroups.forEach(grp => {
+                if (count >= 15) return;
+                html += `
+                    <div onclick="selectGlobalProduct(null, '${grp.norm.replace(/'/g, "\'")}')" class="p-3 hover:bg-slate-50 cursor-pointer flex items-center justify-between border-b border-slate-100 transition">
+                        <div>
+                            <span class="font-black text-[#002f6c] block">${grp.norm}</span>
+                            <span class="text-[10px] text-slate-500 font-bold">Consolidação de ${grp.codes.size} código(s)</span>
+                        </div>
+                        <span class="text-[9px] bg-blue-100 text-[#002f6c] px-2 py-0.5 rounded-full font-black uppercase">Grupo Base</span>
+                    </div>
+                `;
+                count++;
+            });
+
+            matchedProducts.forEach(prod => {
+                if (count >= 30) return;
+                html += `
+                    <div onclick="selectGlobalProduct('${prod.code}', null)" class="p-3 hover:bg-slate-50 cursor-pointer flex items-center justify-between border-b border-slate-100 transition">
+                        <div>
+                            <span class="font-black text-slate-900 block">${prod.code} - ${prod.desc}</span>
+                        </div>
+                        <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold uppercase">Código Único</span>
+                    </div>
+                `;
+                count++;
+            });
+
+            if (autocompleteList) {
+                if (html) {
+                    autocompleteList.innerHTML = html;
+                    autocompleteList.classList.remove("hidden");
+                } else {
+                    autocompleteList.classList.add("hidden");
+                }
+            }
+        }
+
+        function handleGlobalProductKeyDown(e) {
+            if (e.key === 'Enter') {
+                const val = e.target.value.trim();
+                if (val) {
+                    selectGlobalProduct(null, null, val.toLowerCase());
+                    const autocompleteList = document.getElementById("global-autocomplete-list");
+                    if (autocompleteList) autocompleteList.classList.add("hidden");
+                }
+            }
+        }
+
+        function selectGlobalProduct(code, normDesc, searchTerm = "") {
+            globalSelectedProductCode = code || "";
+            globalSelectedProductNormalizedDesc = normDesc || "";
+            globalSelectedSearchTerm = searchTerm || "";
+            excludedSubCodes.clear();
+
+            const inputEl = document.getElementById("global-product-code");
+            const bannerType = document.getElementById("banner-active-type");
+            const simDesc = document.getElementById("sim-product-desc");
+            const subcodesContainer = document.getElementById("banner-subcodes-container");
+
+            if (code) {
+                const d = rawDicionario.find(x => x.Produto === code);
+                const descStr = d ? d.Descricao : 'PRODUTO SELECIONADO';
+                if (inputEl) inputEl.value = `${code} - ${descStr}`;
+                if (bannerType) bannerType.innerText = "Código Único Selecionado";
+                if (simDesc) simDesc.innerText = `${code} — ${descStr}`;
+                if (subcodesContainer) subcodesContainer.classList.add("hidden");
+            } else if (normDesc) {
+                if (inputEl) inputEl.value = normDesc;
+                if (bannerType) bannerType.innerText = "Grupo Base Consolidado";
+                if (simDesc) simDesc.innerText = `GRUPO: ${normDesc}`;
+                renderSubcodesList(normDesc);
+            } else if (searchTerm) {
+                if (inputEl) inputEl.value = searchTerm;
+                if (bannerType) bannerType.innerText = "Busca Livre Consolidada";
+                if (simDesc) simDesc.innerText = `TERMO: "${searchTerm.toUpperCase()}"`;
+                if (subcodesContainer) subcodesContainer.classList.add("hidden");
+            }
+
+            const autocompleteList = document.getElementById("global-autocomplete-list");
+            if (autocompleteList) autocompleteList.classList.add("hidden");
+
+            recalculateSimulation();
+        }
+
+        function renderSubcodesList(normDesc) {
+            const container = document.getElementById("banner-subcodes-container");
+            const listEl = document.getElementById("banner-subcodes-list");
+            const countBadge = document.getElementById("banner-subcodes-count");
+
+            if (!container || !listEl) return;
+
+            const subProds = rawDicionario.filter(d => d.NormalizedDesc === normDesc);
+            if (subProds.length <= 1) {
+                container.classList.add("hidden");
+                return;
+            }
+
+            container.classList.remove("hidden");
+            if (countBadge) countBadge.innerText = `${subProds.length} itens`;
+
+            let html = "";
+            subProds.forEach(p => {
+                const isChecked = !excludedSubCodes.has(p.Produto);
+                html += `
+                    <label class="flex items-center gap-2 p-1.5 hover:bg-slate-50 rounded-xl cursor-pointer text-xs font-bold text-slate-800 border border-slate-100">
+                        <input type="checkbox" value="${p.Produto}" ${isChecked ? 'checked' : ''} 
+                               onchange="toggleSubcodeExclusion('${p.Produto}', this.checked)"
+                               class="rounded text-[#002f6c] focus:ring-0">
+                        <span class="truncate">${p.Produto} - ${p.Descricao}</span>
+                    </label>
+                `;
+            });
+            listEl.innerHTML = html;
+        }
+
+        function toggleSubcodeExclusion(code, isChecked) {
+            if (isChecked) excludedSubCodes.delete(code);
+            else excludedSubCodes.add(code);
+            recalculateSimulation();
+        }
+
+        function clearGlobalProduct() {
+            globalSelectedProductCode = "";
+            globalSelectedProductNormalizedDesc = "";
+            globalSelectedSearchTerm = "";
+            excludedSubCodes.clear();
+
+            const inputEl = document.getElementById("global-product-code");
+            const clearBtn = document.getElementById("btn-clear-global-product");
+            const bannerType = document.getElementById("banner-active-type");
+            const simDesc = document.getElementById("sim-product-desc");
+            const subcodesContainer = document.getElementById("banner-subcodes-container");
+
+            if (inputEl) inputEl.value = "";
+            if (clearBtn) clearBtn.classList.add("hidden");
+            if (bannerType) bannerType.innerText = "Material Ativo para Análise";
+            if (simDesc) simDesc.innerText = "Nenhum material selecionado. Use o campo acima para iniciar.";
+            if (subcodesContainer) subcodesContainer.classList.add("hidden");
+
+            recalculateSimulation();
+        }
+
+        function recalculateSimulation() {
+            const qtyInput = document.getElementById("sim-qty");
+            const qtyToRequest = qtyInput ? (parseFloat(qtyInput.value) || 0) : 0;
+            const targetBranchEl = document.getElementById("sim-target-branch");
+            const targetBranch = targetBranchEl ? parseInt(targetBranchEl.value) : 1;
+            
+            localStorage.setItem('portal_target_branch', targetBranch);
+
+            const tbodySim = document.getElementById("sim-tbody");
+            const tbodyFat = document.getElementById("sim-fatiada-tbody");
+            const totalPosEl = document.getElementById("sim-total-saldo-pos");
+            const alertBox = document.getElementById("sim-alert-box");
+
+            if (!globalSelectedProductCode && !globalSelectedProductNormalizedDesc && !globalSelectedSearchTerm) {
+                if (tbodySim) tbodySim.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-400 font-bold">Selecione um código ou grupo na busca acima para iniciar a análise.</td></tr>`;
+                if (tbodyFat) tbodyFat.innerHTML = "";
+                if (totalPosEl) totalPosEl.innerText = "0 PC";
+                if (alertBox) alertBox.classList.add("hidden");
+                return;
+            }
+
+            let productSaldos = rawSaldos ? rawSaldos.filter(s => matchesGlobalProduct(s)) : [];
+            let productVendas = rawVendas ? rawVendas.filter(v => matchesGlobalProduct(v)) : [];
+
+            buildDynamicMonths();
+            const analysisMonthsKeys = MONTHS_ANALYSIS.map(m => m.key);
+            const salesMap = {};
+            
+            productVendas.forEach(v => {
+                if (v.Emissao && v.Emissao !== 'Data N/D') {
+                    const yrMo = v.Emissao.substring(0, 7);
+                    if (analysisMonthsKeys.includes(yrMo)) {
+                        if (!salesMap[v.Filial]) salesMap[v.Filial] = {};
+                        if (!salesMap[v.Filial][yrMo]) salesMap[v.Filial][yrMo] = { qty: 0, val: 0 };
+                        salesMap[v.Filial][yrMo].qty += v.Quantidade;
+                        salesMap[v.Filial][yrMo].val += (v['Vlr.Total'] || 0);
+                    }
+                }
+            });
+
+            const branchProductQuantity = {};
+            rawVendas.forEach(v => {
+                if (!branchProductQuantity[v.Filial]) branchProductQuantity[v.Filial] = {};
+                let trackingKey = v.Produto;
+                if (globalSelectedProductNormalizedDesc) trackingKey = v.NormalizedDesc;
+                if (globalSelectedSearchTerm) trackingKey = "SUPER_GROUP";
+
+                branchProductQuantity[v.Filial][trackingKey] = (branchProductQuantity[v.Filial][trackingKey] || 0) + v.Quantidade;
+            });
+
+            let targetBranchSaldoPos = 0; 
+            const simulatedBranches = [];
+            const alerts = [];
+            const activeFiliaisDict = currentSd2Sector === 'INDUSTRIA' ? { 1: "01", 6: "06" } : DIC_FILIAIS_NAMES;
+
+            Object.keys(activeFiliaisDict).forEach(fId => {
+                const filialId = parseInt(fId);
+                const filialNome = activeFiliaisDict[filialId];
+
+                let curveABC = "C";
+                const branchSales = branchProductQuantity[filialId] || {};
+                const sortedProds = Object.keys(branchSales).map(p => ({ key: p, quantity: branchSales[p] })).sort((a, b) => b.quantity - a.quantity);
+                const totalFilialQuantity = sortedProds.reduce((sum, p) => sum + p.quantity, 0);
+
+                if (totalFilialQuantity > 0) {
+                    let cumulativeQuantity = 0;
+                    for (let i = 0; i < sortedProds.length; i++) {
+                        const prodQty = sortedProds[i].quantity;
+                        const prevCumulativePct = (cumulativeQuantity / totalFilialQuantity) * 100;
+                        cumulativeQuantity += prodQty;
+                        
+                        let targetKey = globalSelectedProductCode;
+                        if (globalSelectedProductNormalizedDesc) targetKey = globalSelectedProductNormalizedDesc;
+                        if (globalSelectedSearchTerm) targetKey = "SUPER_GROUP";
+                        
+                        if (sortedProds[i].key === targetKey) {
+                            if (prevCumulativePct < 80) curveABC = "A";
+                            else if (prevCumulativePct < 95) curveABC = "B";
+                            else curveABC = "C";
+                            break;
+                        }
+                    }
+                }
+
+                const filialSaldos = productSaldos.filter(s => parseInt(s.Filial) === filialId);
+                const saldoAtual = filialSaldos.reduce((acc, curr) => acc + (curr['Qtde.1a.U.M.'] || 0), 0);
+
+                let totalQtdVendas = 0; let totalValVendas = 0;
+                analysisMonthsKeys.forEach(m => {
+                    if (salesMap[filialId] && salesMap[filialId][m]) {
+                        totalQtdVendas += salesMap[filialId][m].qty;
+                        totalValVendas += salesMap[filialId][m].val;
+                    }
+                });
+
+                const numMeses = MONTHS_ANALYSIS.length || 1;
+                const mediaMesQtd = parseFloat((totalQtdVendas / numMeses).toFixed(1));
+                const mediaMesFat = parseFloat((totalValVendas / numMeses).toFixed(2));
+                const dif = saldoAtual - totalQtdVendas;
+
+                let saldoPosEnvio = saldoAtual;
+                if (filialId === targetBranch) {
+                    saldoPosEnvio = saldoAtual + qtyToRequest;
+                    targetBranchSaldoPos = saldoPosEnvio; 
+                } else {
+                    saldoPosEnvio = saldoAtual - qtyToRequest;
+                }
+
+                let cobertura = 0;
+                if (mediaMesQtd > 0) cobertura = parseFloat((saldoPosEnvio / mediaMesQtd).toFixed(1));
+                else cobertura = saldoPosEnvio > 0 ? 99.0 : 0.0;
+
+                let statusText = "IDEAL"; let statusClass = "bg-emerald-50 text-emerald-700 border border-emerald-200";
+                if (cobertura < 3.0) { statusText = "CRÍTICO"; statusClass = "bg-rose-50 text-rose-700 border border-rose-200"; } 
+                else if (cobertura > 6.0) { statusText = "EXCESSO"; statusClass = "bg-blue-50 text-blue-700 border border-blue-200"; }
+
+                simulatedBranches.push({
+                    filialId, filialNome, curveABC, statusText, statusClass, cobertura,
+                    saldoAtual, saldoPosEnvio, totalQtdVendas, mediaMesQtd, mediaMesFat, dif
+                });
+            });
+
+            simulatedBranches.sort((a, b) => a.filialId - b.filialId);
+            if (tbodySim) {
+                tbodySim.innerHTML = "";
+                simulatedBranches.forEach(b => {
+                    const row = document.createElement("tr");
+                    row.className = b.filialId === targetBranch ? "bg-slate-50 font-black border-l-4 border-[#002f6c]" : "hover:bg-slate-50 transition text-xs font-bold";
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-black text-slate-900 flex items-center gap-2">
+                            ${b.filialNome}
+                            ${b.filialId === targetBranch ? '<span class="text-[9px] bg-[#002f6c] text-white px-2 py-0.5 rounded-full uppercase font-black tracking-wider">Destino</span>' : ''}
+                        </td>
+                        <td class="py-3 px-3 text-center font-black text-slate-500">${b.curveABC}</td>
+                        <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-full font-black uppercase tracking-wider text-[10px] ${b.statusClass}">${b.statusText}</span></td>
+                        <td class="py-3 px-3 text-center font-black ${b.cobertura < 3.0 ? 'text-rose-600' : 'text-slate-900'}">${b.cobertura === 99.0 ? 'Sem Vendas (99)' : b.cobertura.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right font-bold text-slate-600">${b.saldoAtual.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right font-black ${b.filialId === targetBranch ? 'text-[#002f6c] bg-slate-100' : 'text-slate-800'}">${b.saldoPosEnvio.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right text-slate-600">${b.totalQtdVendas.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right text-slate-800 font-bold">${b.mediaMesQtd.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right text-slate-600">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(b.mediaMesFat)}</td>
+                        <td class="py-3 px-4 text-right font-black ${b.dif < 0 ? 'text-rose-600' : 'text-emerald-700'}">${b.dif.toLocaleString('pt-BR')}</td>
+                    `;
+                    tbodySim.appendChild(row);
+                });
+            }
+
+            if (totalPosEl) {
+                totalPosEl.innerText = `${targetBranchSaldoPos.toLocaleString('pt-BR')} PC`;
+            }
+
+            const alertsContainer = document.getElementById("sim-alerts-container");
+            if (alertsContainer && alertBox) {
+                alertsContainer.innerHTML = "";
+                if (qtyToRequest > 0) {
+                    simulatedBranches.forEach(b => {
+                        if (b.filialId !== targetBranch) {
+                            if (b.saldoPosEnvio < 0) {
+                                alerts.push({ type: "critical", message: `🛑 <strong>Não dá para atender a solicitação:</strong> A filial <strong>${b.filialNome}</strong> ficará com estoque negativo de <strong>${b.saldoPosEnvio} PC</strong> se fornecer esta quantidade!` });
+                            } else if (b.saldoPosEnvio === 0) {
+                                alerts.push({ type: "depleted", message: `⚠️ <strong>Está zerando o estoque:</strong> A filial <strong>${b.filialNome}</strong> esgotará completamente o saldo físico dela com essa remessa!` });
+                            } else if (b.statusText === "EXCESSO" || b.statusText === "IDEAL") {
+                                alerts.push({ type: "success", message: `✅ <strong>Unidade pode atender:</strong> A filial <strong>${b.filialNome}</strong> possui saldo seguro pós-envio (${b.saldoPosEnvio} PC) e pode realizar o remanejamento!` });
+                            } else {
+                                alerts.push({ type: "warning", message: `⚠️ <strong>Estoque Crítico pós-remanejamento:</strong> O estoque da filial <strong>${b.filialNome}</strong> cobrirá apenas <strong>${b.cobertura.toLocaleString('pt-BR')} meses</strong> de venda.` });
+                            }
+                        }
+                    });
+                }
+
+                if (alerts.length > 0) {
+                    alertBox.classList.remove("hidden");
+                    alerts.forEach(a => {
+                        const alertDiv = document.createElement("div");
+                        if (a.type === "critical") alertDiv.className = "p-3 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-xs font-bold flex items-center gap-2";
+                        else if (a.type === "depleted") alertDiv.className = "p-3 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900 text-xs font-bold flex items-center gap-2";
+                        else if (a.type === "success") alertDiv.className = "p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold flex items-center gap-2";
+                        else alertDiv.className = "p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-xs font-bold flex items-center gap-2";
+                        alertDiv.innerHTML = a.message;
+                        alertsContainer.appendChild(alertDiv);
+                    });
+                } else {
+                    alertBox.classList.add("hidden");
+                }
+            }
+
+            const theadFat = document.getElementById("sim-fatiada-thead");
+            if (theadFat) {
+                theadFat.innerHTML = `<th class="py-3 px-4">Filiais</th>`;
+                MONTHS_ANALYSIS.forEach(m => {
+                    const th = document.createElement("th"); th.className = "py-3 px-3 text-right"; th.innerText = m.label;
+                    theadFat.appendChild(th);
+                });
+            }
+
+            if (tbodyFat) {
+                tbodyFat.innerHTML = "";
+                Object.keys(activeFiliaisDict).forEach(fId => {
+                    const filialId = parseInt(fId);
+                    const row = document.createElement("tr");
+                    row.className = filialId === targetBranch ? "bg-slate-50 font-black" : "hover:bg-slate-50 text-xs font-bold transition";
+                    let htmlCells = `<td class="py-3 px-4 font-black text-slate-800">${activeFiliaisDict[filialId]}</td>`;
+                    MONTHS_ANALYSIS.forEach(m => {
+                        const qtySold = (salesMap[filialId] && salesMap[filialId][m.key]) ? salesMap[filialId][m.key].qty : 0;
+                        htmlCells += `<td class="py-3 px-3 text-right text-slate-900 font-bold">${qtySold.toLocaleString('pt-BR')}</td>`;
+                    });
+                    row.innerHTML = htmlCells;
+                    tbodyFat.appendChild(row);
+                });
+            }
+        }
