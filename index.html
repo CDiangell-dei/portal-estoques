@@ -1569,6 +1569,14 @@
                             <input type="date" id="minutaDataEntrega" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
                         </div>
 
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                                <i data-lucide="shopping-bag" class="w-3 h-3 text-amber-600"></i>
+                                <span>Sacolas Utilizadas</span>
+                            </label>
+                            <input type="number" min="0" step="1" id="minutaQtdSacolas" placeholder="0" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                        </div>
+
                         <div class="md:col-span-2 lg:col-span-4">
                             <button type="submit" id="btnMinutaSubmit" class="w-full bg-[#002f6c] hover:bg-[#00204a] text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider shadow-md transition-all touch-active">
                                 <span id="btnMinutaSubmitText">Registrar Minuta de Recebimento</span>
@@ -1620,10 +1628,18 @@
                 </div>
 
                 <!-- KPIS MINUTAS -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm print-card">
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Recebimentos</p>
                         <p id="kpiMinutaTotalQty" class="text-2xl font-black text-[#002f6c] mt-1">0</p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-2xl border border-amber-200/80 bg-amber-50/30 shadow-sm print-card">
+                        <p class="text-[10px] font-black text-amber-700 uppercase tracking-wider flex items-center gap-1">
+                            <i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-amber-600"></i>
+                            Total Sacolas
+                        </p>
+                        <p id="kpiMinutaTotalSacolas" class="text-2xl font-black text-amber-900 mt-1">0</p>
                     </div>
 
                     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm print-card">
@@ -2166,14 +2182,21 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-3 gap-3">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Conferente / Recebedor</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Conferente</label>
                             <select id="editMinutaConferente" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]"></select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Data da Entrega</label>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Data Entrega</label>
                             <input type="date" id="editMinutaData" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                                <i data-lucide="shopping-bag" class="w-3 h-3 text-amber-600"></i>
+                                <span>Sacolas</span>
+                            </label>
+                            <input type="number" min="0" step="1" id="editMinutaQtdSacolas" placeholder="0" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
                         </div>
                     </div>
 
@@ -5729,6 +5752,10 @@ function renderArmazemChart() {
 
             const elRatio = document.getElementById('kpiMinutaRatio');
             if (elRatio) elRatio.innerText = `${nfPct}% / ${orcPct}%`;
+
+            const totalSacolas = filteredMinutasDataset.reduce((acc, curr) => acc + (parseInt(curr.qtd_sacolas || 0, 10) || 0), 0);
+            const elTotalSacolas = document.getElementById('kpiMinutaTotalSacolas');
+            if (elTotalSacolas) elTotalSacolas.innerText = totalSacolas.toLocaleString('pt-BR');
         }
 
         function renderMinutasCharts() {
@@ -5923,9 +5950,15 @@ function renderArmazemChart() {
                 const isAdmin = currentUser && currentUser.eh_admin;
                 const canDelete = isOwner || isAdmin;
 
+                const sacolasVal = item.qtd_sacolas || 0;
+                const sacolasBadge = sacolasVal > 0 
+                    ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-200 shadow-2xs">${sacolasVal} sacola(s)</span>`
+                    : `<span class="text-slate-300 font-bold text-xs">-</span>`;
+
                 tr.innerHTML = `
                     <td class="px-5 py-3 text-xs font-bold text-slate-500">${d}</td>
                     <td class="px-5 py-3 text-xs">${nfDisplay}</td>
+                    <td class="px-5 py-3 text-center">${sacolasBadge}</td>
                     <td class="px-5 py-3 font-bold text-slate-900">${item.conferente || '-'}</td>
                     <td class="px-5 py-3 text-xs text-slate-600 font-bold">${item.almoxarife || '-'}</td>
                     <td class="px-5 py-3 text-right text-xs text-slate-400 font-bold">${item.filial || '-'}</td>
@@ -6038,11 +6071,14 @@ function renderArmazemChart() {
                 return;
             }
 
+            const qtdSacolas = document.getElementById('minutaQtdSacolas') ? (parseInt(document.getElementById('minutaQtdSacolas').value, 10) || 0) : 0;
+
             let payload = {
                 conferente: conferente,
                 almoxarife: currentUser ? (currentUser.nome || 'SISTEMA') : 'SISTEMA',
                 data_entrega: new Date(dataEntrega + 'T12:00:00').toISOString(),
-                filial: currentUser ? String(currentUser.filial_comercio || currentUser.filial_atual || '01').trim().padStart(2, '0') : '01'
+                filial: currentUser ? String(currentUser.filial_comercio || currentUser.filial_atual || '01').trim().padStart(2, '0') : '01',
+                qtd_sacolas: qtdSacolas
             };
 
             if (currentMinutaMode === 'MINUTA') {
@@ -6121,6 +6157,7 @@ function renderArmazemChart() {
             if (document.getElementById('minutaOrcamentoNumero')) document.getElementById('minutaOrcamentoNumero').value = '';
             if (document.getElementById('minutaConferenteSelect')) document.getElementById('minutaConferenteSelect').value = '';
             if (document.getElementById('customSerieInput')) document.getElementById('customSerieInput').value = '';
+            if (document.getElementById('minutaQtdSacolas')) document.getElementById('minutaQtdSacolas').value = '0';
             
             // Restaura o modo de série padrão (dropdown)
             toggleCustomSerieField(true);
@@ -6251,6 +6288,9 @@ function renderArmazemChart() {
                 elData.value = item.data_entrega.split('T')[0];
             }
 
+            const elSacolas = document.getElementById('editMinutaQtdSacolas');
+            if (elSacolas) elSacolas.value = item.qtd_sacolas !== undefined && item.qtd_sacolas !== null ? item.qtd_sacolas : 0;
+
             const modal = document.getElementById('editMinutaModal');
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
         }
@@ -6272,9 +6312,12 @@ function renderArmazemChart() {
 
             if (!id) return;
 
+            const editSacolas = document.getElementById('editMinutaQtdSacolas') ? (parseInt(document.getElementById('editMinutaQtdSacolas').value, 10) || 0) : 0;
+
             let payload = {
                 conferente: conferente,
-                data_entrega: new Date(dataEntrega + 'T12:00:00').toISOString()
+                data_entrega: new Date(dataEntrega + 'T12:00:00').toISOString(),
+                qtd_sacolas: editSacolas
             };
 
             if (nf) payload.numero_nf = parseInt(nf, 10);
