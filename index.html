@@ -3994,8 +3994,8 @@
                         for (let i = 0; i < activeCodes.length; i += chunkSize) {
                             const chunk = activeCodes.slice(i, i + chunkSize);
                             const { data, error } = await supabaseClient.from('sb1_industria')
-                                .select('Codigo, "Descr.Espec.", Unidade, "Fator Conv.", tags')
-                                .in('Codigo', chunk);
+                                .select('codigo, descricao, unidade, fator_conv, tags')
+                                .in('codigo', chunk);
                             if (data) sb1All = sb1All.concat(data);
                         }
                     }
@@ -4003,7 +4003,7 @@
                     let from1 = 0, step1 = 1000, fetchMore1 = true;
                     while (fetchMore1) {
                         const { data, error } = await supabaseClient.from('sb1_comercio')
-                            .select('Codigo, "Descr.Espec.", Unidade, "Fator Conv.", tags')
+                            .select('codigo, descricao, unidade, fator_conv, tags')
                             .range(from1, from1 + step1 - 1);
                         if (error || !data || data.length === 0) { fetchMore1 = false; } 
                         else {
@@ -4382,9 +4382,9 @@
 
                 return {
                     codigo: cod,
-                    descricao: prod['Descr.Espec.'] || '-',
-                    unidade: prod.Unidade || '-',
-                    fatorConv: prod['Fator Conv.'] || 1,
+                    descricao: prod.descricao || prod['Descr.Espec.'] || '-',
+                    unidade: prod.unidade || prod.Unidade || '-',
+                    fatorConv: prod.fator_conv || prod['Fator Conv.'] || 1,
                     tags: prod.tags || '',
                     quantidade: sysQty,
                     qtd_contada: countedQty,
@@ -7166,7 +7166,8 @@ function renderArmazemChart() {
 
             const sb1Map = {};
             rawSb1Dataset.forEach(p => {
-                sb1Map[p.Codigo] = p['Descr.Espec.'] || '-';
+                const c = p.codigo || p.Codigo;
+                if (c) sb1Map[c] = p.descricao || p['Descr.Espec.'] || '-';
             });
 
             filteredValidadeDataset = rawValidadeDataset.filter(v => {
@@ -7220,7 +7221,8 @@ function renderArmazemChart() {
 
             const sb1Map = {};
             rawSb1Dataset.forEach(p => {
-                sb1Map[p.Codigo] = p['Descr.Espec.'] || '-';
+                const c = p.codigo || p.Codigo;
+                if (c) sb1Map[c] = p.descricao || p['Descr.Espec.'] || '-';
             });
 
             if (filteredValidadeDataset.length === 0) {
@@ -7452,7 +7454,10 @@ function renderArmazemChart() {
             if (!item) return;
 
             const sb1Map = {};
-            rawSb1Dataset.forEach(p => { sb1Map[p.Codigo] = p['Descr.Espec.'] || '-'; });
+            rawSb1Dataset.forEach(p => {
+                const c = p.codigo || p.Codigo;
+                if (c) sb1Map[c] = p.descricao || p['Descr.Espec.'] || '-';
+            });
 
             document.getElementById('valTransferId').value = item.id;
             document.getElementById('valTransferProdDesc').innerText = `${item.produto} - ${sb1Map[item.produto] || '-'}`;
@@ -7549,7 +7554,8 @@ function renderArmazemChart() {
 
                 const prodDescMap = {};
                 rawSb1Dataset.forEach(p => {
-                    if (p.Codigo) prodDescMap[String(p.Codigo).trim()] = p['Descr.Espec.'] || '-';
+                    const c = p.codigo || p.Codigo;
+                    if (c) prodDescMap[String(c).trim()] = p.descricao || p['Descr.Espec.'] || '-';
                 });
 
                 rawKardexDataset = confData.map(c => {
@@ -8159,7 +8165,8 @@ function renderArmazemChart() {
 
                 const prodDescMap = {};
                 rawSb1Dataset.forEach(p => {
-                    if (p.Codigo) prodDescMap[String(p.Codigo).trim()] = p['Descr.Espec.'] || '-';
+                    const c = p.codigo || p.Codigo;
+                    if (c) prodDescMap[String(c).trim()] = p.descricao || p['Descr.Espec.'] || '-';
                 });
 
                 let html = '';
@@ -10718,7 +10725,7 @@ function renderArmazemChart() {
                 // Executa todas as 4 consultas em paralelo ultra rápido
                 const [dbFiliais, dbSb1, dbSaldos, dbSd2] = await Promise.all([
                     fetchSupabaseRestFast('filiais', '*', 10),
-                    fetchSupabaseRestFast('sb1_comercio', 'Codigo,%22Descr.Espec.%22,Unidade,tags', 15000),
+                    fetchSupabaseRestFast('sb1_comercio', 'codigo,descricao,unidade,tags', 15000),
                     fetchSupabaseRestFast('saldo_comercio', 'produto,filial,armazem,quantidade', 6000),
                     fetchSupabaseRestFast('sd2_comercio', 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr)
                 ]);
@@ -10738,9 +10745,10 @@ function renderArmazemChart() {
                 const umMap = {};
                 const tagMap = {};
                 rawDicionario = dbSb1.map(item => {
-                    const cod = normalizeProductCode(item.Codigo);
-                    const desc = item["Descr.Espec."] || 'SEM DESCRIÇÃO';
-                    const um = item.Unidade || 'PC';
+                    const rawCode = item.codigo || item.Codigo || '';
+                    const cod = normalizeProductCode(rawCode);
+                    const desc = item.descricao || item["Descr.Espec."] || 'SEM DESCRIÇÃO';
+                    const um = item.unidade || item.Unidade || 'PC';
                     descMap[cod] = desc;
                     umMap[cod] = um;
                     tagMap[cod] = item.tags || 'Geral';
