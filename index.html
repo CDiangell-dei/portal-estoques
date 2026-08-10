@@ -10700,7 +10700,7 @@ function renderArmazemChart() {
         let chartStockDistribution = null;
         let MONTHS_ANALYSIS = [];
 
-        async function fetchSupabaseRestFast(endpoint, selectQuery, totalExpectedRows = 70000, extraFilter = '') {
+        async function fetchSupabaseRestFast(endpoint, selectQuery, maxExpectedRows = 70000, extraFilter = '') {
             const baseUrl = (typeof DEFAULT_SUPABASE_URL !== 'undefined' ? DEFAULT_SUPABASE_URL : 'https://wpwerdaiqyfhfhhioosp.supabase.co') + '/rest/v1/' + endpoint;
             const apiKey = typeof DEFAULT_SUPABASE_KEY !== 'undefined' ? DEFAULT_SUPABASE_KEY : 'sb_publishable_BGgecij1uLNAr-2XWMTPCA_y8_lT9Go';
             const headers = {
@@ -10709,23 +10709,54 @@ function renderArmazemChart() {
             };
 
             const pageSize = 1000;
-            const numPages = Math.max(1, Math.ceil(totalExpectedRows / pageSize));
+            const concurrency = 6; // Respeita o limite de conexões simultâneas HTTP/1.1 e HTTP/2 do navegador por host
             const url = baseUrl + '?select=' + selectQuery + (extraFilter ? '&' + extraFilter : '');
 
-            const promises = [];
-            for (let i = 0; i < numPages; i++) {
-                const rangeHeader = (i * pageSize) + '-' + ((i + 1) * pageSize - 1);
-                promises.push(
-                    fetch(url, {
-                        headers: { ...headers, 'Range': rangeHeader, 'Range-Unit': 'items' }
-                    })
-                    .then(r => r.ok ? r.json() : [])
-                    .catch(() => [])
-                );
+            let allRows = [];
+            let currentOffset = 0;
+            let keepFetching = true;
+
+            while (keepFetching && currentOffset < maxExpectedRows) {
+                const batchPromises = [];
+                for (let c = 0; c < concurrency; c++) {
+                    const start = currentOffset + (c * pageSize);
+                    if (start >= maxExpectedRows) break;
+                    const end = start + pageSize - 1;
+                    const rangeHeader = `${start}-${end}`;
+
+                    batchPromises.push(
+                        fetch(url, {
+                            headers: { ...headers, 'Range': rangeHeader, 'Range-Unit': 'items' }
+                        })
+                        .then(r => r.ok ? r.json() : [])
+                        .catch(() => [])
+                    );
+                }
+
+                const batchResults = await Promise.all(batchPromises);
+                let reachedEnd = false;
+
+                for (const rows of batchResults) {
+                    if (Array.isArray(rows) && rows.length > 0) {
+                        allRows = allRows.concat(rows);
+                        if (rows.length < pageSize) {
+                            reachedEnd = true;
+                            break;
+                        }
+                    } else {
+                        reachedEnd = true;
+                        break;
+                    }
+                }
+
+                if (reachedEnd) {
+                    keepFetching = false;
+                } else {
+                    currentOffset += concurrency * pageSize;
+                }
             }
 
-            const results = await Promise.all(promises);
-            return results.flat().filter(Boolean);
+            return allRows;
         }
 
         async function triggerSync() {
