@@ -10709,9 +10709,7 @@ function renderArmazemChart() {
             };
 
             const pageSize = 1000;
-            const concurrency = 6; // Respeita o limite de conexões simultâneas HTTP/1.1 e HTTP/2 do navegador por host
-            const url = baseUrl + '?select=' + selectQuery + (extraFilter ? '&' + extraFilter : '');
-
+            const concurrency = 5; // Limite de concorrência paralela nativa do navegador
             let allRows = [];
             let currentOffset = 0;
             let keepFetching = true;
@@ -10719,17 +10717,19 @@ function renderArmazemChart() {
             while (keepFetching && currentOffset < maxExpectedRows) {
                 const batchPromises = [];
                 for (let c = 0; c < concurrency; c++) {
-                    const start = currentOffset + (c * pageSize);
-                    if (start >= maxExpectedRows) break;
-                    const end = start + pageSize - 1;
-                    const rangeHeader = `${start}-${end}`;
+                    const offset = currentOffset + (c * pageSize);
+                    if (offset >= maxExpectedRows) break;
+
+                    let queryUrl = `${baseUrl}?select=${selectQuery}&limit=${pageSize}&offset=${offset}`;
+                    if (extraFilter) queryUrl += '&' + extraFilter;
 
                     batchPromises.push(
-                        fetch(url, {
-                            headers: { ...headers, 'Range': rangeHeader, 'Range-Unit': 'items' }
-                        })
+                        fetch(queryUrl, { headers })
                         .then(r => r.ok ? r.json() : [])
-                        .catch(() => [])
+                        .catch(err => {
+                            console.warn(`Erro no fetch REST (${endpoint}):`, err);
+                            return [];
+                        })
                     );
                 }
 
