@@ -8378,6 +8378,9 @@ function renderArmazemChart() {
         function normalizeProductCode(code) {
             if (code === undefined || code === null) return '';
             let cleanStr = String(code).trim();
+            if (cleanStr.includes('.')) {
+                cleanStr = cleanStr.split('.')[0];
+            }
             if (/^\d+$/.test(cleanStr)) {
                let numStr = cleanStr.replace(/^0+/, ''); 
                if (numStr === '') return '0';
@@ -8534,7 +8537,19 @@ function renderArmazemChart() {
                     currentCache.vendas = rawVendas;
                 }
 
+                // Cruzamento mestre de descrições normalizadas entre SB1, Saldos e Vendas
+                const prodDescMap = {};
+                if (rawDicionario) rawDicionario.forEach(d => { prodDescMap[d.Produto] = d.NormalizedDesc; });
+                if (rawSaldos) rawSaldos.forEach(s => { if (!prodDescMap[s.Produto]) prodDescMap[s.Produto] = s.NormalizedDesc; });
+
+                if (rawVendas) {
+                    rawVendas.forEach(v => {
+                        v.NormalizedDesc = prodDescMap[v.Produto] || "DESCONHECIDO";
+                    });
+                }
+
                 processAndPopulate();
+                recalculateSimulation();
             } catch (err) {
                 console.error("Erro ao sincronizar SD2:", err);
                 showAlert("Erro ao carregar dados do SD2.", "error");
