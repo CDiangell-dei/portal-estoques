@@ -10676,28 +10676,32 @@ function renderArmazemChart() {
         let chartStockDistribution = null;
         let MONTHS_ANALYSIS = [];
 
-        async function fetchSupabaseTablePaginated(tableName, selectQuery = '*', maxRows = 70000, filterGte = null) {
-            if (!supabaseClient) return [];
-            const step = 1000;
-            let allData = [];
-            let offset = 0;
-            let continueFetching = true;
+        async function fetchSupabaseRestFast(endpoint, selectQuery, totalExpectedRows = 70000, extraFilter = '') {
+            const baseUrl = (typeof DEFAULT_SUPABASE_URL !== 'undefined' ? DEFAULT_SUPABASE_URL : 'https://wpwerdaiqyfhfhhioosp.supabase.co') + '/rest/v1/' + endpoint;
+            const apiKey = typeof DEFAULT_SUPABASE_KEY !== 'undefined' ? DEFAULT_SUPABASE_KEY : 'sb_publishable_BGgecij1uLNAr-2XWMTPCA_y8_lT9Go';
+            const headers = {
+                'apikey': apiKey,
+                'authorization': 'Bearer ' + apiKey
+            };
 
-            while (offset < maxRows && continueFetching) {
-                let query = supabaseClient.from(tableName).select(selectQuery).range(offset, offset + step - 1);
-                if (filterGte) {
-                    query = query.gte(filterGte.column, filterGte.value);
-                }
-                const { data, error } = await query;
-                if (error || !data || data.length === 0) {
-                    continueFetching = false;
-                } else {
-                    allData = allData.concat(data);
-                    if (data.length < step) continueFetching = false;
-                    offset += step;
-                }
+            const pageSize = 1000;
+            const numPages = Math.max(1, Math.ceil(totalExpectedRows / pageSize));
+            const url = baseUrl + '?select=' + selectQuery + (extraFilter ? '&' + extraFilter : '');
+
+            const promises = [];
+            for (let i = 0; i < numPages; i++) {
+                const rangeHeader = (i * pageSize) + '-' + ((i + 1) * pageSize - 1);
+                promises.push(
+                    fetch(url, {
+                        headers: { ...headers, 'Range': rangeHeader, 'Range-Unit': 'items' }
+                    })
+                    .then(r => r.ok ? r.json() : [])
+                    .catch(() => [])
+                );
             }
-            return allData;
+
+            const results = await Promise.all(promises);
+            return results.flat().filter(Boolean);
         }
 
         async function triggerSync() {
@@ -10705,10 +10709,21 @@ function renderArmazemChart() {
             if (syncIcon) syncIcon.classList.add("animate-spin");
 
             try {
-                if (!supabaseClient) initSupabase();
+                if (typeof initSupabase === "function" && !supabaseClient) initSupabase();
 
-                // 1. Filiais
-                const { data: dbFiliais } = await supabaseClient.from('filiais').select('*');
+                const sevenMonthsAgo = new Date();
+                sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+                const dateFilterStr = sevenMonthsAgo.toISOString().split('T')[0];
+
+                // Executa todas as 4 consultas em paralelo ultra rápido
+                const [dbFiliais, dbSb1, dbSaldos, dbSd2] = await Promise.all([
+                    fetchSupabaseRestFast('filiais', '*', 10),
+                    fetchSupabaseRestFast('sb1_comercio', 'Codigo,%22Descr.Espec.%22,Unidade,tags', 15000),
+                    fetchSupabaseRestFast('saldo_comercio', 'produto,filial,armazem,quantidade', 6000),
+                    fetchSupabaseRestFast('sd2_comercio', 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr)
+                ]);
+
+                // 1. Processa Filiais
                 if (dbFiliais && dbFiliais.length > 0) {
                     dbFiliais.forEach(f => {
                         const num = parseInt(f.num_filial, 10);
@@ -10718,8 +10733,7 @@ function renderArmazemChart() {
                     });
                 }
 
-                // 2. sb1_comercio (Dicionário)
-                const dbSb1 = await fetchSupabaseTablePaginated('sb1_comercio', 'Codigo, "Descr.Espec.", Unidade, tags', 20000);
+                // 2. Processa sb1_comercio (Dicionário)
                 const descMap = {};
                 const umMap = {};
                 const tagMap = {};
@@ -10733,8 +10747,7 @@ function renderArmazemChart() {
                     return { Codigo: cod, Descricao: desc, Unidade: um, Grupo: item.tags || 'Geral' };
                 });
 
-                // 3. saldo_comercio
-                const dbSaldos = await fetchSupabaseTablePaginated('saldo_comercio', 'produto, filial, armazem, quantidade', 10000);
+                // 3. Processa saldo_comercio
                 rawSaldos = dbSaldos.map(s => {
                     const cod = normalizeProductCode(s.produto);
                     return {
@@ -10748,13 +10761,7 @@ function renderArmazemChart() {
                     };
                 }).filter(s => s.Produto);
 
-                // 4. sd2_comercio (últimos 7 meses)
-                const sevenMonthsAgo = new Date();
-                sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-                const dateFilterStr = sevenMonthsAgo.toISOString().split('T')[0];
-
-                const dbSd2 = await fetchSupabaseTablePaginated('sd2_comercio', 'filial, produto, quantidade, vlr_unitario, vlr_total, tipo_saida, armazem, emissao, num_documento', 70000, { column: 'emissao', value: dateFilterStr });
-
+                // 4. Processa sd2_comercio
                 rawVendas = dbSd2.map(v => {
                     const cod = normalizeProductCode(v.produto);
                     return {
@@ -10786,7 +10793,7 @@ function renderArmazemChart() {
                 populateSalesPeriods();
                 applyFilters();
 
-                showAlert(`Sincronização Supabase realizada! (${rawVendas.length} lançamentos de saídas e ${rawSaldos.length} registros de estoque).`, "success");
+                showAlert(`Sincronização Supabase realizada! (${rawVendas.length} saídas e ${rawSaldos.length} saldos).`, "success");
             } catch (err) {
                 console.error("Erro na sincronização Supabase:", err);
                 showAlert("Erro ao sincronizar dados com o Supabase. Verifique a conexão.", "error");
