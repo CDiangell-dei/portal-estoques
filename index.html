@@ -8423,12 +8423,14 @@ function renderArmazemChart() {
         const SUPABASE_URL = "https://wpwerdaiqyfhfhhioosp.supabase.co";
         const SUPABASE_KEY = "sb_publishable_BGgecij1uLNAr-2XWMTPCA_y8_lT9Go";
 
-        async function fetchSupabaseTable(tableName, selectColumns = '*') {
-            const step = 5000;
-            const maxOffset = 50000; // Para 50k registros, busca 10 blocos simultaneamente em paralelo!
-            const fetchPromises = [];
+        async function fetchSupabaseTable(tableName, selectColumns = '*', maxRows = 70000) {
+            const step = 1000;
+            let targetMax = maxRows;
+            if (tableName.includes('saldo')) targetMax = 6000;
+            if (tableName.includes('sb1')) targetMax = 16000;
 
-            for (let offset = 0; offset <= maxOffset; offset += step) {
+            const fetchPromises = [];
+            for (let offset = 0; offset < targetMax; offset += step) {
                 const url = `${SUPABASE_URL}/rest/v1/${tableName}?select=${selectColumns}&offset=${offset}&limit=${step}`;
                 fetchPromises.push(
                     fetch(url, {
