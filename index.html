@@ -2222,9 +2222,15 @@
                         <i data-lucide="clipboard-check" class="w-5 h-5 text-teal-600"></i>
                         <h3 class="text-sm font-black text-slate-900">Lançar Contagem Física</h3>
                     </div>
-                    <button type="button" onclick="closeCountModal()" class="p-1 text-slate-400 hover:text-slate-700">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="toggleAppCalculator()" id="btnToggleCalc" class="text-[11px] font-black text-[#002f6c] bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-xl border border-blue-200/80 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm" title="Abrir ou fechar calculadora">
+                            <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                            <span id="labelToggleCalc">Abrir Calculadora</span>
+                        </button>
+                        <button type="button" onclick="closeCountModal()" class="p-1 text-slate-400 hover:text-slate-700">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
                 </div>
                 <form onsubmit="handleCountSubmit(event)" class="space-y-3">
                     <input type="hidden" id="countProductCode">
@@ -2249,13 +2255,18 @@
                         </div>
                     </div>
 
-                    <!-- TECLADO CALCULADORA DA APLICAÇÃO (TOUCH INTELIGENTE) -->
-                    <div id="appCalculatorKeypad" class="bg-slate-900 text-white rounded-2xl p-3 shadow-lg space-y-2 border border-slate-800">
+                    <!-- TECLADO CALCULADORA DA APLICAÇÃO (TOUCH INTELIGENTE - RECOLHÍVEL) -->
+                    <div id="appCalculatorKeypad" class="hidden bg-slate-900 text-white rounded-2xl p-3 shadow-lg space-y-2 border border-slate-800 transition-all duration-300">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                             <span class="text-[10px] font-black uppercase text-teal-400 tracking-wider flex items-center gap-1">
                                 🧮 Calculadora Inteligente
                             </span>
-                            <span id="appCalcTargetLabel" class="text-[10px] font-bold text-slate-400">Toque no campo para digitar</span>
+                            <div class="flex items-center gap-2">
+                                <span id="appCalcTargetLabel" class="text-[10px] font-bold text-slate-400">Toque no campo para digitar</span>
+                                <button type="button" onclick="toggleAppCalculator(false)" class="text-slate-400 hover:text-white p-0.5 rounded-lg text-xs" title="Minimizar Calculadora">
+                                    <i data-lucide="chevron-up" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-4 gap-1.5 font-bold text-xs select-none">
@@ -5052,6 +5063,10 @@ function renderArmazemChart() {
             });
 
             document.getElementById('countInputObs').value = '';
+            
+            // Inicia a calculadora fechada por padrão para manter a tela limpa
+            toggleAppCalculator(false);
+
             const modal = document.getElementById('countModal');
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
             if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -5168,6 +5183,24 @@ function renderArmazemChart() {
         }
 
         let activeCalcArmazemCode = null;
+
+        function toggleAppCalculator(show = null) {
+            const keypad = document.getElementById('appCalculatorKeypad');
+            const label = document.getElementById('labelToggleCalc');
+            if (!keypad) return;
+
+            const isHidden = keypad.classList.contains('hidden');
+            const shouldShow = (show !== null) ? show : isHidden;
+
+            if (shouldShow) {
+                keypad.classList.remove('hidden');
+                if (label) label.innerText = 'Fechar Calculadora';
+            } else {
+                keypad.classList.add('hidden');
+                if (label) label.innerText = 'Abrir Calculadora';
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
 
         function setActiveCalcTarget(armazemCode) {
             activeCalcArmazemCode = armazemCode;
