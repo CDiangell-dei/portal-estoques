@@ -3448,6 +3448,13 @@
                 document.getElementById('appContainer').classList.remove('hidden');
                 document.getElementById('appContainer').classList.add('flex');
 
+                // Iniciar pré-carregamento dos dados do SD2 em segundo plano em paralelo
+                setTimeout(() => {
+                    if (typeof triggerSync === 'function' && (!rawVendas || rawVendas.length === 0)) {
+                        triggerSync();
+                    }
+                }, 300);
+
                 resetInactivityTimer();
                 await fetchAllRecords();
                 return true;
@@ -11113,6 +11120,7 @@ function renderArmazemChart() {
             const stepEl = document.getElementById("sd2ProgressStepText");
             const pctEl = document.getElementById("sd2ProgressPercent");
             const barEl = document.getElementById("sd2ProgressBar");
+            const syncBadge = document.getElementById("sd2-last-sync-time");
 
             if (overlay) overlay.classList.remove("hidden");
             if (timerEl) timerEl.innerText = "0.0s";
@@ -11120,12 +11128,17 @@ function renderArmazemChart() {
             if (stepEl) stepEl.innerText = "Conectando ao Supabase...";
             if (pctEl) pctEl.innerText = "0%";
             if (barEl) barEl.style.width = "0%";
+            if (syncBadge) {
+                syncBadge.innerText = "Sincronizando...";
+                syncBadge.className = "bg-amber-600 text-white px-2 py-0.5 rounded-lg font-mono text-[10px] animate-pulse";
+            }
 
             sd2ProgressTotalCount = 0;
             const startTime = performance.now();
+
             const timerInterval = setInterval(() => {
-                const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
-                if (timerEl) timerEl.innerText = `${elapsed}s`;
+                const elapsed = (performance.now() - startTime) / 1000;
+                if (timerEl) timerEl.innerText = `${elapsed.toFixed(1)}s`;
             }, 100);
 
             const updateUIProgress = (pct, stepName) => {
@@ -11142,24 +11155,17 @@ function renderArmazemChart() {
                 sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
                 const dateFilterStr = sevenMonthsAgo.toISOString().split('T')[0];
 
-                updateUIProgress(10, "Baixando filiais e dicionário de produtos...");
-                const dbFiliais = await fetchSupabaseRestFast('filiais', '*', 10, '', () => updateUIProgress(15, "Carregando filiais..."));
-                const dbSb1 = await fetchSupabaseRestFast('sb1_comercio', 'codigo,descricao,unidade,tags', 15000, '', () => {
-                    const pct = 15 + Math.min(25, (sd2ProgressTotalCount / 15000) * 25);
-                    updateUIProgress(pct, "Baixando dicionário de produtos...");
-                });
+                updateUIProgress(10, "Baixando filiais, produtos, saldos e saídas SD2 em paralelo...");
 
-                updateUIProgress(40, "Baixando saldos dos armazéns...");
-                const dbSaldos = await fetchSupabaseRestFast('saldo_comercio', 'produto,filial,armazem,quantidade', 6000, '', () => {
-                    const pct = 40 + Math.min(15, (sd2ProgressTotalCount / 20000) * 15);
-                    updateUIProgress(pct, "Baixando saldos dos armazéns...");
-                });
-
-                updateUIProgress(55, "Baixando saídas do SD2 (vendas últimos 7 meses)...");
-                const dbSd2 = await fetchSupabaseRestFast('sd2_comercio', 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr, () => {
-                    const pct = 55 + Math.min(40, (sd2ProgressTotalCount / 85000) * 40);
-                    updateUIProgress(pct, "Baixando saídas do SD2...");
-                });
+                const [dbFiliais, dbSb1, dbSaldos, dbSd2] = await Promise.all([
+                    fetchSupabaseRestFast('filiais', '*', 10, '', () => {}),
+                    fetchSupabaseRestFast('sb1_comercio', 'codigo,descricao,unidade,tags', 15000, '', () => {}),
+                    fetchSupabaseRestFast('saldo_comercio', 'produto,filial,armazem,quantidade', 6000, '', () => {}),
+                    fetchSupabaseRestFast('sd2_comercio', 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr, () => {
+                        const pct = Math.min(90, Math.round((sd2ProgressTotalCount / 85000) * 90));
+                        updateUIProgress(pct, `Baixando saídas SD2 (${sd2ProgressTotalCount.toLocaleString('pt-BR')} itens)...`);
+                    })
+                ]);
 
                 updateUIProgress(95, "Processando relatórios e calculando coberturas...");
 
@@ -11224,7 +11230,10 @@ function renderArmazemChart() {
                 const dateNow = new Date().toLocaleDateString('pt-BR');
                 const syncTimeStr = `${dateNow} às ${timeNow}`;
                 const syncEl = document.getElementById("sd2-last-sync-time");
-                if (syncEl) syncEl.innerText = syncTimeStr;
+                if (syncEl) {
+                    syncEl.innerText = syncTimeStr;
+                    syncEl.className = "bg-emerald-800 text-white px-2 py-0.5 rounded-lg font-mono text-[10px]";
+                }
 
                 buildDynamicMonths();
                 buildTargetBranchSelect();
