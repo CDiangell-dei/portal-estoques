@@ -203,13 +203,13 @@
                 <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1 pt-2 border-t border-slate-100">Portal de Controle de Estoques</p>
             </div>
 
-            <!-- FORMULÃRIO DE LOGIN -->
-            <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-5">
+            <!-- FORMULÁRIO DE LOGIN -->
+            <form id="formLogin" onsubmit="event.preventDefault(); handleLogin(event); return false;" class="space-y-5">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">MatrÃ­cula</label>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Matrícula</label>
                     <div class="relative">
                         <i data-lucide="user" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
-                        <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="loginMatricula" required placeholder="Sua matrÃ­cula corporativa..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] transition-all">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="if(event.key==='Enter'){event.preventDefault();handleLogin(event);}" id="loginMatricula" required placeholder="Sua matrícula corporativa..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] transition-all">
                     </div>
                 </div>
                 <div>
@@ -219,11 +219,11 @@
                     </div>
                     <div class="relative">
                         <i data-lucide="lock" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
-                        <input type="password" id="loginSenha" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] transition-all">
+                        <input type="password" id="loginSenha" onkeydown="if(event.key==='Enter'){event.preventDefault();handleLogin(event);}" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] transition-all">
                     </div>
                 </div>
 
-                <button type="submit" id="btnLoginSubmit" class="w-full bg-[#002f6c] hover:bg-[#00204a] text-white py-3.5 rounded-xl font-black text-sm tracking-wider uppercase shadow-md transition-all flex items-center justify-center space-x-2 touch-active mt-2">
+                <button type="button" onclick="handleLogin(event)" id="btnLoginSubmit" class="w-full bg-[#002f6c] hover:bg-[#00204a] text-white py-3.5 rounded-xl font-black text-sm tracking-wider uppercase shadow-md transition-all flex items-center justify-center space-x-2 touch-active mt-2 cursor-pointer">
                     <span>Acessar Sistema</span>
                     <i data-lucide="log-in" class="w-4 h-4"></i>
                 </button>
@@ -3574,18 +3574,19 @@
 
                 // 2. Fallback: Consulta direta à tabela usuarios do Supabase
                 if (!matchedUser) {
-                    const matInt = parseInt(matRaw, 10);
-                    const queryMat = isNaN(matInt) ? matRaw : matInt;
                     const { data: userData, error: userErr } = await supabaseClient
                         .from('usuarios')
                         .select('*')
-                        .or(`matricula.eq.${queryMat},matricula.eq.${matRaw}`)
                         .eq('senha', pwd);
 
                     if (userErr) {
                         console.error("Erro na consulta de usuário:", userErr);
                     } else if (userData && userData.length > 0) {
-                        matchedUser = userData[0];
+                        const targetMat = String(matRaw).trim();
+                        matchedUser = userData.find(u => {
+                            const uMat = String(u.matricula || '').trim();
+                            return uMat === targetMat || parseInt(uMat, 10) === parseInt(targetMat, 10);
+                        });
                     }
                 }
 
