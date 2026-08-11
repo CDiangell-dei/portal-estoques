@@ -4134,6 +4134,48 @@
             }
         }
 
+        function restoreInventoryFiltersFromLocalStorage() {
+            // 1. Restaurar Statuses
+            try {
+                const savedStatuses = localStorage.getItem('amazon_selected_statuses');
+                if (savedStatuses) {
+                    const parsed = JSON.parse(savedStatuses);
+                    if (Array.isArray(parsed)) {
+                        document.querySelectorAll('.status-checkbox').forEach(cb => {
+                            cb.checked = parsed.includes(cb.value);
+                        });
+                    }
+                }
+            } catch (e) {}
+
+            // 2. Restaurar Modo Inverso Excluir Tags
+            try {
+                const savedExclude = localStorage.getItem('amazon_tag_exclude_mode');
+                const cbExclude = document.getElementById('invTagExcludeMode');
+                if (savedExclude !== null && cbExclude) {
+                    cbExclude.checked = (savedExclude === 'true');
+                }
+            } catch (e) {}
+
+            // 3. Restaurar Exibir Saldo Zerado
+            try {
+                const savedZero = localStorage.getItem('amazon_show_zero_saldo');
+                const cbZero = document.getElementById('invShowZeroSaldo');
+                if (savedZero !== null && cbZero) {
+                    cbZero.checked = (savedZero === 'true');
+                }
+            } catch (e) {}
+
+            // 4. Restaurar Termo de Busca Rápida
+            try {
+                const savedSearch = localStorage.getItem('amazon_inv_search');
+                const inputSearch = document.getElementById('invSearch');
+                if (savedSearch !== null && inputSearch) {
+                    inputSearch.value = savedSearch;
+                }
+            } catch (e) {}
+        }
+
         function extractInventoryMetadata() {
             const selFilial = document.getElementById('invFilterFilial');
             if (selFilial) {
@@ -4146,8 +4188,11 @@
                     availableFiliais = [getTargetFilialForSector()];
                 }
 
-                // Preserve or resolve the current selection
-                let currentVal = selFilial.value || getTargetFilialForSector();
+                // Tentar recuperar filial salva no localStorage
+                let savedFilial = null;
+                try { savedFilial = localStorage.getItem('amazon_selected_filial'); } catch(e) {}
+
+                let currentVal = savedFilial || selFilial.value || getTargetFilialForSector();
                 
                 let opts = '';
                 if (isAdmin) {
@@ -4159,7 +4204,7 @@
                 });
                 selFilial.innerHTML = opts;
 
-                // Adjust selected value based on availability
+                // Ajustar filial selecionada
                 if (currentVal && !availableFiliais.includes(currentVal) && currentVal !== 'ALL') {
                     selFilial.value = availableFiliais[0] || 'ALL';
                 } else {
@@ -4230,7 +4275,6 @@
                 } catch(e) {}
 
                 let html = '';
-                // Opção especial para filtrar materiais sem tag
                 const isNoTagChecked = (Array.isArray(savedTagSelection) && savedTagSelection.includes('__no_tag__'));
                 html += `
                     <label class="flex items-center space-x-2.5 p-1.5 hover:bg-amber-50/50 rounded-xl cursor-pointer select-none border-b border-slate-100 mb-1 pb-2">
@@ -4253,7 +4297,8 @@
                 containerTags.innerHTML = html;
             }
 
-
+            // Restaurar preferências salvas adicionais
+            restoreInventoryFiltersFromLocalStorage();
         }
 
         function toggleArmazemDropdown(e) {
@@ -4293,10 +4338,15 @@
         }
 
         function applyInventoryFilters(resetPage = false) {
-            const term = document.getElementById('invSearch') ? document.getElementById('invSearch').value.toLowerCase().trim() : '';
+            const rawSearchVal = document.getElementById('invSearch') ? document.getElementById('invSearch').value : '';
+            const term = rawSearchVal.toLowerCase().trim();
+            try { localStorage.setItem('amazon_inv_search', rawSearchVal); } catch(e) {}
 
             const selectedStatuses = [];
             document.querySelectorAll('.status-checkbox:checked').forEach(cb => selectedStatuses.push(cb.value));
+            if (document.querySelectorAll('.status-checkbox').length > 0) {
+                try { localStorage.setItem('amazon_selected_statuses', JSON.stringify(selectedStatuses)); } catch(e) {}
+            }
 
             const btnLabelStatus = document.getElementById('statusDropdownLabel');
             if (btnLabelStatus) {
@@ -4334,6 +4384,8 @@
             }
 
             const isExcludeTagMode = document.getElementById('invTagExcludeMode') ? document.getElementById('invTagExcludeMode').checked : false;
+            try { localStorage.setItem('amazon_tag_exclude_mode', String(isExcludeTagMode)); } catch(e) {}
+
             const btnLabelTag = document.getElementById('tagDropdownLabel');
             const btnTagDropdown = document.getElementById('tagDropdownBtn');
 
@@ -4358,9 +4410,13 @@
             }
 
             const showZeroSaldo = document.getElementById('invShowZeroSaldo') ? document.getElementById('invShowZeroSaldo').checked : false;
+            try { localStorage.setItem('amazon_show_zero_saldo', String(showZeroSaldo)); } catch(e) {}
 
             const selFilial = document.getElementById('invFilterFilial');
             const selectedFilial = selFilial ? selFilial.value : 'ALL';
+            if (selFilial && selFilial.value) {
+                try { localStorage.setItem('amazon_selected_filial', selFilial.value); } catch(e) {}
+            }
 
             const saldoMap = {};
             rawSaldoDataset.forEach(s => {
