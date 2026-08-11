@@ -653,15 +653,25 @@
                         </p>
                         <div class="flex flex-wrap items-center gap-3 pt-2 text-[11px] text-blue-200">
                             <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Conexão Supabase Ativa</span>
-                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-300"></span> Setor: Comércio</span>
+                            <span id="sd2SectorBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-400/20">Setor: Comércio</span>
                         </div>
                     </div>
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                        <!-- SELETOR DE SETOR (COMÉRCIO X INDÚSTRIA) -->
+                        <div class="flex items-center bg-black/30 p-1 rounded-2xl border border-white/10 shadow-inner">
+                            <button type="button" onclick="switchSd2Sector('COMERCIO')" id="sd2SectorComercioBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all bg-emerald-500 text-white shadow-sm flex items-center gap-1.5 cursor-pointer">
+                                <span>🛒 Comércio</span>
+                            </button>
+                            <button type="button" onclick="switchSd2Sector('INDUSTRIA')" id="sd2SectorIndustriaBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-blue-200 hover:text-white flex items-center gap-1.5 cursor-pointer">
+                                <span>🏭 Indústria</span>
+                            </button>
+                        </div>
+
                         <div class="bg-black/20 border border-white/10 rounded-2xl px-4 py-2 text-right">
                             <span class="text-[9px] text-blue-200 font-bold uppercase tracking-wider block">Último Sync Supabase</span>
                             <span id="sd2-last-sync-time" class="text-xs font-black text-white mt-0.5">Não sincronizado</span>
                         </div>
-                        <button onclick="triggerSync()" class="py-2.5 px-5 bg-amazonRed-500 hover:bg-amazonRed-600 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                        <button onclick="triggerSync(true)" class="py-2.5 px-5 bg-amazonRed-500 hover:bg-amazonRed-600 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
                             <i data-lucide="rotate-cw" id="sd2-sync-icon" class="w-4 h-4"></i>
                             <span>Sincronizar Supabase</span>
                         </button>
@@ -10612,100 +10622,189 @@ function renderArmazemChart() {
 
         async function triggerSync(forceRefresh = false) {
             const currentCache = sd2SectorCache[currentSd2Sector];
-            if (!forceRefresh && currentCache.vendas && currentCache.saldos && currentCache.sb1) {
+            if (!forceRefresh && currentCache && currentCache.vendas && currentCache.saldos && currentCache.sb1) {
                 rawDicionario = currentCache.sb1;
                 rawSaldos = currentCache.saldos;
                 rawVendas = currentCache.vendas;
+                buildDynamicMonths();
+                buildTargetBranchSelect();
+                buildWarehouseFilters();
+                buildTESFilters();
+                buildBranchFilters();
                 processAndPopulate();
                 recalculateSimulation();
                 return;
             }
 
-            const syncIcon = document.getElementById("icon-trigger-sync");
-            if (syncIcon) syncIcon.className = "fa-solid fa-spinner fa-spin";
+            const syncIcon = document.getElementById("sd2-sync-icon") || document.getElementById("icon-trigger-sync");
+            if (syncIcon) syncIcon.classList.add("animate-spin");
+
+            const overlay = document.getElementById("sd2ProgressOverlay");
+            const timerEl = document.getElementById("sd2ProgressTimer");
+            const countEl = document.getElementById("sd2ProgressRecordCount");
+            const stepEl = document.getElementById("sd2ProgressStepText");
+            const pctEl = document.getElementById("sd2ProgressPercent");
+            const barEl = document.getElementById("sd2ProgressBar");
+            const syncBadge = document.getElementById("sd2-last-sync-time");
+
+            if (overlay) overlay.classList.remove("hidden");
+            if (timerEl) timerEl.innerText = "0.0s";
+            if (countEl) countEl.innerText = "0 itens";
+            if (stepEl) stepEl.innerText = "Conectando ao Supabase...";
+            if (pctEl) pctEl.innerText = "0%";
+            if (barEl) barEl.style.width = "0%";
+            if (syncBadge) {
+                syncBadge.innerText = "Sincronizando...";
+                syncBadge.className = "text-xs font-black text-amber-300 mt-0.5 animate-pulse";
+            }
+
+            sd2ProgressTotalCount = 0;
+            const startTime = performance.now();
+
+            const timerInterval = setInterval(() => {
+                const elapsed = (performance.now() - startTime) / 1000;
+                if (timerEl) timerEl.innerText = `${elapsed.toFixed(1)}s`;
+            }, 100);
+
+            const updateUIProgress = (pct, stepName) => {
+                if (barEl) barEl.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+                if (pctEl) pctEl.innerText = `${Math.min(100, Math.max(0, Math.round(pct)))}%`;
+                if (stepEl && stepName) stepEl.innerText = stepName;
+                if (countEl) countEl.innerText = `${sd2ProgressTotalCount.toLocaleString('pt-BR')} itens`;
+            };
 
             try {
+                if (typeof initSupabase === "function" && !supabaseClient) initSupabase();
+
+                const sevenMonthsAgo = new Date();
+                sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+                const dateFilterStr = sevenMonthsAgo.toISOString().split('T')[0];
+
                 const sb1Table = currentSd2Sector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
                 const saldoTable = currentSd2Sector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
                 const sd2Table = currentSd2Sector === 'INDUSTRIA' ? 'sd2_industria' : 'sd2_comercio';
 
-                const [sb1Data, saldosData, vendasData] = await Promise.all([
-                    fetchSupabaseTable(sb1Table, '*'),
-                    fetchSupabaseTable(saldoTable, '*'),
-                    fetchSupabaseTable(sd2Table, 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento,serie')
+                updateUIProgress(10, `Baixando filiais, ${sb1Table}, ${saldoTable} e ${sd2Table} em paralelo...`);
+
+                // 1. Busca PARALELA em todas as 4 tabelas Supabase (public.filiais, sb1, saldo e sd2)
+                const [dbFiliais, dbSb1, dbSaldos, dbSd2] = await Promise.all([
+                    fetchSupabaseRestFast('filiais', '*', 20, '', () => {}),
+                    fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags', 16000, '', () => {
+                        updateUIProgress(30, `Baixando cadastro de produtos (${sb1Table})...`);
+                    }),
+                    fetchSupabaseRestFast(saldoTable, 'produto,filial,armazem,quantidade', 8000, '', () => {
+                        updateUIProgress(50, `Baixando saldos físicos (${saldoTable})...`);
+                    }),
+                    fetchSupabaseRestFast(sd2Table, 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr, () => {
+                        const pct = Math.min(90, 50 + Math.round((sd2ProgressTotalCount / 70000) * 40));
+                        updateUIProgress(pct, `Baixando saídas SD2 (${sd2Table}: ${sd2ProgressTotalCount.toLocaleString('pt-BR')} itens)...`);
+                    })
                 ]);
 
-                if (sb1Data && sb1Data.length > 0) {
-                    rawDicionario = sb1Data.map(d => {
-                        const rawCod = d['Codigo'] || d['codigo'] || d['Produto'] || d['produto'];
-                        const desc = String(d['Descr.Espec.'] || d['descricao'] || 'PRODUTO SEM DESCRIÇÃO').trim();
-                        return {
-                            Produto: normalizeProductCode(rawCod),
-                            Descricao: desc,
-                            NormalizedDesc: normalizeDescription(desc),
-                            Unidade: String(d['U.M.'] || d['unidade'] || 'PC').trim()
-                        };
-                    }).filter(d => d.Produto !== '');
-                    currentCache.sb1 = rawDicionario;
-                }
+                updateUIProgress(92, "Processando dicionários e calculando coberturas de estoque...");
 
-                if (saldosData && saldosData.length > 0) {
-                    rawSaldos = saldosData.map(s => {
-                        const rawCod = s['produto'] || s['Produto'] || s['codigo'] || s['Codigo'];
-                        const desc = String(s['descricao'] || s['Descricao'] || 'PRODUTO SEM DESCRIÇÃO').trim();
-                        return {
-                            Produto: normalizeProductCode(rawCod),
-                            Descricao: desc,
-                            NormalizedDesc: normalizeDescription(desc),
-                            Grupo: String(s['grupo'] || s['Grupo'] || 'Outros').trim(),
-                            Filial: parseInt(s['filial'] || s['Filial']) || 1,
-                            Armazem: parseInt(s['armazem'] || s['Armazem']) || 1,
-                            "Qtde.1a.U.M.": parseFloat(s['quantidade'] || s['Qtde.1a.U.M.'] || 0) || 0,
-                            Unidade: String(s['unidade'] || s['Unidade'] || 'PC').trim()
-                        };
-                    }).filter(s => s.Produto !== '');
-                    currentCache.saldos = rawSaldos;
-                }
-
-                if (vendasData && vendasData.length > 0) {
-                    rawVendas = vendasData.map(v => {
-                        const rawCod = v['produto'] || v['Produto'];
-                        return {
-                            Filial: parseInt(v['filial'] || v['Filial']) || 1,
-                            Produto: normalizeProductCode(rawCod),
-                            Quantidade: parseFloat(v['quantidade'] || 0) || 0,
-                            "Vlr.Total": parseFloat(v['vlr_total'] || 0) || 0,
-                            "Vlr.Unit.": parseFloat(v['vlr_unitario'] || 0) || 0,
-                            Emissao: formatExcelDate(v['emissao'] || v['Emissao']),
-                            Armazem: parseInt(v['armazem'] || v['Armazem']) || 1,
-                            Unidade: 'PC',
-                            TES: String(v['tipo_saida'] || v['TES'] || '').trim(),
-                            "Num. Docto.": String(v['num_documento'] || v['Num. Docto.'] || '').trim(),
-                            Serie: String(v['serie'] || v['Serie'] || '').trim()
-                        };
-                    }).filter(v => v.Produto !== '');
-                    currentCache.vendas = rawVendas;
-                }
-
-                // Cruzamento mestre de descrições normalizadas entre SB1, Saldos e Vendas
-                const prodDescMap = {};
-                if (rawDicionario) rawDicionario.forEach(d => { prodDescMap[d.Produto] = d.NormalizedDesc; });
-                if (rawSaldos) rawSaldos.forEach(s => { if (!prodDescMap[s.Produto]) prodDescMap[s.Produto] = s.NormalizedDesc; });
-
-                if (rawVendas) {
-                    rawVendas.forEach(v => {
-                        v.NormalizedDesc = prodDescMap[v.Produto] || "DESCONHECIDO";
+                // 2. Processa Filiais do Supabase (public.filiais)
+                if (dbFiliais && dbFiliais.length > 0) {
+                    dbFiliais.forEach(f => {
+                        const num = parseInt(f.num_filial || f.filial, 10);
+                        if (!isNaN(num)) {
+                            const nameStr = `${String(f.num_filial || f.filial).padStart(2,'0')} - ${f.nome_filial || f.nome}`;
+                            DIC_FILIAIS[num] = nameStr;
+                            DIC_FILIAIS_NAMES[num] = nameStr;
+                        }
                     });
+                }
+
+                // 3. Processa Dicionário SB1
+                const descMap = {};
+                const umMap = {};
+                const tagMap = {};
+
+                rawDicionario = dbSb1.map(item => {
+                    const rawCode = item.codigo || item.Codigo || '';
+                    const cod = normalizeProductCode(rawCode);
+                    const desc = item.descricao || item["Descr.Espec."] || 'SEM DESCRIÇÃO';
+                    const um = item.unidade || item.Unidade || 'PC';
+                    descMap[cod] = desc;
+                    umMap[cod] = um;
+                    tagMap[cod] = item.tags || 'Geral';
+                    return {
+                        Codigo: cod,
+                        Produto: cod,
+                        Descricao: desc,
+                        NormalizedDesc: normalizeDescription(desc),
+                        Unidade: um,
+                        Grupo: item.tags || 'Geral'
+                    };
+                }).filter(item => item.Codigo !== '');
+
+                // 4. Processa Saldos de Armazéns
+                rawSaldos = dbSaldos.map(s => {
+                    const cod = normalizeProductCode(s.produto || s.Produto);
+                    return {
+                        Produto: cod,
+                        Filial: parseInt(s.filial || s.Filial, 10) || 1,
+                        Armazem: parseInt(s.armazem || s.Armazem, 10) || 1,
+                        "Qtde.1a.U.M.": parseFloat(s.quantidade || s['Qtde.1a.U.M.'] || 0) || 0,
+                        Descricao: descMap[cod] || 'PRODUTO SEM DESCRIÇÃO',
+                        NormalizedDesc: normalizeDescription(descMap[cod] || 'PRODUTO SEM DESCRIÇÃO'),
+                        Unidade: umMap[cod] || 'PC',
+                        Grupo: tagMap[cod] || 'Outros'
+                    };
+                }).filter(s => s.Produto !== '');
+
+                // 5. Processa Vendas SD2
+                rawVendas = dbSd2.map(v => {
+                    const cod = normalizeProductCode(v.produto || v.Produto);
+                    return {
+                        Filial: parseInt(v.filial || v.Filial, 10) || 1,
+                        Produto: cod,
+                        Quantidade: parseFloat(v.quantidade || 0) || 0,
+                        "Vlr.Unitario": parseFloat(v.vlr_unitario || 0) || 0,
+                        "Vlr.Total": parseFloat(v.vlr_total || 0) || 0,
+                        Emissao: v.emissao ? String(v.emissao).split('T')[0] : 'Data N/D',
+                        Armazem: parseInt(v.armazem || v.Armazem, 10) || 1,
+                        TES: String(v.tipo_saida || v.TES || 'N/D').trim(),
+                        "Num. Docto.": String(v.num_documento || '-').trim(),
+                        Descricao: descMap[cod] || 'DESCONHECIDO',
+                        NormalizedDesc: normalizeDescription(descMap[cod] || 'DESCONHECIDO'),
+                        Unidade: umMap[cod] || 'PC'
+                    };
+                }).filter(v => v.Produto !== '');
+
+                // Salvar no Cache de Setor
+                currentCache.sb1 = rawDicionario;
+                currentCache.saldos = rawSaldos;
+                currentCache.vendas = rawVendas;
+
+                const timeNow = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const dateNow = new Date().toLocaleDateString('pt-BR');
+                const syncTimeStr = `${dateNow} às ${timeNow}`;
+                if (syncBadge) {
+                    syncBadge.innerText = `${syncTimeStr} (${currentSd2Sector})`;
+                    syncBadge.className = "text-xs font-black text-emerald-300 mt-0.5";
                 }
 
                 buildDynamicMonths();
                 buildTargetBranchSelect();
+                buildWarehouseFilters();
+                buildTESFilters();
+                buildBranchFilters();
+                populateSalesPeriods();
                 processAndPopulate();
                 recalculateSimulation();
+
+                updateUIProgress(100, "Sincronização concluída com sucesso!");
+                showAlert(`Sincronização ${currentSd2Sector} concluída em ${((performance.now() - startTime) / 1000).toFixed(1)}s! (${rawVendas.length.toLocaleString('pt-BR')} saídas e ${rawSaldos.length.toLocaleString('pt-BR')} saldos).`, "success");
             } catch (err) {
-                console.error("Erro ao sincronizar SD2:", err);
+                console.error("Erro na sincronização Supabase SD2:", err);
+                showAlert("Erro ao sincronizar dados do SD2 com o Supabase. Tente novamente.", "error");
             } finally {
-                if (syncIcon) syncIcon.className = "fa-solid fa-rotate-right";
+                clearInterval(timerInterval);
+                if (syncIcon) syncIcon.classList.remove("animate-spin");
+                setTimeout(() => {
+                    if (overlay) overlay.classList.add("hidden");
+                }, 500);
             }
         }
 
@@ -11110,152 +11209,7 @@ function renderArmazemChart() {
             return allRows;
         }
 
-        async function triggerSync() {
-            const syncIcon = document.getElementById("sd2-sync-icon");
-            if (syncIcon) syncIcon.classList.add("animate-spin");
 
-            const overlay = document.getElementById("sd2ProgressOverlay");
-            const timerEl = document.getElementById("sd2ProgressTimer");
-            const countEl = document.getElementById("sd2ProgressRecordCount");
-            const stepEl = document.getElementById("sd2ProgressStepText");
-            const pctEl = document.getElementById("sd2ProgressPercent");
-            const barEl = document.getElementById("sd2ProgressBar");
-            const syncBadge = document.getElementById("sd2-last-sync-time");
-
-            if (overlay) overlay.classList.remove("hidden");
-            if (timerEl) timerEl.innerText = "0.0s";
-            if (countEl) countEl.innerText = "0 itens";
-            if (stepEl) stepEl.innerText = "Conectando ao Supabase...";
-            if (pctEl) pctEl.innerText = "0%";
-            if (barEl) barEl.style.width = "0%";
-            if (syncBadge) {
-                syncBadge.innerText = "Sincronizando...";
-                syncBadge.className = "bg-amber-600 text-white px-2 py-0.5 rounded-lg font-mono text-[10px] animate-pulse";
-            }
-
-            sd2ProgressTotalCount = 0;
-            const startTime = performance.now();
-
-            const timerInterval = setInterval(() => {
-                const elapsed = (performance.now() - startTime) / 1000;
-                if (timerEl) timerEl.innerText = `${elapsed.toFixed(1)}s`;
-            }, 100);
-
-            const updateUIProgress = (pct, stepName) => {
-                if (barEl) barEl.style.width = `${Math.min(100, Math.max(0, pct))}%`;
-                if (pctEl) pctEl.innerText = `${Math.min(100, Math.max(0, Math.round(pct)))}%`;
-                if (stepEl && stepName) stepEl.innerText = stepName;
-                if (countEl) countEl.innerText = `${sd2ProgressTotalCount.toLocaleString('pt-BR')} itens`;
-            };
-
-            try {
-                if (typeof initSupabase === "function" && !supabaseClient) initSupabase();
-
-                const sevenMonthsAgo = new Date();
-                sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-                const dateFilterStr = sevenMonthsAgo.toISOString().split('T')[0];
-
-                updateUIProgress(10, "Baixando filiais, produtos, saldos e saídas SD2 em paralelo...");
-
-                const [dbFiliais, dbSb1, dbSaldos, dbSd2] = await Promise.all([
-                    fetchSupabaseRestFast('filiais', '*', 10, '', () => {}),
-                    fetchSupabaseRestFast('sb1_comercio', 'codigo,descricao,unidade,tags', 15000, '', () => {}),
-                    fetchSupabaseRestFast('saldo_comercio', 'produto,filial,armazem,quantidade', 6000, '', () => {}),
-                    fetchSupabaseRestFast('sd2_comercio', 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr, () => {
-                        const pct = Math.min(90, Math.round((sd2ProgressTotalCount / 85000) * 90));
-                        updateUIProgress(pct, `Baixando saídas SD2 (${sd2ProgressTotalCount.toLocaleString('pt-BR')} itens)...`);
-                    })
-                ]);
-
-                updateUIProgress(95, "Processando relatórios e calculando coberturas...");
-
-                // 1. Processa Filiais
-                if (dbFiliais && dbFiliais.length > 0) {
-                    dbFiliais.forEach(f => {
-                        const num = parseInt(f.num_filial, 10);
-                        if (!isNaN(num)) {
-                            DIC_FILIAIS[num] = `${f.num_filial} - ${f.nome_filial}`;
-                        }
-                    });
-                }
-
-                // 2. Processa sb1_comercio (Dicionário)
-                const descMap = {};
-                const umMap = {};
-                const tagMap = {};
-                rawDicionario = dbSb1.map(item => {
-                    const rawCode = item.codigo || item.Codigo || '';
-                    const cod = normalizeProductCode(rawCode);
-                    const desc = item.descricao || item["Descr.Espec."] || 'SEM DESCRIÇÃO';
-                    const um = item.unidade || item.Unidade || 'PC';
-                    descMap[cod] = desc;
-                    umMap[cod] = um;
-                    tagMap[cod] = item.tags || 'Geral';
-                    return { Codigo: cod, Descricao: desc, Unidade: um, Grupo: item.tags || 'Geral' };
-                });
-
-                // 3. Processa saldo_comercio
-                rawSaldos = dbSaldos.map(s => {
-                    const cod = normalizeProductCode(s.produto);
-                    return {
-                        Produto: cod,
-                        Filial: parseInt(s.filial, 10) || 1,
-                        Armazem: parseInt(s.armazem, 10) || 1,
-                        "Qtde.1a.U.M.": parseFloat(s.quantidade) || 0,
-                        Descricao: descMap[cod] || 'PRODUTO SEM DESCRIÇÃO',
-                        Unidade: umMap[cod] || 'PC',
-                        Grupo: tagMap[cod] || 'Outros'
-                    };
-                }).filter(s => s.Produto);
-
-                // 4. Processa sd2_comercio
-                rawVendas = dbSd2.map(v => {
-                    const cod = normalizeProductCode(v.produto);
-                    return {
-                        Filial: parseInt(v.filial, 10) || 1,
-                        Produto: cod,
-                        Quantidade: parseFloat(v.quantidade) || 0,
-                        "Vlr.Unitario": parseFloat(v.vlr_unitario) || 0,
-                        "Vlr.Total": parseFloat(v.vlr_total) || 0,
-                        Emissao: v.emissao ? String(v.emissao).split('T')[0] : 'Data N/D',
-                        Armazem: parseInt(v.armazem, 10) || 1,
-                        TES: v.tipo_saida || 'N/D',
-                        "Num. Docto.": v.num_documento || '-',
-                        Descricao: descMap[cod] || 'DESCONHECIDO',
-                        Unidade: umMap[cod] || 'PC'
-                    };
-                }).filter(v => v.Produto);
-
-                const timeNow = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                const dateNow = new Date().toLocaleDateString('pt-BR');
-                const syncTimeStr = `${dateNow} às ${timeNow}`;
-                const syncEl = document.getElementById("sd2-last-sync-time");
-                if (syncEl) {
-                    syncEl.innerText = syncTimeStr;
-                    syncEl.className = "bg-emerald-800 text-white px-2 py-0.5 rounded-lg font-mono text-[10px]";
-                }
-
-                buildDynamicMonths();
-                buildTargetBranchSelect();
-                buildWarehouseFilters();
-                buildTESFilters();
-                buildBranchFilters();
-                populateSalesPeriods();
-                applyFilters();
-
-                updateUIProgress(100, "Sincronização concluída com sucesso!");
-                showAlert(`Sincronização Supabase realizada em ${((performance.now() - startTime) / 1000).toFixed(1)}s! (${rawVendas.length.toLocaleString('pt-BR')} saídas e ${rawSaldos.length.toLocaleString('pt-BR')} saldos).`, "success");
-            } catch (err) {
-                console.error("Erro na sincronização Supabase:", err);
-                showAlert("Erro ao sincronizar dados com o Supabase. Verifique a conexão.", "error");
-            } finally {
-                clearInterval(timerInterval);
-                if (syncIcon) syncIcon.classList.remove("animate-spin");
-                setTimeout(() => {
-                    if (overlay) overlay.classList.add("hidden");
-                }, 500);
-            }
-        }
 
         function buildDynamicMonths() {
             let maxDateStr = "";
