@@ -5293,23 +5293,34 @@ function renderArmazemChart() {
             btn.innerText = "Salvando..."; btn.disabled = true;
 
             try {
-                const newProductPayload = {
-                    'Codigo': rawCode,
-                    'Descr.Espec.': desc,
-                    'Unidade': unidade,
-                    'Fator Conv.': fatorConv,
+                const supabasePayload = {
+                    'codigo': rawCode,
+                    'descricao': desc,
+                    'unidade': unidade,
+                    'fator_conv': fatorConv,
                     'tags': tagsStr || null
                 };
 
                 if (supabaseClient && navigator.onLine) {
-                    const { error } = await supabaseClient.from(sb1Table).insert([newProductPayload]);
+                    let { error } = await supabaseClient.from(sb1Table).insert([supabasePayload]);
+                    if (error) {
+                        const legacyPayload = {
+                            'Codigo': rawCode,
+                            'Descr.Espec.': desc,
+                            'Unidade': unidade,
+                            'Fator Conv.': fatorConv,
+                            'tags': tagsStr || null
+                        };
+                        const res2 = await supabaseClient.from(sb1Table).insert([legacyPayload]);
+                        error = res2.error;
+                    }
                     if (error) {
                         showAlert(`Erro ao cadastrar produto: ${error.message}`, "error");
                         btn.innerText = origText; btn.disabled = false;
                         return;
                     }
                 } else {
-                    saveOfflineAction('insert', sb1Table, [newProductPayload]);
+                    saveOfflineAction('insert', sb1Table, [supabasePayload]);
                 }
 
                 showAlert(`Produto ${rawCode} cadastrado com sucesso!`, "success");
@@ -5319,8 +5330,8 @@ function renderArmazemChart() {
                     await loadInventoryData();
                 }
 
-            } catch (err) {
-                showAlert(`Falha: ${err.message || err}`, "error");
+            } catch (e) {
+                showAlert(`Erro no cadastro: ${e.message}`, "error");
             } finally {
                 btn.innerText = origText; btn.disabled = false;
             }
@@ -5429,17 +5440,24 @@ function renderArmazemChart() {
             const sb1Table = currentSector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
 
             const btn = document.getElementById('btnSaveTags');
-            const origText = btn.innerText;
-            btn.innerText = "Salvando..."; btn.disabled = true;
+            const origText = btn ? btn.innerText : 'Salvar Tags';
+            if (btn) { btn.innerText = "Salvando..."; btn.disabled = true; }
 
             try {
                 if (supabaseClient && navigator.onLine) {
-                    const { error } = await supabaseClient.from(sb1Table)
+                    let { error } = await supabaseClient.from(sb1Table)
                         .update({ tags: tagsString || null })
-                        .eq('Codigo', code);
+                        .eq('codigo', code);
+
+                    if (error) {
+                        const res2 = await supabaseClient.from(sb1Table)
+                            .update({ tags: tagsString || null })
+                            .eq('Codigo', code);
+                        error = res2.error;
+                    }
+
                     if (error) {
                         showAlert(`Erro ao salvar tags: ${error.message}`, "error");
-                        btn.innerText = origText; btn.disabled = false;
                         return;
                     }
                 } else {
