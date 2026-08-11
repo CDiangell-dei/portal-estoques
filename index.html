@@ -3542,29 +3542,62 @@
         }
 
         async function handleLogin(e) {
-            e.preventDefault();
-            const matRaw = document.getElementById('loginMatricula').value.trim();
-            const pwd = document.getElementById('loginSenha').value.trim();
+            if (e) e.preventDefault();
+            const matInput = document.getElementById('loginMatricula');
+            const pwdInput = document.getElementById('loginSenha');
+            if (!matInput || !pwdInput) return;
 
-            if (!matRaw || !pwd) { showAlert("Preencha a matrÃ­cula e a senha.", "warning"); return; }
+            const matRaw = matInput.value.trim();
+            const pwd = pwdInput.value.trim();
+
+            if (!matRaw || !pwd) { showAlert("Preencha a matrícula e a senha.", "warning"); return; }
             if (!supabaseClient) { initSupabase(); }
-            if (!supabaseClient) { showAlert("NÃ£o foi possÃ­vel conectar.", "error"); return; }
+            if (!supabaseClient) { showAlert("Não foi possível conectar ao Supabase.", "error"); return; }
 
             const btnSubmit = document.getElementById('btnLoginSubmit');
-            const originalText = btnSubmit.innerHTML;
-            btnSubmit.innerHTML = "Autenticando..."; btnSubmit.disabled = true;
+            const originalText = btnSubmit ? btnSubmit.innerHTML : "Entrar";
+            if (btnSubmit) { btnSubmit.innerHTML = "Autenticando..."; btnSubmit.disabled = true; }
 
             try {
-                const matNum = isNaN(matRaw) ? matRaw : parseInt(matRaw, 10);
-                let { data, error } = await supabaseClient.rpc('login_usuario', { p_matricula: parseInt(matNum, 10) || 0, p_senha: pwd });
+                let matchedUser = null;
 
-                if (error) { showAlert(`Erro: ${error.message}`, "error"); btnSubmit.innerHTML = originalText; btnSubmit.disabled = false; return; }
-                if (!data || data.length === 0) { showAlert("MatrÃ­cula ou senha incorretos.", "error"); btnSubmit.innerHTML = originalText; btnSubmit.disabled = false; return; }
+                // 1. Tentar login via RPC no Supabase (login_usuario)
+                try {
+                    const matInt = parseInt(matRaw, 10) || 0;
+                    const { data: rpcData, error: rpcErr } = await supabaseClient.rpc('login_usuario', { p_matricula: matInt, p_senha: pwd });
+                    if (!rpcErr && rpcData && rpcData.length > 0) {
+                        matchedUser = rpcData[0];
+                    }
+                } catch (eRpc) {
+                    console.warn("RPC login_usuario fallback acionado:", eRpc);
+                }
 
-                const matchedUser = data[0];
-                if (matchedUser.status !== true) {
-                    showAlert("Conta inativa ou pendente de aprovaÃ§Ã£o.", "warning");
-                    btnSubmit.innerHTML = originalText; btnSubmit.disabled = false;
+                // 2. Fallback: Consulta direta à tabela usuarios do Supabase
+                if (!matchedUser) {
+                    const matInt = parseInt(matRaw, 10);
+                    const queryMat = isNaN(matInt) ? matRaw : matInt;
+                    const { data: userData, error: userErr } = await supabaseClient
+                        .from('usuarios')
+                        .select('*')
+                        .or(`matricula.eq.${queryMat},matricula.eq.${matRaw}`)
+                        .eq('senha', pwd);
+
+                    if (userErr) {
+                        console.error("Erro na consulta de usuário:", userErr);
+                    } else if (userData && userData.length > 0) {
+                        matchedUser = userData[0];
+                    }
+                }
+
+                if (!matchedUser) {
+                    showAlert("Matrícula ou senha incorretos.", "error");
+                    if (btnSubmit) { btnSubmit.innerHTML = originalText; btnSubmit.disabled = false; }
+                    return;
+                }
+
+                if (matchedUser.status !== true && matchedUser.status !== 'true' && matchedUser.status !== 1) {
+                    showAlert("Conta inativa ou pendente de aprovação.", "warning");
+                    if (btnSubmit) { btnSubmit.innerHTML = originalText; btnSubmit.disabled = false; }
                     return;
                 }
 
@@ -3573,28 +3606,38 @@
                 sessionStorage.setItem('amazon_user_pwd', pwd);
                 saveUserSession(currentUser);
 
-                document.getElementById('headerUserName').innerText = currentUser.nome;
-                document.getElementById('headerUserFilial').innerText = getFilialDisplayName(currentUser.filial_atual);
-                document.getElementById('homeUserName').innerText = currentUser.nome;
+                const headerUser = document.getElementById('headerUserName');
+                const headerFilial = document.getElementById('headerUserFilial');
+                const homeUser = document.getElementById('homeUserName');
+
+                if (headerUser) headerUser.innerText = currentUser.nome || 'Usuário';
+                if (headerFilial) headerFilial.innerText = getFilialDisplayName(currentUser.filial_atual);
+                if (homeUser) homeUser.innerText = currentUser.nome || 'Usuário';
 
                 updateRolePermissionsUI();
-            if (typeof closeMobileMenu === "function") closeMobileMenu();
+                if (typeof closeMobileMenu === "function") closeMobileMenu();
 
-                document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
+                const loginScreen = document.getElementById('loginScreen');
+                const appContainer = document.getElementById('appContainer');
+
+                if (loginScreen) loginScreen.classList.add('opacity-0', 'pointer-events-none');
                 setTimeout(() => {
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('appContainer').classList.remove('hidden');
-                    document.getElementById('appContainer').classList.add('flex');
-                }, 500);
+                    if (loginScreen) loginScreen.classList.add('hidden');
+                    if (appContainer) {
+                        appContainer.classList.remove('hidden');
+                        appContainer.classList.add('flex');
+                    }
+                }, 400);
 
                 resetInactivityTimer();
                 await loadMasterData();
                 await fetchAllRecords();
 
             } catch (err) {
-                showAlert(`Falha: ${err.message || err}`, "error");
+                console.error("Erro ao autenticar:", err);
+                showAlert(`Falha de Login: ${err.message || err}`, "error");
             } finally {
-                btnSubmit.innerHTML = originalText; btnSubmit.disabled = false;
+                if (btnSubmit) { btnSubmit.innerHTML = originalText; btnSubmit.disabled = false; }
             }
         }
 
@@ -9873,6 +9916,19 @@ function renderArmazemChart() {
                     }
                 });
             }
+        }
+
+        // Inicialização global do portal ao carregar a página
+        document.addEventListener('DOMContentLoaded', async () => {
+            initSupabase();
+            const hasSession = await checkExistingSession();
+            if (!hasSession) {
+                const loginScreen = document.getElementById('loginScreen');
+                if (loginScreen) {
+                    loginScreen.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+                }
+            }
+        });
     </script>
 </body>
 </html>
