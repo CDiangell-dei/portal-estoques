@@ -5126,7 +5126,7 @@ function renderArmazemChart() {
                             <p class="text-[10px] font-bold text-slate-400 mt-0.5">Saldo Sis: ${sysQtyDisplay}</p>
                         </div>
                         <div class="w-40 text-right">
-                            <input type="text" inputmode="decimal" data-armazem="${armazemCode}" data-factor="${factor}" data-mode="peso" id="countInput_${armazemCode}" onfocus="setActiveCalcTarget('${armazemCode}')" oninput="updateCountPreview('${armazemCode}')" class="count-warehouse-input w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 text-right" placeholder="Ex: 20 ou 5*3+4">
+                            <input type="text" inputmode="none" readonly data-armazem="${armazemCode}" data-factor="${factor}" data-mode="peso" id="countInput_${armazemCode}" onclick="onArmazemInputClick('${armazemCode}')" onfocus="onArmazemInputClick('${armazemCode}')" oninput="updateCountPreview('${armazemCode}')" class="count-warehouse-input w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 text-right cursor-pointer" placeholder="Toque para contar">
                         </div>
                     </div>
                     
@@ -5202,11 +5202,16 @@ function renderArmazemChart() {
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
+        function onArmazemInputClick(armazemCode) {
+            setActiveCalcTarget(armazemCode);
+            toggleAppCalculator(true);
+        }
+
         function setActiveCalcTarget(armazemCode) {
             activeCalcArmazemCode = armazemCode;
             const label = document.getElementById('appCalcTargetLabel');
             if (label) {
-                label.innerText = armazemCode ? `Digitando no Armazém ${armazemCode}` : `Toque no campo para digitar`;
+                label.innerText = armazemCode ? `Armazém ${armazemCode}` : `Toque no campo para digitar`;
             }
         }
 
@@ -5252,18 +5257,39 @@ function renderArmazemChart() {
 
             if (char === 'C') {
                 inp.value = '';
+                updateCountPreview(activeCalcArmazemCode);
             } else if (char === 'BACKSPACE') {
                 inp.value = inp.value.slice(0, -1);
+                updateCountPreview(activeCalcArmazemCode);
             } else if (char === '=') {
-                const val = parseSmartMathExpression(inp.value);
-                if (val !== null && !isNaN(val)) {
-                    inp.value = String(val);
+                const rawVal = inp.value.trim();
+                if (rawVal) {
+                    const val = parseSmartMathExpression(rawVal);
+                    if (val !== null && !isNaN(val) && val >= 0) {
+                        inp.value = String(val);
+                        updateCountPreview(activeCalcArmazemCode);
+                        toggleAppCalculator(false);
+
+                        // Enviar e salvar a contagem imediatamente ao clicar no botão "="
+                        const form = document.querySelector('#countModal form');
+                        if (form) {
+                            if (typeof form.requestSubmit === 'function') {
+                                form.requestSubmit();
+                            } else {
+                                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                            }
+                        }
+                    } else {
+                        showAlert("Expressão de cálculo inválida. Corrija o valor digitado.", "warning");
+                    }
+                } else {
+                    showAlert("Digite um valor ou cálculo para salvar.", "warning");
                 }
+                return;
             } else {
                 inp.value += char;
+                updateCountPreview(activeCalcArmazemCode);
             }
-
-            updateCountPreview(activeCalcArmazemCode);
         }
 
         function updateCountPreview(armazem) {
