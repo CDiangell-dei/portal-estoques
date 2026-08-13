@@ -2118,8 +2118,7 @@
             } else {
                 cartSelectedBranches = cartSelectedBranches.filter(v => v !== bId);
             }
-            // Atualiza apenas o cabeçalho da tabela de diluição (checkbox mestre)
-            updateCartMasterCheckbox();
+            recalculateSimulation();
         }
 
         function selectAllCartBranches(checked) {
@@ -2827,8 +2826,9 @@
                 }
             });
 
-            // APENAS AS FILIAIS MARCADAS/SELECIONADAS NO FILTRO SUPERIOR
-            const activeFiliaisList = selectedBranches.slice().sort((a, b) => a - b);
+            // No modo diluição: usa filiais selecionadas NO SIMULADOR (cartSelectedBranches)
+            // No modo remanejamento: usa filiais do filtro global (selectedBranches)
+            const activeFiliaisList = (simMode === 'dilution' ? cartSelectedBranches : selectedBranches).slice().sort((a, b) => a - b);
             const branchBaseStats = [];
 
             activeFiliaisList.forEach(filialId => {
