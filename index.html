@@ -25,7 +25,8 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <title>Amazon Aço - Controle de Estoque</title>
     <script>
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // Padrão: MODO CLARO. Apenas aplica escuro se o usuário salvou explicitamente.
+        if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
