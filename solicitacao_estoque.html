@@ -321,7 +321,7 @@
 
         <!-- BARRA DE FILTROS GLOBAIS EM LINHA -->
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4 no-print">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                 
                 <!-- 1. Filtro de Filiais (Conectado com public.filiais) -->
                 <div class="space-y-1.5 relative">
@@ -396,6 +396,25 @@
                             <button onclick="selectTES(false)" class="text-[10px] text-slate-400 hover:underline font-black uppercase">Nenhuma</button>
                         </div>
                         <div id="tes-checkboxes-container" class="space-y-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- 5. Filtro Fornecedores -->
+                <div class="space-y-1.5 relative">
+                    <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-emerald-600"></i> Fornecedores</span>
+                        <span id="supplier-count-badge" class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-extrabold border border-emerald-200">Todos</span>
+                    </label>
+                    <button onclick="toggleDropdown(event, 'supplier')" id="supplier-dropdown-btn" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none flex items-center justify-between cursor-pointer">
+                        <span class="truncate" id="supplier-selected-text">Todos os fornecedores</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+                    <div id="supplier-dropdown-list" class="hidden absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-3 z-50 space-y-2 max-h-60 overflow-y-auto font-medium text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-1">
+                            <button onclick="selectSuppliersFilter(true)" class="text-[10px] text-emerald-600 hover:underline font-black uppercase">Todos</button>
+                            <button onclick="selectSuppliersFilter(false)" class="text-[10px] text-slate-400 hover:underline font-black uppercase">Nenhum</button>
+                        </div>
+                        <div id="supplier-checkboxes-container" class="space-y-1.5"></div>
                     </div>
                 </div>
             </div>
@@ -543,10 +562,14 @@
                 </div>
 
                 <!-- Botão de Ação para Solicitação Geral -->
-                <div id="dilution-action-btn-row" class="hidden pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end">
-                    <button onclick="recalculateSimulation()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer active:scale-95">
+                <div id="dilution-action-btn-row" class="hidden pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2.5">
+                    <button onclick="recalculateSimulation()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        <span>Executar Diluição entre Todas as Unidades</span>
+                        <span>Calcular Diluição</span>
+                    </button>
+                    <button onclick="addToCart()" class="py-2.5 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span>Adicionar à Lista de Pedido</span>
                     </button>
                 </div>
 
@@ -607,6 +630,46 @@
                             </tr>
                         </thead>
                         <tbody id="sim-fatiada-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CARD DE SOLICITAÇÕES ACUMULADAS (CARRINHO) -->
+            <div id="requestCartCard" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wider">
+                            <i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-600"></i>
+                            Lista de Solicitações Acumuladas (Carrinho)
+                        </h3>
+                        <p class="text-[11px] text-slate-400 font-bold mt-0.5">Produtos acumulados para exportação de remanejamento geral.</p>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button onclick="exportCartToExcel()" class="flex-1 sm:flex-none py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
+                            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                            Exportar Excel (.xlsx)
+                        </button>
+                        <button onclick="clearCart()" class="flex-1 sm:flex-none py-2 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            Limpar Lista
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr id="cartTableHeader" class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
+                                <th class="py-3 px-4">Código</th>
+                                <th class="py-3 px-3">Descrição</th>
+                                <th class="py-3 px-3 text-center">UM</th>
+                                <th class="py-3 px-3 text-right">Qtd Total</th>
+                                <th class="py-3 px-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200">
+                            <tr><td colspan="15" class="py-6 text-center text-slate-400 font-bold">Nenhum produto adicionado à lista.</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -795,6 +858,7 @@
                             <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
                                 <th class="py-3 px-4">Código</th>
                                 <th class="py-3 px-4">Descrição Comercial</th>
+                                <th class="py-3 px-4">Fornecedor</th>
                                 <th class="py-3 px-4">Grupo / Tag</th>
                                 <th class="py-3 px-4">Filial</th>
                                 <th class="py-3 px-4">Armazém</th>
@@ -858,6 +922,13 @@
 
         let activeTES = [];
         let selectedTES = [];
+
+        let activeSuppliers = [];
+        let selectedSuppliers = [];
+
+        let tempDilutionSelectedBranches = {};
+        let currentSimulatedStats = [];
+        let requestCart = [];
 
         // ESTRUTURA DE SELEÇÃO DE PRODUTO
         let globalSelectedProductCodes = [];
@@ -1766,7 +1837,7 @@
 
                 updateUIProgress(10, `Baixando filiais da tabela public.filiais e dicionário mestre (${sb1Table})...`);
                 const dbFiliais = await fetchSupabaseRestFast('filiais', '*', 50, '', () => updateUIProgress(15, "Carregando filiais da public.filiais..."));
-                const dbSb1 = await fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags', 30000, '', () => {
+                const dbSb1 = await fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags,fornecedores', 30000, '', () => {
                     const pct = 15 + Math.min(25, (sd2ProgressTotalCount / 20000) * 25);
                     updateUIProgress(pct, "Baixando cadastro mestre de produtos (SB1)...");
                 });
@@ -1808,6 +1879,7 @@
                 const umMap = {};
                 const tagMap = {};
 
+                window.fornecedoresMap = {};
                 rawDicionario = dbSb1.map(item => {
                     const cod = normalizeProductCode(item.codigo || item.Codigo);
                     const desc = item.descricao || item["Descr.Espec."] || 'SEM DESCRIÇÃO';
@@ -1817,6 +1889,11 @@
                     cleanDescMap[cod] = cleanDesc;
                     umMap[cod] = um;
                     tagMap[cod] = item.tags || 'Geral';
+                    
+                    const fornsStr = item.fornecedores || '';
+                    const fornsArr = fornsStr ? fornsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+                    window.fornecedoresMap[cod] = fornsArr;
+
                     return { Codigo: cod, Descricao: desc, CleanDescricao: cleanDesc, Unidade: um, Grupo: item.tags || 'Geral' };
                 });
 
@@ -1892,6 +1969,7 @@
                 buildTargetBranchSelect();
                 buildWarehouseFilters();
                 buildTESFilters();
+                buildSupplierFilters();
                 buildBranchFilters();
                 populateSalesPeriods();
 
@@ -1910,6 +1988,7 @@
                 }
 
                 applyFilters();
+                initCart();
 
                 updateUIProgress(100, "Sincronização concluída com sucesso!");
                 const sectorLabel = currentSd2Sector === 'INDUSTRIA' ? 'Indústria' : 'Comércio';
@@ -2255,7 +2334,9 @@
             const matchedItems = rawDicionario.filter(d => {
                 const codMatch = d.Codigo.toLowerCase().includes(searchVal) || d.Codigo.toLowerCase().includes(normTyped);
                 const descMatch = d.Descricao.toLowerCase().includes(searchVal) || d.CleanDescricao.toLowerCase().includes(searchClean);
-                return codMatch || descMatch;
+                const itemSups = window.fornecedoresMap[d.Codigo] || [];
+                const supMatch = itemSups.some(s => s.toLowerCase().includes(searchVal));
+                return codMatch || descMatch || supMatch;
             });
 
             if (matchedItems.length === 0) {
@@ -2353,6 +2434,7 @@
             globalSelectedProductCodes = codesArray;
             globalSelectedProductDesc = cleanDesc;
             globalIsConsolidated = codesArray.length > 1;
+            tempDilutionSelectedBranches = {}; // Reset checkbox selections for new product
 
             const inputEl = document.getElementById("global-product-code");
             if (inputEl) inputEl.value = cleanDesc;
@@ -2599,7 +2681,13 @@
                 const matchBranch = selectedBranches.includes(item.Filial);
                 const matchWh = selectedSaldosWarehouses.includes(item.Armazem);
                 const matchProd = (globalSelectedProductCodes.length === 0) || globalSelectedProductCodes.includes(item.Produto);
-                return matchBranch && matchWh && matchProd;
+                
+                let matchSupplier = true;
+                if (activeSuppliers.length > 0 && selectedSuppliers.length < activeSuppliers.length) {
+                    const itemSups = window.fornecedoresMap[item.Produto] || [];
+                    matchSupplier = itemSups.some(s => selectedSuppliers.includes(s));
+                }
+                return matchBranch && matchWh && matchProd && matchSupplier;
             });
 
             filteredVendas = rawVendas.filter(item => {
@@ -2614,7 +2702,13 @@
                     if (salesFromPeriod && yrMo < salesFromPeriod) matchPeriod = false;
                     if (salesToPeriod && yrMo > salesToPeriod) matchPeriod = false;
                 }
-                return matchBranch && matchWh && matchTES && matchProd && matchPeriod;
+                
+                let matchSupplier = true;
+                if (activeSuppliers.length > 0 && selectedSuppliers.length < activeSuppliers.length) {
+                    const itemSups = window.fornecedoresMap[item.Produto] || [];
+                    matchSupplier = itemSups.some(s => selectedSuppliers.includes(s));
+                }
+                return matchBranch && matchWh && matchTES && matchProd && matchPeriod && matchSupplier;
             });
 
             updateKPIs();
@@ -2805,7 +2899,8 @@
             // SE ESTIVER EM MODO DILUIÇÃO GERAL, CALCULA ALOCAÇÃO PROPORCIONAL POR MULTIPLICADOR DE LOTES
             let dilutionAllocations = {};
             if (simMode === 'dilution') {
-                dilutionAllocations = calculateBalancedDilution(qtyToRequest, branchBaseStats, dilutionMethod, simMultiplier);
+                const checkedBranchesList = branchBaseStats.filter(b => tempDilutionSelectedBranches[b.filialId] !== false);
+                dilutionAllocations = calculateBalancedDilution(qtyToRequest, checkedBranchesList, dilutionMethod, simMultiplier);
             }
 
             // ATUALIZAR CABEÇALHOS DA TABELA DE ACORDO COM O MODO
@@ -2909,6 +3004,8 @@
                 });
             });
 
+            currentSimulatedStats = simulatedBranches;
+
             if (totalPosEl) totalPosEl.innerText = `${grandTotalSaldoPos.toLocaleString('pt-BR')} ${activeUnit}`;
 
             tbodySim.innerHTML = "";
@@ -2925,9 +3022,14 @@
                         ? `<span class="ml-1 text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 px-1.5 py-0.5 rounded-full font-black border border-emerald-300">(${palletCount} ${palletCount === 1 ? 'Palete' : 'Paletes'})</span>`
                         : '';
 
+                    const isChecked = tempDilutionSelectedBranches[b.filialId] !== false;
+                    const checkedAttr = isChecked ? "checked" : "";
+                    const checkboxHtml = `<input type="checkbox" ${checkedAttr} onchange="toggleDilutionBranch(event, ${b.filialId}, this.checked)" class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer mr-2">`;
+
                     tr.innerHTML = `
-                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                            ${b.filialNome}
+                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                            ${checkboxHtml}
+                            <span>${b.filialNome}</span>
                             ${b.allocatedQty > 0 ? `<span class="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">+ ${b.allocatedQty.toLocaleString('pt-BR')} ${activeUnit}</span>` : ''}
                         </td>
                         <td class="py-3 px-3 text-center font-black text-slate-500">${b.curveABC}</td>
@@ -3286,14 +3388,19 @@
             if (tbodySearch) {
                 tbodySearch.innerHTML = "";
                 if (filteredSaldos.length === 0) {
-                    tbodySearch.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 font-bold">Nenhum saldo físico localizado. Clique em Sincronizar Supabase.</td></tr>`;
+                    tbodySearch.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 font-bold">Nenhum saldo físico localizado. Clique em Sincronizar Supabase.</td></tr>`;
                 } else {
                     filteredSaldos.sort((a, b) => a.Produto.localeCompare(b.Produto, undefined, { numeric: true })).slice(0, 50).forEach(s => {
                         const tr = document.createElement("tr");
                         tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
+                        
+                        const suppliers = window.fornecedoresMap[s.Produto] || [];
+                        const supplierHtml = suppliers.map(sup => `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 mr-1">${sup}</span>`).join('') || '<span class="text-slate-400 font-normal italic">Sem fornecedor</span>';
+                        
                         tr.innerHTML = `
                             <td class="py-3 px-4 font-black text-slate-900 dark:text-slate-100">${s.Produto}</td>
                             <td class="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">${s.Descricao}</td>
+                            <td class="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">${supplierHtml}</td>
                             <td class="py-3 px-4 text-slate-500">${s.Grupo}</td>
                             <td class="py-3 px-4 text-blue-600 dark:text-blue-400 font-black">${getFilialName(s.Filial)}</td>
                             <td class="py-3 px-4 text-slate-400">Armazém ${s.Armazem}</td>
@@ -3315,8 +3422,278 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
+        function toggleDilutionBranch(event, filialId, checked) {
+            if (event) {
+                event.stopPropagation();
+            }
+            tempDilutionSelectedBranches[filialId] = !!checked;
+            recalculateSimulation();
+        }
+
+        function initCart() {
+            const savedCart = localStorage.getItem(`sd2_request_cart_${currentSd2Sector}`);
+            if (savedCart) {
+                try {
+                    requestCart = JSON.parse(savedCart);
+                } catch (e) {
+                    console.error("Erro ao carregar carrinho:", e);
+                    requestCart = [];
+                }
+            } else {
+                requestCart = [];
+            }
+            renderCartTable();
+        }
+
+        function saveCart() {
+            localStorage.setItem(`sd2_request_cart_${currentSd2Sector}`, JSON.stringify(requestCart));
+            renderCartTable();
+        }
+
+        function addToCart() {
+            if (!globalSelectedProductCodes || globalSelectedProductCodes.length === 0) {
+                showAlert("Nenhum produto selecionado para adicionar!", "warning");
+                return;
+            }
+            
+            const qtyInput = document.getElementById("sim-qty");
+            const qtyToRequest = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
+            if (qtyToRequest <= 0) {
+                showAlert("A quantidade a solicitar deve ser maior que zero!", "warning");
+                return;
+            }
+
+            const sampleCode = globalSelectedProductCodes[0];
+            const pInfo = rawDicionario.find(d => d.Codigo === sampleCode) || rawSaldos.find(s => s.Produto === sampleCode) || rawVendas.find(v => v.Produto === sampleCode);
+            const desc = pInfo ? (pInfo.Descricao || 'Sem Descrição') : 'Sem Descrição';
+            const unit = pInfo ? (pInfo.Unidade || 'PC') : 'PC';
+
+            if (!currentSimulatedStats || currentSimulatedStats.length === 0) {
+                showAlert("Nenhuma simulação ativa para adicionar!", "warning");
+                return;
+            }
+
+            const allocations = {};
+            let sumAllocated = 0;
+            
+            currentSimulatedStats.forEach(b => {
+                allocations[b.filialId] = b.allocatedQty || 0;
+                sumAllocated += b.allocatedQty || 0;
+            });
+
+            if (sumAllocated <= 0) {
+                showAlert("Nenhuma quantidade foi alocada para as filiais!", "warning");
+                return;
+            }
+
+            const existingIdx = requestCart.findIndex(item => item.codigo === sampleCode);
+            const cartItem = {
+                codigo: sampleCode,
+                descricao: desc,
+                unidade: unit,
+                totalQty: sumAllocated,
+                allocations: allocations
+            };
+
+            if (existingIdx > -1) {
+                requestCart[existingIdx] = cartItem;
+                showAlert(`Produto ${sampleCode} atualizado na lista de solicitações!`, "info");
+            } else {
+                requestCart.push(cartItem);
+                showAlert(`Produto ${sampleCode} adicionado à lista de solicitações!`, "success");
+            }
+
+            saveCart();
+        }
+
+        function renderCartTable() {
+            const headEl = document.getElementById("cartTableHeader");
+            const bodyEl = document.getElementById("cartTableBody");
+            if (!bodyEl) return;
+
+            if (requestCart.length === 0) {
+                const numBranches = activeBranches.length || 6;
+                const colspan = numBranches + 5;
+                bodyEl.innerHTML = `<tr><td colspan="${colspan}" class="py-6 text-center text-slate-400 font-bold">Nenhum produto adicionado à lista.</td></tr>`;
+                
+                if (headEl) {
+                    headEl.innerHTML = `
+                        <th class="py-3 px-4">Código</th>
+                        <th class="py-3 px-3">Descrição</th>
+                        <th class="py-3 px-3 text-center">UM</th>
+                        <th class="py-3 px-3 text-right">Qtd Total</th>
+                        <th class="py-3 px-4 text-center">Ações</th>
+                    `;
+                }
+                return;
+            }
+
+            if (headEl) {
+                let filialHeaders = "";
+                activeBranches.forEach(id => {
+                    const formatted = String(id).padStart(2, '0');
+                    filialHeaders += `<th class="py-3 px-3 text-right bg-slate-50/50 dark:bg-slate-700/30 text-[10px] font-black">${formatted}</th>`;
+                });
+
+                headEl.innerHTML = `
+                    <th class="py-3 px-4">Código</th>
+                    <th class="py-3 px-3">Descrição</th>
+                    <th class="py-3 px-3 text-center">UM</th>
+                    <th class="py-3 px-3 text-right">Qtd Total</th>
+                    ${filialHeaders}
+                    <th class="py-3 px-4 text-center">Ações</th>
+                `;
+            }
+
+            bodyEl.innerHTML = "";
+            requestCart.forEach((item, index) => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
+
+                let filialCells = "";
+                activeBranches.forEach(id => {
+                    const qty = item.allocations[id] || 0;
+                    filialCells += `<td class="py-3 px-3 text-right ${qty > 0 ? 'text-emerald-600 font-black' : 'text-slate-400'}">${qty > 0 ? qty.toLocaleString('pt-BR') : '-'}</td>`;
+                });
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-black text-blue-600 dark:text-blue-400 select-all">${item.codigo}</td>
+                    <td class="py-3 px-3 font-semibold text-slate-800 dark:text-slate-100 max-w-xs truncate" title="${item.descricao}">${item.descricao}</td>
+                    <td class="py-3 px-3 text-center text-slate-500">${item.unidade}</td>
+                    <td class="py-3 px-3 text-right font-black text-slate-900 dark:text-white">${item.totalQty.toLocaleString('pt-BR')}</td>
+                    ${filialCells}
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="removeFromCart(${index})" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer" title="Remover item da lista">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                bodyEl.appendChild(tr);
+            });
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function removeFromCart(index) {
+            requestCart.splice(index, 1);
+            showAlert("Produto removido da lista.", "info");
+            saveCart();
+        }
+
+        function clearCart() {
+            if (confirm("Deseja realmente limpar toda a lista acumulada?")) {
+                requestCart = [];
+                showAlert("Lista limpa com sucesso.", "info");
+                saveCart();
+            }
+        }
+
+        function exportCartToExcel() {
+            if (!requestCart || requestCart.length === 0) {
+                showAlert("A lista de solicitações está vazia!", "warning");
+                return;
+            }
+            
+            const dataToExport = requestCart.map(item => {
+                const row = {
+                    "Código": item.codigo,
+                    "Descrição": item.descricao,
+                    "UM": item.unidade,
+                    "Total Geral": item.totalQty
+                };
+                activeBranches.forEach(id => {
+                    const name = getFilialName(id);
+                    row[name] = item.allocations[id] || 0;
+                });
+                return row;
+            });
+
+            try {
+                const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Solicitações");
+                
+                const dateStr = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+                const sectorLabel = currentSd2Sector === 'INDUSTRIA' ? 'Industria' : 'Comercio';
+                const fileName = `Solicitacao_Distribuida_${sectorLabel}_${dateStr}.xlsx`;
+                
+                XLSX.writeFile(workbook, fileName);
+                showAlert("Planilha exportada com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro ao exportar Excel:", e);
+                showAlert("Erro ao exportar planilha Excel.", "error");
+            }
+        }
+
+        window.fornecedoresMap = {};
+
+        function buildSupplierFilters() {
+            const container = document.getElementById("supplier-checkboxes-container");
+            if (!container) return;
+            container.innerHTML = "";
+
+            const uniqueSuppliers = new Set();
+            Object.values(window.fornecedoresMap).forEach(list => {
+                list.forEach(s => uniqueSuppliers.add(s));
+            });
+
+            activeSuppliers = Array.from(uniqueSuppliers).sort();
+            selectedSuppliers = [...activeSuppliers];
+
+            activeSuppliers.forEach(s => {
+                const div = document.createElement("div");
+                div.className = "flex items-center space-x-2";
+                div.innerHTML = `
+                    <input type="checkbox" value="${s}" checked onchange="toggleSupplierFilter('${s}', this.checked)" class="supplier-checkbox w-4 h-4 text-emerald-600 rounded border-slate-300 dark:border-slate-600 focus:ring-emerald-500 cursor-pointer">
+                    <span class="text-slate-700 dark:text-slate-300 font-bold truncate">${s}</span>
+                `;
+                container.appendChild(div);
+            });
+
+            updateSupplierBadge();
+        }
+
+        function toggleSupplierFilter(supplier, checked) {
+            if (checked) {
+                if (!selectedSuppliers.includes(supplier)) selectedSuppliers.push(supplier);
+            } else {
+                selectedSuppliers = selectedSuppliers.filter(s => s !== supplier);
+            }
+            updateSupplierBadge();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function selectSuppliersFilter(select) {
+            const checkboxes = document.querySelectorAll('#supplier-checkboxes-container input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = select);
+            selectedSuppliers = select ? [...activeSuppliers] : [];
+            updateSupplierBadge();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function updateSupplierBadge() {
+            const badge = document.getElementById("supplier-count-badge");
+            const textEl = document.getElementById("supplier-selected-text");
+            if (badge && textEl) {
+                const total = activeSuppliers.length;
+                const selCount = selectedSuppliers.length;
+                if (selCount === total && total > 0) {
+                    badge.innerText = "Todos";
+                    textEl.innerText = "Todos os fornecedores";
+                } else if (selCount === 0) {
+                    badge.innerText = "Nenhum";
+                    textEl.innerText = "Nenhum fornecedor selecionado";
+                } else {
+                    badge.innerText = `${selCount}/${total}`;
+                    textEl.innerText = `${selCount} fornecedor(es) selecionado(s)`;
+                }
+            }
+        }
+
         // Execução ao Carregar
-        window.onload = function() {
+        window.onload = async function() {
             initSupabase();
             const savedSec = localStorage.getItem('sd2_active_sector');
             if (savedSec && (savedSec === 'COMERCIO' || savedSec === 'INDUSTRIA')) {
