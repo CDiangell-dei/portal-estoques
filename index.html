@@ -328,7 +328,7 @@
         <!-- HEADER PRINCIPAL DO PORTAL -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm no-print">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                <a href="index.html" onclick="return handleNavClick(event, 'home');" class="flex items-center space-x-3 cursor-pointer">
                     <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" fetchpriority="high" loading="eager" class="h-10 w-auto flex-shrink-0 object-contain drop-shadow-sm">
                     <div class="border-l border-slate-200 pl-3 hidden sm:block">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><span>Portal de Controle de Estoques</span> <span class="bg-emerald-100 text-emerald-800 text-[9px] px-2 py-0.5 rounded-full font-black border border-emerald-200 shadow-xs">v3.5 (Build 20260807)</span></p>
@@ -338,10 +338,10 @@
                 <!-- NAV DESKTOP (BOTÕES COM DROPDOWNS SEPARADOS IGUAL AO MOBILE) -->
                 <div class="hidden md:flex items-center space-x-2">
                     <!-- BOTÃO INÍCIO -->
-                    <button onclick="switchTab('home'); closeDesktopSubmenus();" id="desktopBtnHome" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-white text-[#002f6c] shadow-sm border border-slate-200 cursor-pointer">
+                    <a href="index.html" onclick="return handleNavClick(event, 'home'); closeDesktopSubmenus();" id="desktopBtnHome" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-white text-[#002f6c] shadow-sm border border-slate-200 cursor-pointer">
                         <i data-lucide="home" class="w-4 h-4"></i>
                         <span>Início</span>
-                    </button>
+                    </a>
 
                     <!-- GRUPO ESTOQUE (DROPDOWN ESTOQUE) -->
                     <div class="relative">
@@ -352,46 +352,46 @@
                         </button>
 
                         <div id="desktopEstoqueSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1 no-print">
-                            <button onclick="switchTab('inventario'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            <a href="inventario.html" onclick="return handleNavClick(event, 'inventario'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                                 <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
                                     <i data-lucide="boxes" class="w-3.5 h-3.5"></i>
                                 </div>
                                 <div>
                                     <p class="text-xs font-black text-slate-800 dark:text-slate-200">Inventário Rotativo</p>
                                 </div>
-                            </button>
-                            <button onclick="switchTab('kardex'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            </a>
+                            <a href="kardex.html" onclick="return handleNavClick(event, 'kardex'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                                 <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
                                     <i data-lucide="history" class="w-3.5 h-3.5"></i>
                                 </div>
                                 <div>
                                     <p class="text-xs font-black text-slate-800 dark:text-slate-200">Kardex de Contagem</p>
                                 </div>
-                            </button>
-                            <button onclick="switchTab('validade'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            </a>
+                            <a href="validade.html" onclick="return handleNavClick(event, 'validade'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                                 <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
                                     <i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i>
                                 </div>
                                 <div>
                                     <p class="text-xs font-black text-slate-800 dark:text-slate-200">Controle de Validade</p>
                                 </div>
-                            </button>
-                            <button onclick="switchTab('vendas'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            </a>
+                            <a href="vendas.html" onclick="return handleNavClick(event, 'vendas'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                                 <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
                                     <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
                                 </div>
                                 <div>
                                     <p class="text-xs font-black text-slate-800 dark:text-slate-200">Vendas & Remanejamento (SD2)</p>
                                 </div>
-                            </button>
+                            </a>
                         </div>
                     </div>
 
                     <!-- BOTÃO VENDAS DIRECT -->
-                    <button onclick="switchTab('vendas'); closeDesktopSubmenus();" id="desktopVendasBtn" class="hidden px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer">
+                    <a href="vendas.html" onclick="return handleNavClick(event, 'vendas'); closeDesktopSubmenus();" id="desktopVendasBtn" class="hidden px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer">
                         <i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i>
                         <span>Vendas & SD2</span>
-                    </button>
+                    </a>
 
                     <!-- GRUPO ALMOXARIFADO (DROPDOWN ALMOXARIFADO) -->
                     <div id="desktopAlmoxGroupContainer" class="relative hidden">
@@ -402,30 +402,30 @@
                         </button>
 
                         <div id="desktopAlmoxSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1 no-print">
-                            <button onclick="switchTab('luvas'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            <a href="luvas.html" onclick="return handleNavClick(event, 'luvas'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                                 <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
                                     <i data-lucide="shield" class="w-3.5 h-3.5"></i>
                                 </div>
                                 <div>
                                     <p class="text-xs font-black text-slate-800 dark:text-slate-200">Consumo de EPIs (Luvas)</p>
                                 </div>
-                            </button>
-                            <button onclick="switchTab('minutas'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            </a>
+                            <a href="minutas.html" onclick="return handleNavClick(event, 'minutas'); closeDesktopSubmenus();" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                                 <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
                                     <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
                                 </div>
                                 <div>
                                     <p class="text-xs font-black text-slate-800 dark:text-slate-200">Minutas & Recebimento</p>
                                 </div>
-                            </button>
+                            </a>
                         </div>
                     </div>
 
                     <!-- BOTÃO ADMIN -->
-                    <button onclick="switchTab('admin'); closeDesktopSubmenus();" id="desktopBtnAdmin" class="hidden px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-amber-500/10 text-amber-700 hover:text-amber-900 border border-amber-500/20 cursor-pointer">
+                    <a href="admin.html" onclick="return handleNavClick(event, 'admin'); closeDesktopSubmenus();" id="desktopBtnAdmin" class="hidden px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-amber-500/10 text-amber-700 hover:text-amber-900 border border-amber-500/20 cursor-pointer">
                         <i data-lucide="settings" class="w-4 h-4"></i>
                         <span>Admin</span>
-                    </button>
+                    </a>
                 </div>
 
                 <div class="flex items-center space-x-3">
@@ -512,7 +512,7 @@
                     <div id="homeGridCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                         
                         <!-- CARD INVENTÁRIO -->
-                        <button id="btnHubInventario" onclick="switchTab('inventario')" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <a id="btnHubInventario" href="inventario.html" onclick="return handleNavClick(event, 'inventario');" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
                             <div class="w-12 h-12 rounded-xl bg-teal-500/10 group-hover:bg-teal-500 transition-colors duration-300 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="boxes" class="w-6 h-6 text-teal-600 group-hover:text-white transition-colors duration-300"></i>
                             </div>
@@ -523,7 +523,7 @@
                         </button>
 
                         <!-- CARD KARDEX DE CONTAGEM -->
-                        <button id="btnHubKardex" onclick="switchTab('kardex')" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <a id="btnHubKardex" href="kardex.html" onclick="return handleNavClick(event, 'kardex');" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
                             <div class="w-12 h-12 rounded-xl bg-indigo-500/10 group-hover:bg-indigo-500 transition-colors duration-300 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="history" class="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors duration-300"></i>
                             </div>
@@ -534,7 +534,7 @@
                         </button>
 
                         <!-- CARD CONTROLE DE VALIDADE -->
-                        <button id="btnHubValidade" onclick="switchTab('validade')" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <a id="btnHubValidade" href="validade.html" onclick="return handleNavClick(event, 'validade');" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
                             <div class="w-12 h-12 rounded-xl bg-amber-500/10 group-hover:bg-amber-500 transition-colors duration-300 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="calendar-clock" class="w-6 h-6 text-amber-600 group-hover:text-white transition-colors duration-300"></i>
                             </div>
@@ -545,7 +545,7 @@
                         </button>
 
                         <!-- CARD VENDAS & REMANEJAMENTO -->
-                        <button id="btnHubVendas" onclick="switchTab('vendas')" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <a id="btnHubVendas" href="vendas.html" onclick="return handleNavClick(event, 'vendas');" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
                             <div class="w-12 h-12 rounded-xl bg-blue-500/10 group-hover:bg-blue-600 transition-colors duration-300 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="trending-up" class="w-6 h-6 text-blue-600 group-hover:text-white transition-colors duration-300"></i>
                             </div>
@@ -556,7 +556,7 @@
                         </button>
 
                         <!-- CARD LUVAS / EPIS -->
-                        <button id="btnHubLuvas" onclick="switchTab('luvas')" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <a id="btnHubLuvas" href="luvas.html" onclick="return handleNavClick(event, 'luvas');" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
                             <div class="w-12 h-12 rounded-xl bg-[#002f6c]/10 group-hover:bg-[#002f6c] transition-colors duration-300 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="shield" class="w-6 h-6 text-[#002f6c] group-hover:text-white transition-colors duration-300"></i>
                             </div>
@@ -567,7 +567,7 @@
                         </button>
 
                         <!-- CARD MINUTAS -->
-                        <button id="btnHubMinutas" onclick="switchTab('minutas')" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <a id="btnHubMinutas" href="minutas.html" onclick="return handleNavClick(event, 'minutas');" class="hidden bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
                             <div class="w-12 h-12 rounded-xl bg-[#9c0e25]/10 group-hover:bg-[#9c0e25] transition-colors duration-300 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="file-text" class="w-6 h-6 text-[#9c0e25] group-hover:text-white transition-colors duration-300"></i>
                             </div>
@@ -578,7 +578,7 @@
                         </button>
 
                         <!-- CARD ADMIN -->
-                        <button id="btnHubAdmin" onclick="switchTab('admin')" class="hidden bg-slate-900 hover:bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
+                        <a id="btnHubAdmin" href="admin.html" onclick="return handleNavClick(event, 'admin');" class="hidden bg-slate-900 hover:bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-sm hover:shadow-md transition-all flex items-center space-x-4 text-left group touch-active">
                             <div class="w-12 h-12 rounded-xl bg-amber-500/10 group-hover:bg-amber-500 transition-colors duration-300 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="settings" class="w-6 h-6 text-amber-500 group-hover:text-white transition-colors duration-300"></i>
                             </div>
@@ -611,10 +611,10 @@
                                 <p class="text-[10px] font-bold text-slate-400">Feed em tempo real das rondas na sua filial</p>
                             </div>
                         </div>
-                        <button type="button" onclick="switchTab('kardex')" class="text-xs font-bold text-[#002f6c] hover:underline flex items-center space-x-1">
+                        <a href="kardex.html" onclick="return handleNavClick(event, 'kardex');" class="text-xs font-bold text-[#002f6c] hover:underline flex items-center space-x-1">
                             <span>Ver Kardex Completo</span>
                             <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                        </button>
+                        </a>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -2828,7 +2828,7 @@
                 <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Módulo de Estoque</span>
                 <button type="button" onclick="closeMobileSubmenus()" class="text-slate-400 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <button onclick="switchTab('inventario'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <a href="inventario.html" onclick="return handleNavClick(event, 'inventario'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
                 <div class="w-8 h-8 rounded-xl bg-blue-50 text-[#002f6c] flex items-center justify-center">
                     <i data-lucide="boxes" class="w-4 h-4"></i>
                 </div>
@@ -2836,8 +2836,8 @@
                     <p class="text-xs font-black text-slate-800">Inventário Rotativo</p>
                     <p class="text-[10px] font-bold text-slate-400">Contagens, saldos e divergências</p>
                 </div>
-            </button>
-            <button onclick="switchTab('kardex'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            </a>
+            <a href="kardex.html" onclick="return handleNavClick(event, 'kardex'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
                 <div class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
                     <i data-lucide="history" class="w-4 h-4"></i>
                 </div>
@@ -2845,15 +2845,15 @@
                     <p class="text-xs font-black text-slate-800">Kardex de Contagem</p>
                     <p class="text-[10px] font-bold text-slate-400">Histórico cronológico de lançamentos</p>
                 </div>
-            </button>
-            <button onclick="switchTab('validade'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            </a>
+            <a href="validade.html" onclick="return handleNavClick(event, 'validade'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
                 <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
                     <i data-lucide="calendar-clock" class="w-4 h-4"></i>
                 </div>
                 <div>
                     <p class="text-xs font-black text-slate-800">Controle de Validade</p>
                     <p class="text-[10px] font-bold text-slate-400">Ano/Mês, alertas e Armazém 50</p>
-            </button>
+            </a>
         </div>
 
         <div id="mobileAlmoxSubmenu" class="hidden md:hidden fixed bottom-16 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl shadow-2xl z-50 p-2 space-y-1.5 no-print">
@@ -2861,7 +2861,7 @@
                 <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Módulo Almoxarifado</span>
                 <button type="button" onclick="closeMobileSubmenus()" class="text-slate-400 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <button onclick="switchTab('luvas'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <a href="luvas.html" onclick="return handleNavClick(event, 'luvas'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
                 <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
                     <i data-lucide="shield" class="w-4 h-4"></i>
                 </div>
@@ -2869,8 +2869,8 @@
                     <p class="text-xs font-black text-slate-800">Consumo de EPIs</p>
                     <p class="text-[10px] font-bold text-slate-400">Entrega de luvas e controle por matrícula</p>
                 </div>
-            </button>
-            <button onclick="switchTab('minutas'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            </a>
+            <a href="minutas.html" onclick="return handleNavClick(event, 'minutas'); closeMobileSubmenus();" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
                 <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
                     <i data-lucide="file-text" class="w-4 h-4"></i>
                 </div>
@@ -2878,15 +2878,15 @@
                     <p class="text-xs font-black text-slate-800">Minutas & Recebimento</p>
                     <p class="text-[10px] font-bold text-slate-400">Entrada de NFs e canhotos de entrega</p>
                 </div>
-            </button>
+            </a>
         </div>
 
         <!-- BOTTOM NAV (MOBILE) -->
         <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 px-2 py-1.5 shadow-lg flex items-center justify-around no-print pb-safe">
-            <button onclick="switchTab('home'); closeMobileSubmenus();" id="bottomBtnHome" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-[#002f6c]">
+            <a href="index.html" onclick="return handleNavClick(event, 'home'); closeMobileSubmenus();" id="bottomBtnHome" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-[#002f6c]">
                 <i data-lucide="home" class="w-5 h-5"></i>
                 <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Início</span>
-            </button>
+            </a>
 
             <!-- GRUPO ESTOQUE -->
             <button onclick="toggleMobileSubmenu('estoque')" id="bottomBtnEstoqueGroup" class="hidden flex-1 min-w-0 flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-600">
@@ -2901,10 +2901,10 @@
             </button>
             
             <!-- ADMIN -->
-            <button onclick="switchTab('admin'); closeMobileSubmenus();" id="bottomBtnAdmin" class="hidden flex-1 min-w-0 flex-col items-center justify-center py-1 text-slate-400 hover:text-amber-600">
+            <a href="admin.html" onclick="return handleNavClick(event, 'admin'); closeMobileSubmenus();" id="bottomBtnAdmin" class="hidden flex-1 min-w-0 flex-col items-center justify-center py-1 text-slate-400 hover:text-amber-600">
                 <i data-lucide="settings" class="w-5 h-5"></i>
                 <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Admin</span>
-            </button>
+            </a>
         </nav>
 
     </div>
@@ -3930,6 +3930,29 @@
             } finally {
                 if (loader) loader.classList.add('hidden');
             }
+        }
+
+        
+        function getTabUrl(tab) {
+            if (tab === 'home') return 'index.html';
+            return tab + '.html';
+        }
+
+        function handleNavClick(event, tab) {
+            if (event && (event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1)) {
+                return true;
+            }
+            if (event) event.preventDefault();
+            const targetUrl = getTabUrl(tab);
+            const pathParts = window.location.pathname.split('/');
+            const currentFile = pathParts[pathParts.length - 1] || 'index.html';
+            
+            if (currentFile === targetUrl || (currentFile === '' && targetUrl === 'index.html')) {
+                switchTab(tab);
+            } else {
+                window.location.href = targetUrl;
+            }
+            return false;
         }
 
         function switchTab(tab) {
