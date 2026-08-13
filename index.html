@@ -1260,7 +1260,7 @@
                                 <i data-lucide="package-plus" class="w-4 h-4"></i>
                                 <span>+ Novo Produto</span>
                             </button>
-                            <button type="button" onclick="exportInventarioCSV()" class="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 h-[38px]">
+                            <button type="button" onclick="exportInventarioExcel()" class="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 h-[38px]">
                                 <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                                 <span>Exportar</span>
                             </button>
@@ -3266,36 +3266,117 @@
             handleLogout();
         }
 
-        function exportInventarioCSV() {
+        function exportInventarioExcel() {
             if (!filteredInventoryDataset || filteredInventoryDataset.length === 0) {
                 showAlert("Nenhum dado para exportar.", "warning");
                 return;
             }
-            const headers = ["Filial", "Armazém", "Código", "Descrição", "Unidade", "Saldo Sistema", "Qtd Contada", "Divergência", "Status"];
-            const rows = filteredInventoryDataset.map(i => {
-                const saldo = parseFloat(i.saldo) || 0;
-                const cont = i.contagem_qtd !== null ? parseFloat(i.contagem_qtd) : null;
-                const div = cont !== null ? (cont - saldo).toFixed(2) : '';
-                let status = "PENDENTE";
-                if (cont !== null) {
-                    if (cont === saldo) status = "ACURADO";
-                    else if (cont > saldo) status = "GANHO";
-                    else status = "PERDA";
+
+            if (typeof XLSX === 'undefined') {
+                showAlert("Biblioteca XLSX não carregada.", "error");
+                return;
+            }
+
+            // Identifica a filial atualmente selecionada para o cabeçalho
+            const selFilial = document.getElementById('invFilterFilial');
+            const selectedFilial = selFilial && selFilial.value ? selFilial.value : 'ALL';
+            
+            let filialLabel = '01- Alvorada';
+            if (selectedFilial !== 'ALL') {
+                const rawName = getFilialDisplayName(selectedFilial, 'comercio');
+                if (rawName && rawName.includes(' - ')) {
+                    const parts = rawName.split(' - ');
+                    const mainName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
+                    filialLabel = `${parts[0]}- ${mainName}`;
+                } else if (rawName) {
+                    filialLabel = rawName;
                 }
-                return [
-                    `"${i.filial}"`, `"${i.armazem}"`, `"${i.codigo}"`, `"${(i.descricao || '').replace(/"/g, '""')}"`,
-                    `"${i.um}"`, saldo, cont !== null ? cont : '', div, `"${status}"`
-                ].join(',');
+            }
+
+            // Identifica os armazéns ativos/selecionados
+            const armCheckboxes = document.querySelectorAll('.armazem-checkbox:checked');
+            let activeArmazens = Array.from(armCheckboxes).map(cb => String(cb.value).trim().padStart(2, '0'));
+            
+            if (!activeArmazens || activeArmazens.length === 0) {
+                activeArmazens = [...new Set((rawSaldoDataset || []).map(s => String(s.armazem || '01').trim().padStart(2, '0')))].sort((a,b) => parseInt(a,10) - parseInt(b,10));
+            } else {
+                activeArmazens.sort((a,b) => parseInt(a,10) - parseInt(b,10));
+            }
+            if (activeArmazens.length === 0) activeArmazens = ['01', '02'];
+
+            // Constrói os cabeçalhos das colunas
+            const armHeaders = activeArmazens.map(a => `Armz ${a}`);
+            const headers = ["Filial", "Código", "Descrição", ...armHeaders, "Saldo Total", "Situação"];
+
+            // Mapeia saldos por produto e armazém a partir de rawSaldoDataset
+            const productArmMap = {};
+            (rawSaldoDataset || []).forEach(s => {
+                if (selectedFilial !== 'ALL' && s.filial !== selectedFilial) return;
+                const cod = String(s.produto || '').trim();
+                const arm = String(s.armazem || '01').trim().padStart(2, '0');
+                if (!productArmMap[cod]) productArmMap[cod] = {};
+                productArmMap[cod][arm] = (productArmMap[cod][arm] || 0) + (parseFloat(s.quantidade) || 0);
             });
-            const csvContent = "\uFEFF" + headers.join(',') + "\n" + rows.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `inventario_export_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+
+            // Monta as linhas de dados
+            const rows = [headers];
+
+            filteredInventoryDataset.forEach(item => {
+                const codStr = String(item.codigo || '').trim();
+                const codNum = !isNaN(Number(codStr)) && codStr !== '' ? Number(codStr) : codStr;
+                const desc = item.descricao || '-';
+
+                let rowTotal = 0;
+                const armValues = activeArmazens.map(arm => {
+                    const val = productArmMap[codStr] ? (productArmMap[codStr][arm] || 0) : 0;
+                    rowTotal += val;
+                    return val;
+                });
+
+                // Status formatado (Title Case)
+                let statusFormatted = 'Acurado';
+                const st = (item.status || 'PENDENTE').toUpperCase();
+                if (st === 'ACURADO') statusFormatted = 'Acurado';
+                else if (st === 'GANHO') statusFormatted = 'Ganho';
+                else if (st === 'PERDA') statusFormatted = 'Perda';
+                else if (st === 'PENDENTE') statusFormatted = 'Pendente';
+                else if (st === 'DIVERGENTE') statusFormatted = 'Divergente';
+                else statusFormatted = st.charAt(0).toUpperCase() + st.slice(1).toLowerCase();
+
+                rows.push([
+                    filialLabel,
+                    codNum,
+                    desc,
+                    ...armValues,
+                    rowTotal,
+                    statusFormatted
+                ]);
+            });
+
+            // Cria planilha usando SheetJS
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+
+            // Largura ideal das colunas
+            const colWidths = [
+                { wch: 15 }, // Filial
+                { wch: 12 }, // Código
+                { wch: 45 }, // Descrição
+                ...activeArmazens.map(() => ({ wch: 10 })), // Armz XX
+                { wch: 14 }, // Saldo Total
+                { wch: 12 }  // Situação
+            ];
+            ws['!cols'] = colWidths;
+
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const sheetName = `inventario_export_${dateStr}`;
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+            XLSX.writeFile(wb, `${sheetName}.xlsx`);
+        }
+
+        function exportInventarioCSV() {
+            exportInventarioExcel();
         }
 
         const INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
