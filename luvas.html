@@ -204,7 +204,7 @@
             </div>
 
             <!-- FORMULÁRIO DE LOGIN -->
-            <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-5">
+            <form id="formLogin" onsubmit="event.preventDefault(); handleLogin(event); return false;" class="space-y-5">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Matrícula</label>
                     <div class="relative">
@@ -236,7 +236,7 @@
             </form>
 
             <!-- FORMULÁRIO DE REGISTRO -->
-            <form id="formRegister" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+            <form id="formRegister" onsubmit="event.preventDefault(); handleRegister(event); return false;" class="space-y-4 hidden">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Matrícula</label>
@@ -274,7 +274,7 @@
             </form>
 
             <!-- FORMULÁRIO DE RESET DE SENHA -->
-            <form id="formReset" onsubmit="handleResetPassword(event)" class="space-y-4 hidden">
+            <form id="formReset" onsubmit="event.preventDefault(); handleResetPassword(event); return false;" class="space-y-4 hidden">
                 <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl mb-2">
                     <div class="flex items-start space-x-2">
                         <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0"></i>
