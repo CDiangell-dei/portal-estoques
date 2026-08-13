@@ -331,7 +331,7 @@
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
                     <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" fetchpriority="high" loading="eager" class="h-10 w-auto flex-shrink-0 object-contain drop-shadow-sm">
                     <div class="border-l border-slate-200 pl-3 hidden sm:block">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><span>Portal de Controle de Estoques</span> <span class="bg-emerald-100 text-emerald-800 text-[9px] px-2 py-0.5 rounded-full font-black border border-emerald-200 shadow-xs">v3.5 (Build 20260812_2240)</span></p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><span>Portal de Controle de Estoques</span> <span class="bg-emerald-100 text-emerald-800 text-[9px] px-2 py-0.5 rounded-full font-black border border-emerald-200 shadow-xs">v3.5 (Build 20260812_2243)</span></p>
                     </div>
                 </div>
 
@@ -3032,16 +3032,33 @@
 
                 currentUser = sessionData.user;
                 window.currentAdminPassword = localStorage.getItem('amazon_user_pwd') || sessionStorage.getItem('amazon_user_pwd') || '';
-                saveUserSession(currentUser); 
+
+                // ESCONDE O LOGIN E MOSTRA O APP INSTANTANEAMENTE SEM AGUARDAR REDE
+                const loginScr = document.getElementById('loginScreen');
+                if (loginScr) loginScr.classList.add('hidden', 'opacity-0', 'pointer-events-none');
+                
+                const appCont = document.getElementById('appContainer');
+                if (appCont) {
+                    appCont.classList.remove('hidden');
+                    appCont.classList.add('flex');
+                }
+
+                if (document.getElementById('headerUserName')) document.getElementById('headerUserName').innerText = currentUser.nome;
+                if (document.getElementById('headerUserFilial')) document.getElementById('headerUserFilial').innerText = getFilialDisplayName(currentUser.filial_atual);
+                if (document.getElementById('homeUserName')) document.getElementById('homeUserName').innerText = currentUser.nome;
+
+                updateRolePermissionsUI();
+                if (typeof closeMobileMenu === "function") closeMobileMenu();
+                forceNowDateAll();
 
                 if (!supabaseClient) {
                     initSupabase();
                 }
 
-                // Sincroniza dados do perfil (incluindo filial_comercio e filial_industria) via banco
+                // Sincroniza em segundo plano
                 if (supabaseClient && currentUser && currentUser.matricula) {
                     try {
-                        const { data: userProfile, error } = await supabaseClient.rpc('get_user_profile', {
+                        const { data: userProfile } = await supabaseClient.rpc('get_user_profile', {
                             p_matricula: parseInt(currentUser.matricula, 10)
                         });
                         if (userProfile && userProfile.length > 0) {
@@ -3053,22 +3070,7 @@
                     }
                 }
 
-                await loadMasterData();
-
-                document.getElementById('headerUserName').innerText = currentUser.nome;
-                document.getElementById('headerUserFilial').innerText = getFilialDisplayName(currentUser.filial_atual);
-                document.getElementById('homeUserName').innerText = currentUser.nome;
-
-                updateRolePermissionsUI();
-                if (typeof closeMobileMenu === "function") closeMobileMenu();
-                forceNowDateAll();
-
-                document.getElementById('loginScreen').classList.add('hidden', 'opacity-0', 'pointer-events-none');
-                document.getElementById('appContainer').classList.remove('hidden');
-                document.getElementById('appContainer').classList.add('flex');
-
-                resetInactivityTimer();
-                await fetchAllRecords();
+                loadMasterData().then(() => fetchAllRecords()).catch(err => console.warn("Erro ao atualizar dados em segundo plano:", err));
                 return true;
             } catch (err) {
                 console.error("Erro ao checar sessão salva:", err);
