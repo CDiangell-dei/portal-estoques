@@ -1,11 +1,11 @@
 {
-  "name": "Almoxarifado Amazon Aço",
-  "short_name": "Almoxarifado",
+  "name": "Amazon Aço - Controle de Estoque",
+  "short_name": "Amazon Aço",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#9c0e25",
-  "description": "Sistema de lançamentos do Almoxarifado Alvorada",
+  "description": "Sistema de Controle de Estoques - Amazon Aço",
   "icons": [
     {
       "src": "https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png",
