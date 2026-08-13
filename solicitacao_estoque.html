@@ -543,11 +543,21 @@
                 </div>
 
                 <!-- Botão de Ação para Solicitação Geral -->
-                <div id="dilution-action-btn-row" class="hidden pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end">
-                    <button onclick="recalculateSimulation()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer active:scale-95">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        <span>Executar Diluição entre Todas as Unidades</span>
+                <div id="dilution-action-btn-row" class="hidden pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center gap-3">
+                    <button type="button" onclick="clearShoppingCart()" class="py-2.5 px-4 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 hover:dark:bg-slate-600 text-xs font-black rounded-2xl shadow-xs transition flex items-center gap-2 cursor-pointer active:scale-95 border border-slate-200 dark:border-slate-600">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span>Limpar Carrinho</span>
                     </button>
+                    <div class="flex gap-2.5">
+                        <button onclick="recalculateSimulation()" class="py-2.5 px-5 bg-slate-600 hover:bg-slate-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer active:scale-95">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            <span>Calcular Diluição</span>
+                        </button>
+                        <button onclick="addProductToCart()" id="btn-add-to-cart" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer active:scale-95">
+                            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                            <span>Adicionar ao Carrinho</span>
+                        </button>
+                    </div>
                 </div>
 
                 <p id="sim-footer-note" class="text-[11px] text-slate-400 italic">* A cobertura de estoque baseia-se no Saldo Pós-Envio dividido pela Média Mensal de Saídas (calculada sobre até 7 meses ativos com saídas no período de 1 ano).</p>
@@ -607,6 +617,41 @@
                             </tr>
                         </thead>
                         <tbody id="sim-fatiada-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Carrinho de Compras Acumuladas -->
+            <div id="shopping-cart-card" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wider">
+                            <i data-lucide="shopping-cart" class="w-4 h-4 text-emerald-600"></i>
+                            Carrinho de Solicitações Acumuladas
+                        </h3>
+                        <p class="text-[11px] text-slate-400 font-bold mt-0.5">Itens salvos para exportação consolidada em lote</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="exportCartToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition active:scale-95 shadow-md">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Exportar para Excel (.xlsx)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr id="cart-table-header" class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
+                                <th class="py-3 px-4">Fornecedor</th>
+                                <th class="py-3 px-4">Código</th>
+                                <th class="py-3 px-4">Descrição</th>
+                                <th class="py-3 px-3 text-right">Total</th>
+                                <th class="py-3 px-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200 font-medium">
+                            <tr><td colspan="5" class="py-6 text-center text-slate-400 font-bold">O carrinho está vazio. Adicione itens para começar.</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -828,6 +873,11 @@
 
         // DICIONÁRIO DE FILIAIS (POPOULADO DINAMICAMENTE DA TABELA PUBLIC.FILIAIS NO SUPABASE)
         let DIC_FILIAIS = {};
+        let shoppingCart = [];
+        let globalFornMap = {};
+        let globalDilutionAllocations = {};
+        let globalActiveUnit = 'PC';
+        let cartSelectedBranches = []; // Filiais selecionadas APENAS para o carrinho (independente dos filtros)
 
         const MONTH_NAMES = {
             "01": "Jan", "02": "Fev", "03": "Mar", "04": "Abr",
@@ -1766,7 +1816,7 @@
 
                 updateUIProgress(10, `Baixando filiais da tabela public.filiais e dicionário mestre (${sb1Table})...`);
                 const dbFiliais = await fetchSupabaseRestFast('filiais', '*', 50, '', () => updateUIProgress(15, "Carregando filiais da public.filiais..."));
-                const dbSb1 = await fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags', 30000, '', () => {
+                const dbSb1 = await fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags,fornecedores', 30000, '', () => {
                     const pct = 15 + Math.min(25, (sd2ProgressTotalCount / 20000) * 25);
                     updateUIProgress(pct, "Baixando cadastro mestre de produtos (SB1)...");
                 });
@@ -1807,17 +1857,20 @@
                 const cleanDescMap = {};
                 const umMap = {};
                 const tagMap = {};
+                globalFornMap = {};
 
                 rawDicionario = dbSb1.map(item => {
                     const cod = normalizeProductCode(item.codigo || item.Codigo);
                     const desc = item.descricao || item["Descr.Espec."] || 'SEM DESCRIÇÃO';
                     const cleanDesc = cleanProductDescription(desc);
                     const um = item.unidade || item.Unidade || 'PC';
+                    const forn = item.fornecedores || '';
                     descMap[cod] = desc;
                     cleanDescMap[cod] = cleanDesc;
                     umMap[cod] = um;
                     tagMap[cod] = item.tags || 'Geral';
-                    return { Codigo: cod, Descricao: desc, CleanDescricao: cleanDesc, Unidade: um, Grupo: item.tags || 'Geral' };
+                    globalFornMap[cod] = forn;
+                    return { Codigo: cod, Descricao: desc, CleanDescricao: cleanDesc, Unidade: um, Grupo: item.tags || 'Geral', Fornecedores: forn };
                 });
 
                 // 3. Saldos
@@ -2009,6 +2062,7 @@
 
             activeBranches = Array.from(setBranches).sort((a, b) => a - b);
             if (selectedBranches.length === 0) selectedBranches = [...activeBranches];
+            if (cartSelectedBranches.length === 0) cartSelectedBranches = [...activeBranches]; // Inicializa seleção do carrinho
             renderBranchCheckboxes();
             buildTargetBranchSelect();
         }
@@ -2055,6 +2109,38 @@
             saveFiltersToLocalStorage();
             applyFilters();
             recalculateSimulation();
+        }
+
+        // --- SELEÇÃO DE FILIAIS EXCLUSIVA DO CARRINHO (não interfere nos filtros) ---
+        function toggleCartBranch(cb, bId) {
+            if (cb.checked) {
+                if (!cartSelectedBranches.includes(bId)) cartSelectedBranches.push(bId);
+            } else {
+                cartSelectedBranches = cartSelectedBranches.filter(v => v !== bId);
+            }
+            // Atualiza apenas o cabeçalho da tabela de diluição (checkbox mestre)
+            updateCartMasterCheckbox();
+        }
+
+        function selectAllCartBranches(checked) {
+            cartSelectedBranches = checked ? [...activeBranches] : [];
+            // Re-renderiza a tabela para refletir o novo estado
+            recalculateSimulation();
+        }
+
+        function updateCartMasterCheckbox() {
+            const master = document.getElementById('cart-master-checkbox');
+            if (!master) return;
+            if (cartSelectedBranches.length === activeBranches.length && activeBranches.length > 0) {
+                master.checked = true;
+                master.indeterminate = false;
+            } else if (cartSelectedBranches.length === 0) {
+                master.checked = false;
+                master.indeterminate = false;
+            } else {
+                master.checked = false;
+                master.indeterminate = true;
+            }
         }
 
         function updateBranchText() {
@@ -2803,18 +2889,28 @@
             });
 
             // SE ESTIVER EM MODO DILUIÇÃO GERAL, CALCULA ALOCAÇÃO PROPORCIONAL POR MULTIPLICADOR DE LOTES
-            let dilutionAllocations = {};
+            globalDilutionAllocations = {};
             if (simMode === 'dilution') {
-                dilutionAllocations = calculateBalancedDilution(qtyToRequest, branchBaseStats, dilutionMethod, simMultiplier);
+                globalDilutionAllocations = calculateBalancedDilution(qtyToRequest, branchBaseStats, dilutionMethod, simMultiplier);
             }
+            const dilutionAllocations = globalDilutionAllocations; // alias local para compat
+            globalActiveUnit = activeUnit;
 
             // ATUALIZAR CABEÇALHOS DA TABELA DE ACORDO COM O MODO
             if (simTableHeader && simTableTitle) {
                 if (simMode === 'dilution') {
                     const multLabel = simMultiplier > 1 ? ` (Lotes de ${simMultiplier.toLocaleString('pt-BR')} ${activeUnit})` : '';
                     simTableTitle.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Solicitação Geral Distribuída${multLabel} para ${activeFiliaisList.length} Unidades`;
+                    const isAllChecked = cartSelectedBranches.length === activeBranches.length && activeBranches.length > 0;
+                    const isSomeChecked = cartSelectedBranches.length > 0 && !isAllChecked;
                     simTableHeader.innerHTML = `
-                        <th class="py-3 px-4">Filiais</th>
+                        <th class="py-3 px-4">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input id="cart-master-checkbox" type="checkbox" ${isAllChecked ? 'checked' : ''} onchange="selectAllCartBranches(this.checked)" class="rounded text-emerald-600 focus:ring-0 cursor-pointer">
+                                <span class="text-slate-500 dark:text-slate-400 font-black text-[10px] uppercase tracking-wider">Incluir no Carrinho</span>
+                            </label>
+                        </th>
+                        <th class="py-3 px-3 text-center">Filial</th>
                         <th class="py-3 px-3 text-center">ABC</th>
                         <th class="py-3 px-3 text-center">Status</th>
                         <th class="py-3 px-3 text-center">Nova Cobertura</th>
@@ -2825,6 +2921,11 @@
                         <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
                         <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
                     `;
+                    // Ajustar indeterminate via JS (não pode ser feito via HTML attr)
+                    setTimeout(() => {
+                        const master = document.getElementById('cart-master-checkbox');
+                        if (master) master.indeterminate = isSomeChecked;
+                    }, 0);
                 } else {
                     simTableTitle.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Simulador de Cobertura de Estoque por Filial`;
                     simTableHeader.innerHTML = `
@@ -2924,12 +3025,16 @@
                     const palletBadge = palletCount > 0
                         ? `<span class="ml-1 text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 px-1.5 py-0.5 rounded-full font-black border border-emerald-300">(${palletCount} ${palletCount === 1 ? 'Palete' : 'Paletes'})</span>`
                         : '';
+                    const isCartChecked = cartSelectedBranches.includes(b.filialId);
 
                     tr.innerHTML = `
-                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                            ${b.filialNome}
-                            ${b.allocatedQty > 0 ? `<span class="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">+ ${b.allocatedQty.toLocaleString('pt-BR')} ${activeUnit}</span>` : ''}
+                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" ${isCartChecked ? 'checked' : ''} onchange="toggleCartBranch(this, ${b.filialId})" class="rounded text-emerald-600 focus:ring-0 cursor-pointer flex-shrink-0">
+                                <span class="flex items-center gap-1.5">${b.filialNome} ${b.allocatedQty > 0 ? `<span class="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">+ ${b.allocatedQty.toLocaleString('pt-BR')} ${activeUnit}</span>` : ''}</span>
+                            </label>
                         </td>
+                        <td class="py-3 px-3 text-center font-black text-slate-600 dark:text-slate-300">${b.filialNome.split(' - ')[0] || b.filialId}</td>
                         <td class="py-3 px-3 text-center font-black text-slate-500">${b.curveABC}</td>
                         <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-full font-black text-[10px] border ${b.statusClass}">${b.statusText}</span></td>
                         <td class="py-3 px-3 text-center font-black ${b.cobertura < 3.0 ? 'text-red-500' : 'text-slate-800 dark:text-slate-100'}">${b.cobertura === 99.0 ? '99+ M' : b.cobertura.toLocaleString('pt-BR')} M</td>
@@ -3315,6 +3420,254 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
+        // --- SISTEMA DE CARRINHO DE COMPRAS ACUMULADAS ---
+        function getFilialShortName(id) {
+            const name = getFilialName(id);
+            if (name.includes(' - ')) {
+                return name.split(' - ')[1].trim();
+            }
+            return name;
+        }
+
+        function getProductFornecedor(code) {
+            const item = rawDicionario.find(d => d.Codigo === code);
+            return item ? (item.Fornecedores || '') : '';
+        }
+
+        function getSortedCart() {
+            return shoppingCart.slice().sort((a, b) => {
+                const fornA = String(a.fornecedor || '').trim().toLowerCase();
+                const fornB = String(b.fornecedor || '').trim().toLowerCase();
+                const compForn = fornA.localeCompare(fornB, undefined, { sensitivity: 'base' });
+                if (compForn !== 0) return compForn;
+
+                const codA = String(a.codigo || '').trim();
+                const codB = String(b.codigo || '').trim();
+                return codA.localeCompare(codB, undefined, { numeric: true, sensitivity: 'base' });
+            });
+        }
+
+        function addProductToCart() {
+            if (globalSelectedProductCodes.length === 0) {
+                showAlert("Nenhum produto selecionado. Busque um produto primeiro.", "warning");
+                return;
+            }
+            if (simMode !== 'dilution') {
+                showAlert("Ative o modo 'Solicitação Geral Distribuída' e calcule a diluição antes de adicionar ao carrinho.", "warning");
+                return;
+            }
+
+            const productCode = globalSelectedProductCodes[0];
+            const productDesc = globalSelectedProductDesc || "Produto Sem Descrição";
+            const productUnit = globalActiveUnit || "PC";
+            const supplier = globalFornMap[productCode] || getProductFornecedor(productCode) || "Não Informado";
+
+            // Montar alocações por filial a partir das variáveis globais
+            const allocations = {};
+            let totalAllocated = 0;
+
+            activeBranches.forEach(bId => {
+                const qty = (cartSelectedBranches.includes(bId) ? (globalDilutionAllocations[bId] || 0) : 0);
+                allocations[bId] = qty;
+                totalAllocated += qty;
+            });
+
+            if (totalAllocated <= 0) {
+                showAlert("A quantidade alocada está zerada. Informe uma quantidade e clique em Calcular Diluição antes de adicionar.", "warning");
+                return;
+            }
+
+            const existingIndex = shoppingCart.findIndex(item => item.codigo === productCode);
+            if (existingIndex > -1) {
+                shoppingCart[existingIndex] = {
+                    codigo: productCode,
+                    descricao: productDesc,
+                    unidade: productUnit,
+                    fornecedor: supplier,
+                    alocacoes: allocations,
+                    total: totalAllocated
+                };
+                showAlert(`Produto ${productCode} atualizado no carrinho!`, "success");
+            } else {
+                shoppingCart.push({
+                    codigo: productCode,
+                    descricao: productDesc,
+                    unidade: productUnit,
+                    fornecedor: supplier,
+                    alocacoes: allocations,
+                    total: totalAllocated
+                });
+                showAlert(`Produto ${productCode} adicionado ao carrinho com sucesso!`, "success");
+            }
+
+            saveCartToLocalStorage();
+            renderShoppingCart();
+        }
+
+        function removeProductFromCart(code) {
+            shoppingCart = shoppingCart.filter(item => item.codigo !== code);
+            saveCartToLocalStorage();
+            renderShoppingCart();
+            showAlert(`Produto ${code} removido do carrinho.`, "info");
+        }
+
+        function clearShoppingCart() {
+            if (shoppingCart.length === 0) return;
+            if (confirm("Deseja realmente limpar todo o carrinho?")) {
+                shoppingCart = [];
+                saveCartToLocalStorage();
+                renderShoppingCart();
+                showAlert("Carrinho esvaziado.", "info");
+            }
+        }
+
+        function renderShoppingCart() {
+            const tbody = document.getElementById("cart-tbody");
+            const thead = document.getElementById("cart-table-header");
+            if (!tbody || !thead) return;
+
+            if (shoppingCart.length === 0) {
+                thead.innerHTML = `
+                    <th class="py-3 px-4">Fornecedor</th>
+                    <th class="py-3 px-4">Código</th>
+                    <th class="py-3 px-4">Descrição</th>
+                    <th class="py-3 px-3 text-right">Total</th>
+                    <th class="py-3 px-4 text-center">Ações</th>
+                `;
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-bold">O carrinho está vazio. Adicione itens para começar.</td></tr>`;
+                return;
+            }
+
+            const branchesToDisplay = activeBranches.slice().sort((a,b) => a - b);
+
+            let headerHtml = `
+                <th class="py-3 px-4">Fornecedor</th>
+                <th class="py-3 px-4">Código</th>
+                <th class="py-3 px-4">Descrição</th>
+            `;
+            branchesToDisplay.forEach(bId => {
+                headerHtml += `<th class="py-3 px-3 text-right">${getFilialShortName(bId)}</th>`;
+            });
+            headerHtml += `
+                <th class="py-3 px-3 text-right bg-blue-50/50 dark:bg-slate-700/50 font-black text-blue-700 dark:text-blue-300">Total</th>
+                <th class="py-3 px-4 text-center">Ações</th>
+            `;
+            thead.innerHTML = headerHtml;
+
+            const sortedCart = getSortedCart();
+
+            let bodyHtml = '';
+            sortedCart.forEach(item => {
+                let filialCells = '';
+                branchesToDisplay.forEach(bId => {
+                    const qty = item.alocacoes[bId] || 0;
+                    filialCells += `<td class="py-3 px-3 text-right ${qty > 0 ? 'font-black text-slate-800 dark:text-white' : 'text-slate-300 dark:text-slate-600'}">${qty > 0 ? qty.toLocaleString('pt-BR') : '-'}</td>`;
+                });
+
+                bodyHtml += `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+                        <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-200 truncate max-w-[150px]" title="${item.fornecedor}">${item.fornecedor}</td>
+                        <td class="py-3 px-4 font-black text-slate-900 dark:text-white">${item.codigo}</td>
+                        <td class="py-3 px-4 truncate max-w-[200px]" title="${item.descricao}">${item.descricao}</td>
+                        ${filialCells}
+                        <td class="py-3 px-3 text-right font-black bg-blue-50/30 dark:bg-slate-700/30 text-blue-600 dark:text-blue-400">${item.total.toLocaleString('pt-BR')} ${item.unidade}</td>
+                        <td class="py-3 px-4 text-center">
+                            <button type="button" onclick="removeProductFromCart('${item.codigo}')" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition active:scale-95" title="Remover do Carrinho">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = bodyHtml;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function saveCartToLocalStorage() {
+            try {
+                localStorage.setItem('amazon_shopping_cart', JSON.stringify(shoppingCart));
+            } catch (e) {
+                console.error("Erro ao salvar carrinho no localStorage:", e);
+            }
+        }
+
+        function loadCartFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('amazon_shopping_cart');
+                if (saved) {
+                    shoppingCart = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error("Erro ao carregar carrinho do localStorage:", e);
+            }
+        }
+
+        function exportCartToExcel() {
+            if (shoppingCart.length === 0) {
+                showAlert("O carrinho está vazio.", "warning");
+                return;
+            }
+
+            if (typeof XLSX === 'undefined') {
+                showAlert("Biblioteca SheetJS (XLSX) não foi carregada.", "error");
+                return;
+            }
+
+            const branchesToDisplay = activeBranches.slice().sort((a,b) => a - b);
+
+            const headers = ["Fornecedor", "Código", "Descrição", "Unidade"];
+            branchesToDisplay.forEach(bId => {
+                headers.push(getFilialName(bId));
+            });
+            headers.push("Total");
+
+            const rows = [headers];
+
+            const sortedCart = getSortedCart();
+
+            sortedCart.forEach(item => {
+                const row = [
+                    item.fornecedor,
+                    !isNaN(Number(item.codigo)) && item.codigo !== '' ? Number(item.codigo) : item.codigo,
+                    item.descricao,
+                    item.unidade
+                ];
+
+                branchesToDisplay.forEach(bId => {
+                    const qty = item.alocacoes[bId] || 0;
+                    row.push(qty);
+                });
+
+                row.push(item.total);
+                rows.push(row);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+
+            const colWidths = [
+                { wch: 25 },
+                { wch: 12 },
+                { wch: 45 },
+                { wch: 8 }
+            ];
+            branchesToDisplay.forEach(() => {
+                colWidths.push({ wch: 15 });
+            });
+            colWidths.push({ wch: 12 });
+            ws['!cols'] = colWidths;
+
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const sheetName = `Solicitacoes_${dateStr}`;
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+            XLSX.writeFile(wb, `solicitacao_estoque_consolidada_${dateStr}.xlsx`);
+            showAlert("Arquivo Excel baixado com sucesso!", "success");
+        }
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
         // Execução ao Carregar
         window.onload = function() {
             initSupabase();
@@ -3323,6 +3676,8 @@
                 currentSd2Sector = savedSec;
                 updateSectorUI();
             }
+            loadCartFromLocalStorage();
+            renderShoppingCart();
             triggerSync();
         };
     </script>
