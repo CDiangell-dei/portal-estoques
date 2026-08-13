@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portal-estoques-v4.2';
+const CACHE_NAME = 'portal-estoques-v4.3';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
