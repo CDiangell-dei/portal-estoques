@@ -2826,9 +2826,9 @@
                 }
             });
 
-            // No modo diluição: usa filiais selecionadas NO SIMULADOR (cartSelectedBranches)
-            // No modo remanejamento: usa filiais do filtro global (selectedBranches)
-            const activeFiliaisList = (simMode === 'dilution' ? cartSelectedBranches : selectedBranches).slice().sort((a, b) => a - b);
+            // Todas as filiais do filtro global aparecem na tabela
+            // No modo diluição, apenas as marcadas no simulador (cartSelectedBranches) recebem quantidade
+            const activeFiliaisList = selectedBranches.slice().sort((a, b) => a - b);
             const branchBaseStats = [];
 
             activeFiliaisList.forEach(filialId => {
@@ -2888,10 +2888,12 @@
                 });
             });
 
-            // SE ESTIVER EM MODO DILUIÇÃO GERAL, CALCULA ALOCAÇÃO PROPORCIONAL POR MULTIPLICADOR DE LOTES
+            // SE ESTIVER EM MODO DILUIÇÃO GERAL, CALCULA ALOCAÇÃO PROPORCIONAL
+            // Passa apenas as filiais MARCADAS no simulador para o cálculo; as demais ficam com 0
             globalDilutionAllocations = {};
             if (simMode === 'dilution') {
-                globalDilutionAllocations = calculateBalancedDilution(qtyToRequest, branchBaseStats, dilutionMethod, simMultiplier);
+                const cartStats = branchBaseStats.filter(b => cartSelectedBranches.includes(b.filialId));
+                globalDilutionAllocations = calculateBalancedDilution(qtyToRequest, cartStats, dilutionMethod, simMultiplier);
             }
             const dilutionAllocations = globalDilutionAllocations; // alias local para compat
             globalActiveUnit = activeUnit;
