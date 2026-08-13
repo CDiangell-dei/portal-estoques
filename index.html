@@ -3304,11 +3304,11 @@
             }
             if (activeArmazens.length === 0) activeArmazens = ['01', '02'];
 
-            // Constrói os cabeçalhos das colunas
-            const armHeaders = activeArmazens.map(a => `Armz ${a}`);
+            // Constrói os cabeçalhos das colunas (Armz XX e Cont. XX para cada armazém)
+            const armHeaders = activeArmazens.flatMap(a => [`Armz ${a}`, `Cont. ${a}`]);
             const headers = ["Filial", "Código", "Descrição", ...armHeaders, "Saldo Total", "Situação"];
 
-            // Mapeia saldos por produto e armazém a partir de rawSaldoDataset
+            // Mapeia saldos do sistema por produto e armazém
             const productArmMap = {};
             (rawSaldoDataset || []).forEach(s => {
                 if (selectedFilial !== 'ALL' && s.filial !== selectedFilial) return;
@@ -3316,6 +3316,27 @@
                 const arm = String(s.armazem || '01').trim().padStart(2, '0');
                 if (!productArmMap[cod]) productArmMap[cod] = {};
                 productArmMap[cod][arm] = (productArmMap[cod][arm] || 0) + (parseFloat(s.quantidade) || 0);
+            });
+
+            // Mapeia contagens físicas por produto e armazém
+            const productArmCountMap = {};
+            (rawConfDataset || []).forEach(c => {
+                if (selectedFilial !== 'ALL' && c.filial !== selectedFilial) return;
+                const cod = String(c.produto || '').trim();
+                const arm = String(c.armazem || c.armazem_contagem || '01').trim().padStart(2, '0');
+                if (!productArmCountMap[cod]) productArmCountMap[cod] = {};
+                productArmCountMap[cod][arm] = parseFloat(c.qtd_contada || 0);
+            });
+
+            // Aplica contagens físicas locais pendentes
+            Object.keys(localCountsMap || {}).forEach(key => {
+                const parts = key.split('_');
+                if (parts.length === 2) {
+                    const arm = String(parts[0]).trim().padStart(2, '0');
+                    const cod = String(parts[1]).trim();
+                    if (!productArmCountMap[cod]) productArmCountMap[cod] = {};
+                    productArmCountMap[cod][arm] = parseFloat(localCountsMap[key] || 0);
+                }
             });
 
             // Monta as linhas de dados
@@ -3327,10 +3348,16 @@
                 const desc = item.descricao || '-';
 
                 let rowTotal = 0;
-                const armValues = activeArmazens.map(arm => {
-                    const val = productArmMap[codStr] ? (productArmMap[codStr][arm] || 0) : 0;
-                    rowTotal += val;
-                    return val;
+                const armPairs = [];
+                activeArmazens.forEach(arm => {
+                    const sysVal = productArmMap[codStr] ? (productArmMap[codStr][arm] || 0) : 0;
+                    rowTotal += sysVal;
+
+                    const hasCount = productArmCountMap[codStr] && productArmCountMap[codStr][arm] !== undefined;
+                    const countVal = hasCount ? productArmCountMap[codStr][arm] : '';
+
+                    armPairs.push(sysVal);
+                    armPairs.push(countVal);
                 });
 
                 // Status formatado (Title Case)
@@ -3347,7 +3374,7 @@
                     filialLabel,
                     codNum,
                     desc,
-                    ...armValues,
+                    ...armPairs,
                     rowTotal,
                     statusFormatted
                 ]);
@@ -3361,7 +3388,7 @@
                 { wch: 15 }, // Filial
                 { wch: 12 }, // Código
                 { wch: 45 }, // Descrição
-                ...activeArmazens.map(() => ({ wch: 10 })), // Armz XX
+                ...activeArmazens.flatMap(() => [{ wch: 10 }, { wch: 10 }]), // Armz XX + Cont. XX
                 { wch: 14 }, // Saldo Total
                 { wch: 12 }  // Situação
             ];
