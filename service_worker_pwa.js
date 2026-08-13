@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portal-estoques-v4.0';
+const CACHE_NAME = 'portal-estoques-v4.1';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Ignora cache para index.html e navegação de página para garantir que as atualizações cheguem na hora
-  if (event.request.mode === 'navigate' || event.request.url.includes('index.html')) {
+  // Ignora cache para index.html, solicitacao_estoque.html e navegação de página para garantir que as atualizações cheguem na hora
+  if (event.request.mode === 'navigate' || event.request.url.includes('index.html') || event.request.url.includes('solicitacao_estoque.html')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
