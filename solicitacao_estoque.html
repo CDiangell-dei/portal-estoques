@@ -147,62 +147,6 @@
         </div>
     </div>
 
-    <!-- OVERLAY DE IMPORTAÇÃO CSV -->
-    <div id="csvImportOverlay" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/70 backdrop-blur-md transition-all duration-300 no-print">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-lg mx-4 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-5 relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600"></div>
-            
-            <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner flex-shrink-0">
-                    <i data-lucide="upload" class="w-6 h-6 animate-pulse"></i>
-                </div>
-                <div>
-                    <h3 class="text-base font-black text-slate-900 dark:text-white leading-tight">Importação de Dados SD2 (CSV)</h3>
-                    <p id="csvImportSubtext" class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Processando arquivo selecionado...</p>
-                </div>
-            </div>
-
-            <!-- Detalhes de Progresso -->
-            <div class="grid grid-cols-3 gap-2 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 text-xs">
-                <div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Linhas</span>
-                    <span id="csvImportTotalRows" class="text-sm font-black text-slate-800 dark:text-slate-200">0</span>
-                </div>
-                <div class="text-center">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Novas (Importadas)</span>
-                    <span id="csvImportNewRows" class="text-sm font-black text-emerald-600 dark:text-emerald-400">0</span>
-                </div>
-                <div class="text-right">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Duplicadas (Ignoradas)</span>
-                    <span id="csvImportDupRows" class="text-sm font-black text-amber-600 dark:text-amber-400">0</span>
-                </div>
-            </div>
-
-            <!-- Barra de Progresso de Importação -->
-            <div class="space-y-1.5">
-                <div class="flex items-center justify-between text-xs font-black">
-                    <span id="csvImportStepText" class="text-slate-600 dark:text-slate-300">Aguardando...</span>
-                    <span id="csvImportPercent" class="text-emerald-600 dark:text-emerald-400">0%</span>
-                </div>
-                <div class="w-full bg-slate-100 dark:bg-slate-700 h-3 rounded-full overflow-hidden p-0.5 shadow-inner">
-                    <div id="csvImportProgressBar" class="bg-gradient-to-r from-emerald-600 to-teal-500 h-full w-0 rounded-full transition-all duration-200"></div>
-                </div>
-            </div>
-
-            <!-- Logs / Status Detalhado -->
-            <div id="csvImportLog" class="max-h-32 overflow-y-auto text-[10px] font-mono bg-slate-900 text-slate-200 p-3 rounded-xl border border-slate-700 space-y-1">
-                <div>Aguardando início...</div>
-            </div>
-
-            <!-- Botões de Ação do Modal -->
-            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-                <button id="btnCsvImportClose" onclick="closeCsvImportModal()" class="hidden py-2 px-4 bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 text-xs font-black rounded-xl transition cursor-pointer">
-                    Fechar
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- TOP HEADER DO PORTAL -->
     <header class="bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 no-print transition-all shadow-sm">
         <div class="w-full lg:max-w-[95%] mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
@@ -251,13 +195,6 @@
                 <button onclick="toggleTheme()" class="p-2 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 transition-all" title="Alternar Tema Claro/Escuro">
                     <i id="themeIcon" data-lucide="sun" class="w-4 h-4"></i>
                 </button>
-
-                <!-- Botão Importar CSV (SD2) -->
-                <button id="btnImportCSV" onclick="document.getElementById('csvFileInput').click()" class="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer" title="Importar arquivo CSV com dados do SD2">
-                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-                    <span>Importar CSV (SD2)</span>
-                </button>
-                <input type="file" id="csvFileInput" class="hidden" accept=".csv" onchange="handleCSVUpload(event)">
 
                 <!-- Botão Sincronizar Supabase -->
                 <button id="btnSyncSupabase" onclick="triggerSync()" class="flex items-center space-x-1.5 bg-amazonRed-500 hover:bg-amazonRed-600 text-white px-4 py-2 rounded-xl text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer">
@@ -308,10 +245,6 @@
                     <span class="text-[9px] text-blue-200 font-bold uppercase tracking-wider block">Último Sync Supabase</span>
                     <span id="sd2-last-sync-time" class="text-xs font-black text-white mt-0.5">Não sincronizado</span>
                 </div>
-                <div class="bg-black/20 border border-white/10 rounded-2xl px-4 py-2 text-right">
-                    <span class="text-[9px] text-emerald-200 font-bold uppercase tracking-wider block">Mais Recente no Banco</span>
-                    <span id="sd2-max-sales-date" class="text-xs font-black text-white mt-0.5">Não sincronizado</span>
-                </div>
                 <button onclick="triggerSync()" class="py-2.5 px-5 bg-amazonRed-500 hover:bg-amazonRed-600 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
                     <i data-lucide="rotate-cw" class="w-4 h-4"></i>
                     <span>Sincronizar Supabase</span>
@@ -321,7 +254,7 @@
 
         <!-- BARRA DE FILTROS GLOBAIS EM LINHA -->
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4 no-print">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                 
                 <!-- 1. Filtro de Filiais (Conectado com public.filiais) -->
                 <div class="space-y-1.5 relative">
@@ -396,25 +329,6 @@
                             <button onclick="selectTES(false)" class="text-[10px] text-slate-400 hover:underline font-black uppercase">Nenhuma</button>
                         </div>
                         <div id="tes-checkboxes-container" class="space-y-1.5"></div>
-                    </div>
-                </div>
-
-                <!-- 5. Filtro Fornecedores -->
-                <div class="space-y-1.5 relative">
-                    <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                        <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-emerald-600"></i> Fornecedores</span>
-                        <span id="supplier-count-badge" class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-extrabold border border-emerald-200">Todos</span>
-                    </label>
-                    <button onclick="toggleDropdown(event, 'supplier')" id="supplier-dropdown-btn" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none flex items-center justify-between cursor-pointer">
-                        <span class="truncate" id="supplier-selected-text">Todos os fornecedores</span>
-                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
-                    </button>
-                    <div id="supplier-dropdown-list" class="hidden absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-3 z-50 space-y-2 max-h-60 overflow-y-auto font-medium text-xs">
-                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-1">
-                            <button onclick="selectSuppliersFilter(true)" class="text-[10px] text-emerald-600 hover:underline font-black uppercase">Todos</button>
-                            <button onclick="selectSuppliersFilter(false)" class="text-[10px] text-slate-400 hover:underline font-black uppercase">Nenhum</button>
-                        </div>
-                        <div id="supplier-checkboxes-container" class="space-y-1.5"></div>
                     </div>
                 </div>
             </div>
@@ -562,18 +476,14 @@
                 </div>
 
                 <!-- Botão de Ação para Solicitação Geral -->
-                <div id="dilution-action-btn-row" class="hidden pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2.5">
-                    <button onclick="recalculateSimulation()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                <div id="dilution-action-btn-row" class="hidden pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                    <button onclick="recalculateSimulation()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer active:scale-95">
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        <span>Calcular Diluição</span>
-                    </button>
-                    <button onclick="addToCart()" class="py-2.5 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
-                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                        <span>Adicionar à Lista de Pedido</span>
+                        <span>Executar Diluição entre Todas as Unidades</span>
                     </button>
                 </div>
 
-                <p id="sim-footer-note" class="text-[11px] text-slate-400 italic">* A cobertura de estoque baseia-se no Saldo Pós-Envio dividido pela Média Mensal de Saídas (calculada sobre até 7 meses ativos com saídas no período de 1 ano).</p>
+                <p id="sim-footer-note" class="text-[11px] text-slate-400 italic">* A cobertura de estoque baseia-se no Saldo Pós-Envio dividido pela Média Mensal de Saídas (últimos 7 meses).</p>
             </div>
 
             <!-- Box de Alertas de Viabilidade / Resumo de Diluição -->
@@ -603,7 +513,7 @@
                                 <th class="py-3 px-3 text-center">Cobertura (Mês)</th>
                                 <th class="py-3 px-3 text-right">Saldo Atual</th>
                                 <th class="py-3 px-3 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Saldo Pós-Envio</th>
-                                <th class="py-3 px-3 text-right">Saídas (12M)</th>
+                                <th class="py-3 px-3 text-right">Saídas (7M)</th>
                                 <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
                                 <th class="py-3 px-3 text-right">Fat. Médio/Mês</th>
                                 <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
@@ -620,7 +530,7 @@
             <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4">
                 <div class="flex justify-between items-center">
                     <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Análise Mensal Fatiada de Saídas (Qtde)</h3>
-                    <span class="text-[10px] text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-black border border-emerald-200 dark:border-emerald-800">Histórico de Demanda (12 Meses)</span>
+                    <span class="text-[10px] text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-black border border-emerald-200 dark:border-emerald-800">Histórico de Demanda (7 Meses)</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
@@ -630,46 +540,6 @@
                             </tr>
                         </thead>
                         <tbody id="sim-fatiada-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200 font-medium"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- CARD DE SOLICITAÇÕES ACUMULADAS (CARRINHO) -->
-            <div id="requestCartCard" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                        <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wider">
-                            <i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-600"></i>
-                            Lista de Solicitações Acumuladas (Carrinho)
-                        </h3>
-                        <p class="text-[11px] text-slate-400 font-bold mt-0.5">Produtos acumulados para exportação de remanejamento geral.</p>
-                    </div>
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <button onclick="exportCartToExcel()" class="flex-1 sm:flex-none py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
-                            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
-                            Exportar Excel (.xlsx)
-                        </button>
-                        <button onclick="clearCart()" class="flex-1 sm:flex-none py-2 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            Limpar Lista
-                        </button>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr id="cartTableHeader" class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
-                                <th class="py-3 px-4">Código</th>
-                                <th class="py-3 px-3">Descrição</th>
-                                <th class="py-3 px-3 text-center">UM</th>
-                                <th class="py-3 px-3 text-right">Qtd Total</th>
-                                <th class="py-3 px-4 text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cartTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200">
-                            <tr><td colspan="15" class="py-6 text-center text-slate-400 font-bold">Nenhum produto adicionado à lista.</td></tr>
-                        </tbody>
                     </table>
                 </div>
             </div>
@@ -858,7 +728,6 @@
                             <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
                                 <th class="py-3 px-4">Código</th>
                                 <th class="py-3 px-4">Descrição Comercial</th>
-                                <th class="py-3 px-4">Fornecedor</th>
                                 <th class="py-3 px-4">Grupo / Tag</th>
                                 <th class="py-3 px-4">Filial</th>
                                 <th class="py-3 px-4">Armazém</th>
@@ -922,13 +791,6 @@
 
         let activeTES = [];
         let selectedTES = [];
-
-        let activeSuppliers = [];
-        let selectedSuppliers = [];
-
-        let tempDilutionSelectedBranches = {};
-        let currentSimulatedStats = [];
-        let requestCart = [];
 
         // ESTRUTURA DE SELEÇÃO DE PRODUTO
         let globalSelectedProductCodes = [];
@@ -1416,313 +1278,6 @@
             return cleanStr;
         }
 
-        function normalizeBranchOrWarehouse(val) {
-            if (val === undefined || val === null) return '';
-            let cleanStr = String(val).trim();
-            if (cleanStr.includes('.')) {
-                cleanStr = cleanStr.split('.')[0];
-            }
-            if (/^\d+$/.test(cleanStr)) {
-               let numStr = cleanStr.replace(/^0+/, ''); 
-               if (numStr === '') return '00';
-               return numStr.padStart(2, '0'); 
-            }
-            return cleanStr;
-        }
-
-        function parseFormattedNumber(val) {
-            if (val === null || val === undefined) return 0;
-            let str = String(val).trim();
-            if (!str) return 0;
-            
-            if (str.includes('.') && str.includes(',')) {
-                if (str.indexOf('.') < str.indexOf(',')) {
-                    str = str.replace(/\./g, '').replace(',', '.');
-                } else {
-                    str = str.replace(/,/g, '');
-                }
-            } else if (str.includes(',')) {
-                str = str.replace(',', '.');
-            }
-            
-            let num = parseFloat(str);
-            return isNaN(num) ? 0 : num;
-        }
-
-        function parseCSVDate(dateStr) {
-            if (!dateStr) return null;
-            let clean = dateStr.trim();
-            if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
-                return clean;
-            }
-            let parts = clean.split('/');
-            if (parts.length === 3) {
-                let day = parts[0].padStart(2, '0');
-                let month = parts[1].padStart(2, '0');
-                let year = parts[2];
-                if (year.length === 2) {
-                    year = "20" + year;
-                }
-                return `${year}-${month}-${day}`;
-            }
-            return null;
-        }
-
-        function getRowUniqueKey(row) {
-            const filial = String(row.filial || row.Filial || '').trim().padStart(2, '0');
-            const produto = normalizeProductCode(row.produto || row.Produto);
-            const armazem = String(row.armazem || row.Armazem || '').trim().padStart(2, '0');
-            const quantidade = Number(row.quantidade !== undefined ? row.quantidade : (row.Quantidade || 0));
-            const vlr_unitario = Number(row.vlr_unitario !== undefined ? row.vlr_unitario : (row["Vlr.Unitario"] || 0));
-            const vlr_total = Number(row.vlr_total !== undefined ? row.vlr_total : (row["Vlr.Total"] || 0));
-            const tipo_saida = String(row.tipo_saida || row.tipo_saída || row.TES || '').trim();
-            
-            const numDocRaw = row.num_documento !== undefined ? row.num_documento : row["Num. Docto."];
-            const num_documento_int = numDocRaw ? parseInt(String(numDocRaw).trim(), 10) : 0;
-            const num_documento = isNaN(num_documento_int) ? '0' : String(num_documento_int);
-
-            const emissao = row.emissao || row.Emissao ? String(row.emissao || row.Emissao).split('T')[0] : '';
-            
-            const qtyStr = quantidade.toFixed(4);
-            const vUnitStr = vlr_unitario.toFixed(4);
-            const vTotalStr = vlr_total.toFixed(4);
-            
-            return `${filial}|${produto}|${armazem}|${qtyStr}|${vUnitStr}|${vTotalStr}|${tipo_saida}|${num_documento}|${emissao}`;
-        }
-
-        async function checkDuplicatesInSupabase(tableName, parsedRows) {
-            const existingKeys = new Set();
-            const documentNumbers = [...new Set(parsedRows.map(r => r.num_documento).filter(n => n !== null && n !== undefined))];
-            
-            const chunkSize = 100;
-            for (let i = 0; i < documentNumbers.length; i += chunkSize) {
-                const chunk = documentNumbers.slice(i, i + chunkSize);
-                
-                const { data, error } = await supabaseClient
-                    .from(tableName)
-                    .select('filial, produto, armazem, quantidade, vlr_unitario, vlr_total, tipo_saida, num_documento, emissao')
-                    .in('num_documento', chunk);
-                    
-                if (error) {
-                    console.error("Erro ao checar duplicatas no Supabase:", error);
-                    throw error;
-                }
-                
-                if (data) {
-                    data.forEach(row => {
-                        const key = getRowUniqueKey(row);
-                        existingKeys.add(key);
-                    });
-                }
-            }
-            return existingKeys;
-        }
-
-        async function handleCSVUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const modal = document.getElementById("csvImportOverlay");
-            const totalEl = document.getElementById("csvImportTotalRows");
-            const newEl = document.getElementById("csvImportNewRows");
-            const dupEl = document.getElementById("csvImportDupRows");
-            const stepEl = document.getElementById("csvImportStepText");
-            const percentEl = document.getElementById("csvImportPercent");
-            const barEl = document.getElementById("csvImportProgressBar");
-            const logEl = document.getElementById("csvImportLog");
-            const closeBtn = document.getElementById("btnCsvImportClose");
-
-            if (modal) modal.classList.remove("hidden");
-            if (closeBtn) closeBtn.classList.add("hidden");
-            if (logEl) logEl.innerHTML = "<div>Iniciando leitura do arquivo...</div>";
-            
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const text = e.target.result;
-                    const lines = text.split(/\r?\n/);
-                    if (lines.length <= 1) {
-                        throw new Error("Arquivo vazio ou sem linhas de dados.");
-                    }
-
-                    const headerLine = lines[0];
-                    const separator = headerLine.includes(';') ? ';' : ',';
-                    const headers = headerLine.split(separator).map(h => h.trim().toLowerCase());
-                    
-                    logEl.innerHTML += `<div>Separador detectado: '${separator}'</div>`;
-                    
-                    const colFilial = headers.indexOf("filial");
-                    const colProduto = headers.indexOf("produto");
-                    const colQuantidade = headers.indexOf("quantidade");
-                    const colVlrUnitario = headers.indexOf("vlr_unitario");
-                    const colVlrTotal = headers.indexOf("vlr_total");
-                    const colTipoSaida = headers.indexOf("tipo_saida");
-                    const colArmazem = headers.indexOf("armazem");
-                    const colNumDocumento = headers.indexOf("num_documento");
-                    const colSerie = headers.indexOf("serie");
-                    const colEmissao = headers.indexOf("emissao");
-
-                    if (colFilial === -1 || colProduto === -1 || colQuantidade === -1 || colEmissao === -1) {
-                        throw new Error("Colunas obrigatórias não encontradas no cabeçalho (filial, produto, quantidade, emissao).");
-                    }
-
-                    const parsedRows = [];
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-
-                        const cols = line.split(separator);
-                        if (cols.length < headers.length) {
-                            continue;
-                        }
-
-                        const rawFilial = cols[colFilial];
-                        const rawProduto = cols[colProduto];
-                        const rawQuantidade = cols[colQuantidade];
-                        const rawVlrUnitario = colVlrUnitario !== -1 ? cols[colVlrUnitario] : "0";
-                        const rawVlrTotal = colVlrTotal !== -1 ? cols[colVlrTotal] : "0";
-                        const rawTipoSaida = colTipoSaida !== -1 ? cols[colTipoSaida] : "";
-                        const rawArmazem = colArmazem !== -1 ? cols[colArmazem] : "";
-                        const rawNumDocumento = colNumDocumento !== -1 ? cols[colNumDocumento] : "";
-                        const rawSerie = colSerie !== -1 ? cols[colSerie] : "";
-                        const rawEmissao = cols[colEmissao];
-
-                        const filial = normalizeBranchOrWarehouse(rawFilial);
-                        const produto = normalizeProductCode(rawProduto);
-                        const armazem = normalizeBranchOrWarehouse(rawArmazem);
-                        const quantidade = parseFormattedNumber(rawQuantidade);
-                        const vlr_unitario = parseFormattedNumber(rawVlrUnitario);
-                        const vlr_total = parseFormattedNumber(rawVlrTotal);
-                        const tipo_saida = String(rawTipoSaida).trim();
-                        const num_documento = rawNumDocumento ? parseInt(rawNumDocumento.trim(), 10) : null;
-                        const serie = String(rawSerie).trim();
-                        const emissao = parseCSVDate(rawEmissao);
-
-                        if (!filial || !produto || isNaN(quantidade) || !emissao) {
-                            continue;
-                        }
-
-                        parsedRows.push({
-                            filial,
-                            produto,
-                            quantidade,
-                            vlr_unitario,
-                            vlr_total,
-                            tipo_saida,
-                            armazem,
-                            num_documento,
-                            serie,
-                            emissao
-                        });
-                    }
-
-                    if (totalEl) totalEl.innerText = parsedRows.length;
-                    logEl.innerHTML += `<div>Lidas ${parsedRows.length} linhas de dados válidos.</div>`;
-
-                    if (parsedRows.length === 0) {
-                        throw new Error("Nenhuma linha de dados válida encontrada para processamento.");
-                    }
-
-                    const tableName = currentSd2Sector === 'INDUSTRIA' ? 'sd2_industria' : 'sd2_comercio';
-                    logEl.innerHTML += `<div>Tabela de destino: public.${tableName}</div>`;
-
-                    if (!supabaseClient) {
-                        initSupabase();
-                    }
-
-                    if (stepEl) stepEl.innerText = "Verificando registros existentes no Supabase...";
-                    if (barEl) barEl.style.width = "30%";
-                    if (percentEl) percentEl.innerText = "30%";
-
-                    logEl.innerHTML += `<div>Consultando o Supabase para evitar duplicidade...</div>`;
-                    logEl.scrollTop = logEl.scrollHeight;
-                    
-                    const existingKeys = await checkDuplicatesInSupabase(tableName, parsedRows);
-                    logEl.innerHTML += `<div>Dados retornados. Comparando chaves...</div>`;
-
-                    const rowsToInsert = [];
-                    let duplicateCount = 0;
-
-                    parsedRows.forEach(row => {
-                        const key = getRowUniqueKey(row);
-                        if (existingKeys.has(key)) {
-                            duplicateCount++;
-                        } else {
-                            rowsToInsert.push(row);
-                        }
-                    });
-
-                    if (dupEl) dupEl.innerText = duplicateCount;
-                    if (newEl) newEl.innerText = rowsToInsert.length;
-                    logEl.innerHTML += `<div>Registros duplicados: ${duplicateCount} (serão ignorados)</div>`;
-                    logEl.innerHTML += `<div>Registros novos a inserir: ${rowsToInsert.length}</div>`;
-                    logEl.scrollTop = logEl.scrollHeight;
-
-                    if (rowsToInsert.length === 0) {
-                        if (stepEl) stepEl.innerText = "Concluído! Nenhum registro novo.";
-                        if (barEl) barEl.style.width = "100%";
-                        if (percentEl) percentEl.innerText = "100%";
-                        logEl.innerHTML += `<div class="text-emerald-400 font-bold">Importação concluída! Todos os registros já existiam no banco.</div>`;
-                        if (closeBtn) closeBtn.classList.remove("hidden");
-                        triggerSync();
-                        return;
-                    }
-
-                    if (stepEl) stepEl.innerText = "Inserindo novos registros no Supabase...";
-                    
-                    const insertChunkSize = 100;
-                    let insertedCount = 0;
-
-                    for (let i = 0; i < rowsToInsert.length; i += insertChunkSize) {
-                        const chunk = rowsToInsert.slice(i, i + insertChunkSize);
-                        const chunkProgress = 30 + Math.round((i / rowsToInsert.length) * 60);
-                        if (barEl) barEl.style.width = `${chunkProgress}%`;
-                        if (percentEl) percentEl.innerText = `${chunkProgress}%`;
-
-                        logEl.innerHTML += `<div>Gravando lote ${Math.floor(i / insertChunkSize) + 1}...</div>`;
-                        logEl.scrollTop = logEl.scrollHeight;
-
-                        const { data, error } = await supabaseClient
-                            .from(tableName)
-                            .insert(chunk);
-
-                        if (error) {
-                            console.error("Erro ao inserir lote:", error);
-                            throw new Error(`Erro Supabase: ${error.message} - Código: ${error.code}`);
-                        }
-
-                        insertedCount += chunk.length;
-                    }
-
-                    if (stepEl) stepEl.innerText = "Finalizado com sucesso!";
-                    if (barEl) barEl.style.width = "100%";
-                    if (percentEl) percentEl.innerText = "100%";
-                    logEl.innerHTML += `<div class="text-emerald-400 font-bold">Importação concluída! ${insertedCount} novos registros adicionados.</div>`;
-                    logEl.scrollTop = logEl.scrollHeight;
-                    if (closeBtn) closeBtn.classList.remove("hidden");
-                    
-                    triggerSync();
-
-                } catch (err) {
-                    console.error("Erro na importação:", err);
-                    if (stepEl) stepEl.innerText = "Erro na importação!";
-                    if (barEl) barEl.style.background = "#ef4444";
-                    logEl.innerHTML += `<div class="text-rose-500 font-bold">Erro: ${err.message}</div>`;
-                    logEl.scrollTop = logEl.scrollHeight;
-                    if (closeBtn) closeBtn.classList.remove("hidden");
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = "";
-        }
-
-        function closeCsvImportModal() {
-            const modal = document.getElementById("csvImportOverlay");
-            if (modal) modal.classList.add("hidden");
-            const barEl = document.getElementById("csvImportProgressBar");
-            if (barEl) barEl.style.background = "";
-        }
-
         function formatCurrency(val) {
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
         }
@@ -1827,9 +1382,9 @@
             try {
                 if (!supabaseClient) initSupabase();
 
-                const twelveMonthsAgo = new Date();
-                twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-                const dateFilterStr = twelveMonthsAgo.toISOString().split('T')[0];
+                const sevenMonthsAgo = new Date();
+                sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+                const dateFilterStr = sevenMonthsAgo.toISOString().split('T')[0];
 
                 const sb1Table = currentSd2Sector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
                 const saldoTable = currentSd2Sector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
@@ -1837,7 +1392,7 @@
 
                 updateUIProgress(10, `Baixando filiais da tabela public.filiais e dicionário mestre (${sb1Table})...`);
                 const dbFiliais = await fetchSupabaseRestFast('filiais', '*', 50, '', () => updateUIProgress(15, "Carregando filiais da public.filiais..."));
-                const dbSb1 = await fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags,fornecedores', 30000, '', () => {
+                const dbSb1 = await fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags', 30000, '', () => {
                     const pct = 15 + Math.min(25, (sd2ProgressTotalCount / 20000) * 25);
                     updateUIProgress(pct, "Baixando cadastro mestre de produtos (SB1)...");
                 });
@@ -1879,7 +1434,6 @@
                 const umMap = {};
                 const tagMap = {};
 
-                window.fornecedoresMap = {};
                 rawDicionario = dbSb1.map(item => {
                     const cod = normalizeProductCode(item.codigo || item.Codigo);
                     const desc = item.descricao || item["Descr.Espec."] || 'SEM DESCRIÇÃO';
@@ -1889,11 +1443,6 @@
                     cleanDescMap[cod] = cleanDesc;
                     umMap[cod] = um;
                     tagMap[cod] = item.tags || 'Geral';
-                    
-                    const fornsStr = item.fornecedores || '';
-                    const fornsArr = fornsStr ? fornsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
-                    window.fornecedoresMap[cod] = fornsArr;
-
                     return { Codigo: cod, Descricao: desc, CleanDescricao: cleanDesc, Unidade: um, Grupo: item.tags || 'Geral' };
                 });
 
@@ -1969,7 +1518,6 @@
                 buildTargetBranchSelect();
                 buildWarehouseFilters();
                 buildTESFilters();
-                buildSupplierFilters();
                 buildBranchFilters();
                 populateSalesPeriods();
 
@@ -1988,7 +1536,6 @@
                 }
 
                 applyFilters();
-                initCart();
 
                 updateUIProgress(100, "Sincronização concluída com sucesso!");
                 const sectorLabel = currentSd2Sector === 'INDUSTRIA' ? 'Indústria' : 'Comércio';
@@ -2015,21 +1562,6 @@
                 });
             }
 
-            // Exibir a data do lançamento mais recente no banco de dados
-            const maxDateEl = document.getElementById("sd2-max-sales-date");
-            if (maxDateEl) {
-                if (maxDateStr) {
-                    const parts = maxDateStr.split('-');
-                    if (parts.length === 3) {
-                        maxDateEl.innerText = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                    } else {
-                        maxDateEl.innerText = maxDateStr;
-                    }
-                } else {
-                    maxDateEl.innerText = "Sem lançamentos";
-                }
-            }
-
             let baseDate = new Date();
             if (maxDateStr) {
                 const parts = maxDateStr.split('-');
@@ -2039,7 +1571,7 @@
             MONTHS_ANALYSIS = [];
             const monthNames = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 7; i++) {
                 let d = new Date(baseDate);
                 d.setMonth(d.getMonth() - i);
                 const yr = d.getFullYear();
@@ -2056,7 +1588,7 @@
             if (theadFat) {
                 theadFat.innerHTML = `<th class="py-3 px-4">Filiais</th>` +
                     MONTHS_ANALYSIS.map(m => `<th class="py-3 px-3 text-right">${m.label}</th>`).join('') +
-                    `<th class="py-3 px-4 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Total 12M</th>`;
+                    `<th class="py-3 px-4 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Total 7M</th>`;
             }
         }
 
@@ -2334,9 +1866,7 @@
             const matchedItems = rawDicionario.filter(d => {
                 const codMatch = d.Codigo.toLowerCase().includes(searchVal) || d.Codigo.toLowerCase().includes(normTyped);
                 const descMatch = d.Descricao.toLowerCase().includes(searchVal) || d.CleanDescricao.toLowerCase().includes(searchClean);
-                const itemSups = window.fornecedoresMap[d.Codigo] || [];
-                const supMatch = itemSups.some(s => s.toLowerCase().includes(searchVal));
-                return codMatch || descMatch || supMatch;
+                return codMatch || descMatch;
             });
 
             if (matchedItems.length === 0) {
@@ -2434,7 +1964,6 @@
             globalSelectedProductCodes = codesArray;
             globalSelectedProductDesc = cleanDesc;
             globalIsConsolidated = codesArray.length > 1;
-            tempDilutionSelectedBranches = {}; // Reset checkbox selections for new product
 
             const inputEl = document.getElementById("global-product-code");
             if (inputEl) inputEl.value = cleanDesc;
@@ -2681,13 +2210,7 @@
                 const matchBranch = selectedBranches.includes(item.Filial);
                 const matchWh = selectedSaldosWarehouses.includes(item.Armazem);
                 const matchProd = (globalSelectedProductCodes.length === 0) || globalSelectedProductCodes.includes(item.Produto);
-                
-                let matchSupplier = true;
-                if (activeSuppliers.length > 0 && selectedSuppliers.length < activeSuppliers.length) {
-                    const itemSups = window.fornecedoresMap[item.Produto] || [];
-                    matchSupplier = itemSups.some(s => selectedSuppliers.includes(s));
-                }
-                return matchBranch && matchWh && matchProd && matchSupplier;
+                return matchBranch && matchWh && matchProd;
             });
 
             filteredVendas = rawVendas.filter(item => {
@@ -2702,13 +2225,7 @@
                     if (salesFromPeriod && yrMo < salesFromPeriod) matchPeriod = false;
                     if (salesToPeriod && yrMo > salesToPeriod) matchPeriod = false;
                 }
-                
-                let matchSupplier = true;
-                if (activeSuppliers.length > 0 && selectedSuppliers.length < activeSuppliers.length) {
-                    const itemSups = window.fornecedoresMap[item.Produto] || [];
-                    matchSupplier = itemSups.some(s => selectedSuppliers.includes(s));
-                }
-                return matchBranch && matchWh && matchTES && matchProd && matchPeriod && matchSupplier;
+                return matchBranch && matchWh && matchTES && matchProd && matchPeriod;
             });
 
             updateKPIs();
@@ -2844,63 +2361,26 @@
                 const filialSaldos = prodSaldos.filter(s => s.Filial === filialId);
                 const saldoAtual = filialSaldos.reduce((acc, curr) => acc + curr["Qtde.1a.U.M."], 0);
 
-                // Filtrar vendas da filial para o produto
-                const filialVendas = prodVendas.filter(v => v.Filial === filialId);
-                
-                // Mapear vendas por mês para a filial
-                const monthlySales = {};
-                analysisKeys.forEach(k => {
-                    monthlySales[k] = { qty: 0, val: 0 };
-                });
-
-                filialVendas.forEach(v => {
-                    const yrMo = v.Emissao ? v.Emissao.substring(0, 7) : '';
-                    if (monthlySales[yrMo]) {
-                        monthlySales[yrMo].qty += v.Quantidade;
-                        monthlySales[yrMo].val += v["Vlr.Total"];
+                let totalQtdVendas = 0;
+                let totalValVendas = 0;
+                analysisKeys.forEach(m => {
+                    if (salesMap[filialId] && salesMap[filialId][m]) {
+                        totalQtdVendas += salesMap[filialId][m].qty;
+                        totalValVendas += salesMap[filialId][m].val;
                     }
                 });
 
-                // Filtrar os meses que de fato tiveram vendas (qty > 0)
-                // A lista analysisKeys já está ordenada em ordem cronológica decrescente (do mais recente para o mais antigo)
-                const activeMonthKeys = analysisKeys.filter(k => monthlySales[k].qty > 0);
+                const numMonths = MONTHS_ANALYSIS.length || 7;
+                const mediaMesQtd = parseFloat((totalQtdVendas / numMonths).toFixed(1));
+                const mediaMesFat = parseFloat((totalValVendas / numMonths).toFixed(2));
 
-                // Pegar os últimos 7 meses ativos (com vendas) dentro do período de 1 ano
-                const top7ActiveKeys = activeMonthKeys.slice(0, 7);
-
-                let activeQtdSum = 0;
-                let activeValSum = 0;
-                top7ActiveKeys.forEach(k => {
-                    activeQtdSum += monthlySales[k].qty;
-                    activeValSum += monthlySales[k].val;
-                });
-
-                // A média mensal é calculada dividindo a soma dos 7 meses ativos por 7 para manter o baseline correto.
-                // Se houver menos de 7 meses ativos (ex: 3), dividimos por 7 para refletir a menor frequência.
-                const mediaMesQtd = parseFloat((activeQtdSum / 7).toFixed(1));
-                const mediaMesFat = parseFloat((activeValSum / 7).toFixed(2));
-
-                // Para exibição na coluna "Total Saídas (12M)", somamos todo o período de 12 meses
-                let total12MQtd = 0;
-                analysisKeys.forEach(k => {
-                    total12MQtd += monthlySales[k].qty;
-                });
-
-                branchBaseStats.push({ 
-                    filialId, 
-                    filialNome, 
-                    saldoAtual, 
-                    totalQtdVendas: total12MQtd, 
-                    mediaMesQtd, 
-                    mediaMesFat 
-                });
+                branchBaseStats.push({ filialId, filialNome, saldoAtual, totalQtdVendas, mediaMesQtd, mediaMesFat });
             });
 
             // SE ESTIVER EM MODO DILUIÇÃO GERAL, CALCULA ALOCAÇÃO PROPORCIONAL POR MULTIPLICADOR DE LOTES
             let dilutionAllocations = {};
             if (simMode === 'dilution') {
-                const checkedBranchesList = branchBaseStats.filter(b => tempDilutionSelectedBranches[b.filialId] !== false);
-                dilutionAllocations = calculateBalancedDilution(qtyToRequest, checkedBranchesList, dilutionMethod, simMultiplier);
+                dilutionAllocations = calculateBalancedDilution(qtyToRequest, branchBaseStats, dilutionMethod, simMultiplier);
             }
 
             // ATUALIZAR CABEÇALHOS DA TABELA DE ACORDO COM O MODO
@@ -2916,7 +2396,7 @@
                         <th class="py-3 px-3 text-right">Saldo Atual</th>
                         <th class="py-3 px-3 text-right bg-emerald-50 dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 font-black">Qtd. Alocada (+ q)</th>
                         <th class="py-3 px-3 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Saldo Pós-Entrada</th>
-                        <th class="py-3 px-3 text-right">Saídas (12M)</th>
+                        <th class="py-3 px-3 text-right">Saídas (7M)</th>
                         <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
                         <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
                     `;
@@ -2929,7 +2409,7 @@
                         <th class="py-3 px-3 text-center">Cobertura (Mês)</th>
                         <th class="py-3 px-3 text-right">Saldo Atual</th>
                         <th class="py-3 px-3 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Saldo Pós-Envio</th>
-                        <th class="py-3 px-3 text-right">Saídas (12M)</th>
+                        <th class="py-3 px-3 text-right">Saídas (7M)</th>
                         <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
                         <th class="py-3 px-3 text-right">Fat. Médio/Mês</th>
                         <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
@@ -3004,8 +2484,6 @@
                 });
             });
 
-            currentSimulatedStats = simulatedBranches;
-
             if (totalPosEl) totalPosEl.innerText = `${grandTotalSaldoPos.toLocaleString('pt-BR')} ${activeUnit}`;
 
             tbodySim.innerHTML = "";
@@ -3022,14 +2500,9 @@
                         ? `<span class="ml-1 text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 px-1.5 py-0.5 rounded-full font-black border border-emerald-300">(${palletCount} ${palletCount === 1 ? 'Palete' : 'Paletes'})</span>`
                         : '';
 
-                    const isChecked = tempDilutionSelectedBranches[b.filialId] !== false;
-                    const checkedAttr = isChecked ? "checked" : "";
-                    const checkboxHtml = `<input type="checkbox" ${checkedAttr} onchange="toggleDilutionBranch(event, ${b.filialId}, this.checked)" class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer mr-2">`;
-
                     tr.innerHTML = `
-                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-                            ${checkboxHtml}
-                            <span>${b.filialNome}</span>
+                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            ${b.filialNome}
                             ${b.allocatedQty > 0 ? `<span class="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">+ ${b.allocatedQty.toLocaleString('pt-BR')} ${activeUnit}</span>` : ''}
                         </td>
                         <td class="py-3 px-3 text-center font-black text-slate-500">${b.curveABC}</td>
@@ -3388,19 +2861,14 @@
             if (tbodySearch) {
                 tbodySearch.innerHTML = "";
                 if (filteredSaldos.length === 0) {
-                    tbodySearch.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 font-bold">Nenhum saldo físico localizado. Clique em Sincronizar Supabase.</td></tr>`;
+                    tbodySearch.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 font-bold">Nenhum saldo físico localizado. Clique em Sincronizar Supabase.</td></tr>`;
                 } else {
                     filteredSaldos.sort((a, b) => a.Produto.localeCompare(b.Produto, undefined, { numeric: true })).slice(0, 50).forEach(s => {
                         const tr = document.createElement("tr");
                         tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
-                        
-                        const suppliers = window.fornecedoresMap[s.Produto] || [];
-                        const supplierHtml = suppliers.map(sup => `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 mr-1">${sup}</span>`).join('') || '<span class="text-slate-400 font-normal italic">Sem fornecedor</span>';
-                        
                         tr.innerHTML = `
                             <td class="py-3 px-4 font-black text-slate-900 dark:text-slate-100">${s.Produto}</td>
                             <td class="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">${s.Descricao}</td>
-                            <td class="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">${supplierHtml}</td>
                             <td class="py-3 px-4 text-slate-500">${s.Grupo}</td>
                             <td class="py-3 px-4 text-blue-600 dark:text-blue-400 font-black">${getFilialName(s.Filial)}</td>
                             <td class="py-3 px-4 text-slate-400">Armazém ${s.Armazem}</td>
@@ -3422,278 +2890,8 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        function toggleDilutionBranch(event, filialId, checked) {
-            if (event) {
-                event.stopPropagation();
-            }
-            tempDilutionSelectedBranches[filialId] = !!checked;
-            recalculateSimulation();
-        }
-
-        function initCart() {
-            const savedCart = localStorage.getItem(`sd2_request_cart_${currentSd2Sector}`);
-            if (savedCart) {
-                try {
-                    requestCart = JSON.parse(savedCart);
-                } catch (e) {
-                    console.error("Erro ao carregar carrinho:", e);
-                    requestCart = [];
-                }
-            } else {
-                requestCart = [];
-            }
-            renderCartTable();
-        }
-
-        function saveCart() {
-            localStorage.setItem(`sd2_request_cart_${currentSd2Sector}`, JSON.stringify(requestCart));
-            renderCartTable();
-        }
-
-        function addToCart() {
-            if (!globalSelectedProductCodes || globalSelectedProductCodes.length === 0) {
-                showAlert("Nenhum produto selecionado para adicionar!", "warning");
-                return;
-            }
-            
-            const qtyInput = document.getElementById("sim-qty");
-            const qtyToRequest = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
-            if (qtyToRequest <= 0) {
-                showAlert("A quantidade a solicitar deve ser maior que zero!", "warning");
-                return;
-            }
-
-            const sampleCode = globalSelectedProductCodes[0];
-            const pInfo = rawDicionario.find(d => d.Codigo === sampleCode) || rawSaldos.find(s => s.Produto === sampleCode) || rawVendas.find(v => v.Produto === sampleCode);
-            const desc = pInfo ? (pInfo.Descricao || 'Sem Descrição') : 'Sem Descrição';
-            const unit = pInfo ? (pInfo.Unidade || 'PC') : 'PC';
-
-            if (!currentSimulatedStats || currentSimulatedStats.length === 0) {
-                showAlert("Nenhuma simulação ativa para adicionar!", "warning");
-                return;
-            }
-
-            const allocations = {};
-            let sumAllocated = 0;
-            
-            currentSimulatedStats.forEach(b => {
-                allocations[b.filialId] = b.allocatedQty || 0;
-                sumAllocated += b.allocatedQty || 0;
-            });
-
-            if (sumAllocated <= 0) {
-                showAlert("Nenhuma quantidade foi alocada para as filiais!", "warning");
-                return;
-            }
-
-            const existingIdx = requestCart.findIndex(item => item.codigo === sampleCode);
-            const cartItem = {
-                codigo: sampleCode,
-                descricao: desc,
-                unidade: unit,
-                totalQty: sumAllocated,
-                allocations: allocations
-            };
-
-            if (existingIdx > -1) {
-                requestCart[existingIdx] = cartItem;
-                showAlert(`Produto ${sampleCode} atualizado na lista de solicitações!`, "info");
-            } else {
-                requestCart.push(cartItem);
-                showAlert(`Produto ${sampleCode} adicionado à lista de solicitações!`, "success");
-            }
-
-            saveCart();
-        }
-
-        function renderCartTable() {
-            const headEl = document.getElementById("cartTableHeader");
-            const bodyEl = document.getElementById("cartTableBody");
-            if (!bodyEl) return;
-
-            if (requestCart.length === 0) {
-                const numBranches = activeBranches.length || 6;
-                const colspan = numBranches + 5;
-                bodyEl.innerHTML = `<tr><td colspan="${colspan}" class="py-6 text-center text-slate-400 font-bold">Nenhum produto adicionado à lista.</td></tr>`;
-                
-                if (headEl) {
-                    headEl.innerHTML = `
-                        <th class="py-3 px-4">Código</th>
-                        <th class="py-3 px-3">Descrição</th>
-                        <th class="py-3 px-3 text-center">UM</th>
-                        <th class="py-3 px-3 text-right">Qtd Total</th>
-                        <th class="py-3 px-4 text-center">Ações</th>
-                    `;
-                }
-                return;
-            }
-
-            if (headEl) {
-                let filialHeaders = "";
-                activeBranches.forEach(id => {
-                    const formatted = String(id).padStart(2, '0');
-                    filialHeaders += `<th class="py-3 px-3 text-right bg-slate-50/50 dark:bg-slate-700/30 text-[10px] font-black">${formatted}</th>`;
-                });
-
-                headEl.innerHTML = `
-                    <th class="py-3 px-4">Código</th>
-                    <th class="py-3 px-3">Descrição</th>
-                    <th class="py-3 px-3 text-center">UM</th>
-                    <th class="py-3 px-3 text-right">Qtd Total</th>
-                    ${filialHeaders}
-                    <th class="py-3 px-4 text-center">Ações</th>
-                `;
-            }
-
-            bodyEl.innerHTML = "";
-            requestCart.forEach((item, index) => {
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
-
-                let filialCells = "";
-                activeBranches.forEach(id => {
-                    const qty = item.allocations[id] || 0;
-                    filialCells += `<td class="py-3 px-3 text-right ${qty > 0 ? 'text-emerald-600 font-black' : 'text-slate-400'}">${qty > 0 ? qty.toLocaleString('pt-BR') : '-'}</td>`;
-                });
-
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-black text-blue-600 dark:text-blue-400 select-all">${item.codigo}</td>
-                    <td class="py-3 px-3 font-semibold text-slate-800 dark:text-slate-100 max-w-xs truncate" title="${item.descricao}">${item.descricao}</td>
-                    <td class="py-3 px-3 text-center text-slate-500">${item.unidade}</td>
-                    <td class="py-3 px-3 text-right font-black text-slate-900 dark:text-white">${item.totalQty.toLocaleString('pt-BR')}</td>
-                    ${filialCells}
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="removeFromCart(${index})" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer" title="Remover item da lista">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </td>
-                `;
-                bodyEl.appendChild(tr);
-            });
-
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        function removeFromCart(index) {
-            requestCart.splice(index, 1);
-            showAlert("Produto removido da lista.", "info");
-            saveCart();
-        }
-
-        function clearCart() {
-            if (confirm("Deseja realmente limpar toda a lista acumulada?")) {
-                requestCart = [];
-                showAlert("Lista limpa com sucesso.", "info");
-                saveCart();
-            }
-        }
-
-        function exportCartToExcel() {
-            if (!requestCart || requestCart.length === 0) {
-                showAlert("A lista de solicitações está vazia!", "warning");
-                return;
-            }
-            
-            const dataToExport = requestCart.map(item => {
-                const row = {
-                    "Código": item.codigo,
-                    "Descrição": item.descricao,
-                    "UM": item.unidade,
-                    "Total Geral": item.totalQty
-                };
-                activeBranches.forEach(id => {
-                    const name = getFilialName(id);
-                    row[name] = item.allocations[id] || 0;
-                });
-                return row;
-            });
-
-            try {
-                const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Solicitações");
-                
-                const dateStr = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-                const sectorLabel = currentSd2Sector === 'INDUSTRIA' ? 'Industria' : 'Comercio';
-                const fileName = `Solicitacao_Distribuida_${sectorLabel}_${dateStr}.xlsx`;
-                
-                XLSX.writeFile(workbook, fileName);
-                showAlert("Planilha exportada com sucesso!", "success");
-            } catch (e) {
-                console.error("Erro ao exportar Excel:", e);
-                showAlert("Erro ao exportar planilha Excel.", "error");
-            }
-        }
-
-        window.fornecedoresMap = {};
-
-        function buildSupplierFilters() {
-            const container = document.getElementById("supplier-checkboxes-container");
-            if (!container) return;
-            container.innerHTML = "";
-
-            const uniqueSuppliers = new Set();
-            Object.values(window.fornecedoresMap).forEach(list => {
-                list.forEach(s => uniqueSuppliers.add(s));
-            });
-
-            activeSuppliers = Array.from(uniqueSuppliers).sort();
-            selectedSuppliers = [...activeSuppliers];
-
-            activeSuppliers.forEach(s => {
-                const div = document.createElement("div");
-                div.className = "flex items-center space-x-2";
-                div.innerHTML = `
-                    <input type="checkbox" value="${s}" checked onchange="toggleSupplierFilter('${s}', this.checked)" class="supplier-checkbox w-4 h-4 text-emerald-600 rounded border-slate-300 dark:border-slate-600 focus:ring-emerald-500 cursor-pointer">
-                    <span class="text-slate-700 dark:text-slate-300 font-bold truncate">${s}</span>
-                `;
-                container.appendChild(div);
-            });
-
-            updateSupplierBadge();
-        }
-
-        function toggleSupplierFilter(supplier, checked) {
-            if (checked) {
-                if (!selectedSuppliers.includes(supplier)) selectedSuppliers.push(supplier);
-            } else {
-                selectedSuppliers = selectedSuppliers.filter(s => s !== supplier);
-            }
-            updateSupplierBadge();
-            applyFilters();
-            recalculateSimulation();
-        }
-
-        function selectSuppliersFilter(select) {
-            const checkboxes = document.querySelectorAll('#supplier-checkboxes-container input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = select);
-            selectedSuppliers = select ? [...activeSuppliers] : [];
-            updateSupplierBadge();
-            applyFilters();
-            recalculateSimulation();
-        }
-
-        function updateSupplierBadge() {
-            const badge = document.getElementById("supplier-count-badge");
-            const textEl = document.getElementById("supplier-selected-text");
-            if (badge && textEl) {
-                const total = activeSuppliers.length;
-                const selCount = selectedSuppliers.length;
-                if (selCount === total && total > 0) {
-                    badge.innerText = "Todos";
-                    textEl.innerText = "Todos os fornecedores";
-                } else if (selCount === 0) {
-                    badge.innerText = "Nenhum";
-                    textEl.innerText = "Nenhum fornecedor selecionado";
-                } else {
-                    badge.innerText = `${selCount}/${total}`;
-                    textEl.innerText = `${selCount} fornecedor(es) selecionado(s)`;
-                }
-            }
-        }
-
         // Execução ao Carregar
-        window.onload = async function() {
+        window.onload = function() {
             initSupabase();
             const savedSec = localStorage.getItem('sd2_active_sector');
             if (savedSec && (savedSec === 'COMERCIO' || savedSec === 'INDUSTRIA')) {
