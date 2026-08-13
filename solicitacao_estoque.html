@@ -145,21 +145,7 @@
             <!-- Logo Amazon Aço & Título -->
             <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
                 <div class="flex items-center space-x-3">
-                    <img id="amazonLogo" 
-                         src="https://www.amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" 
-                         alt="Amazon Aço" 
-                         class="h-10 w-auto object-contain dark:brightness-100 transition-all"
-                         onerror="this.style.display='none'; document.getElementById('logoFallback').classList.remove('hidden');" />
-                    
-                    <div id="logoFallback" class="hidden flex items-center space-x-2">
-                        <div class="p-2 bg-[#9c0e25] rounded-lg text-white">
-                            <i data-lucide="shield" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-base font-black tracking-wider text-slate-900 dark:text-white leading-none">AMAZON AÇO</h1>
-                            <p class="text-[9px] tracking-widest text-[#9c0e25] dark:text-red-400 font-bold uppercase mt-0.5">Almoxarifado Alvorada</p>
-                        </div>
-                    </div>
+                    <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" fetchpriority="high" loading="eager" class="h-10 w-auto flex-shrink-0 object-contain drop-shadow-sm">
 
                     <div class="hidden sm:block border-l border-slate-200 dark:border-slate-800 pl-3">
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -259,7 +245,7 @@
 
         <!-- BARRA DE FILTROS GLOBAIS EM LINHA -->
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4 no-print">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                 
                 <!-- 1. Filtro de Filiais (Conectado com public.filiais) -->
                 <div class="space-y-1.5 relative">
@@ -336,32 +322,34 @@
                         <div id="tes-checkboxes-container" class="space-y-1.5"></div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 5. Filtro Global de Produto & Botão Limpar -->
-                <div class="space-y-1.5 relative">
-                    <div class="flex items-center justify-between">
-                        <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                            <i data-lucide="barcode" class="w-3.5 h-3.5 text-blue-600"></i> Busca Mestre SB1
-                        </label>
-                        <span id="global-um-badge" class="text-[9px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded font-black uppercase">Todos</span>
-                    </div>
-                    <div class="relative flex items-center gap-2">
-                        <div class="relative flex-1">
-                            <input type="text" id="global-product-code" placeholder="Digite código ou descrição..."
-                                   class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl pl-8 pr-7 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none focus:border-blue-600 transition"
-                                   oninput="handleGlobalProductInput(this.value)"
-                                   onkeydown="handleGlobalProductKeyDown(event)">
-                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400"></i>
-                            <button id="btn-clear-global-product" onclick="clearGlobalProduct()" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
-                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                            </button>
-                        </div>
-                        <button onclick="clearFilters()" title="Limpar todos os filtros" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-2xl border border-slate-200 dark:border-slate-600 transition cursor-pointer">
-                            <i data-lucide="filter-x" class="w-4 h-4"></i>
+            <!-- LINHA EXCLUSIVA LARGURA TOTAL: BUSCA MESTRE SB1 -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60 space-y-2 relative">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <i data-lucide="barcode" class="w-4 h-4 text-blue-600"></i>
+                        <span>Busca Mestre SB1 (Código / Descrição do Produto)</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <span id="global-um-badge" class="text-[10px] bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-md font-black uppercase border border-blue-200 dark:border-slate-600">Todos</span>
+                        <button onclick="clearFilters()" title="Limpar todos os filtros" class="py-1 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-600 transition text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                            <i data-lucide="filter-x" class="w-3.5 h-3.5 text-rose-500"></i>
+                            <span>Limpar Filtros</span>
                         </button>
                     </div>
-                    <div id="global-autocomplete-list" class="hidden absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 font-medium text-xs"></div>
                 </div>
+                <div class="relative flex items-center">
+                    <input type="text" id="global-product-code" placeholder="Digite o código ou a descrição do material para filtrar (ex: PARAF AUTO BROCANTE)..."
+                           class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 font-bold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 transition shadow-inner"
+                           oninput="handleGlobalProductInput(this.value)"
+                           onkeydown="handleGlobalProductKeyDown(event)">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 text-slate-400"></i>
+                    <button id="btn-clear-global-product" onclick="clearGlobalProduct()" class="hidden absolute right-3 text-slate-400 hover:text-slate-600 p-1">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div id="global-autocomplete-list" class="hidden absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 font-medium text-xs"></div>
             </div>
 
             <!-- Banner de Material Ativo com Indicador de Consolidação -->
