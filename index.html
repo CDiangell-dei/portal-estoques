@@ -11149,6 +11149,73 @@ function renderArmazemChart() {
 
         let sd2ProgressTotalCount = 0;
 
+        function buildSupabaseServerFilters() {
+            let vendasFilterParts = [];
+            let saldosFilterParts = [];
+            let sb1FilterParts = [];
+
+            // Filtro de Filiais
+            if (typeof selectedBranches !== 'undefined' && Array.isArray(selectedBranches) && selectedBranches.length > 0 && typeof activeBranches !== 'undefined' && selectedBranches.length < activeBranches.length) {
+                const branchList = [];
+                selectedBranches.forEach(b => {
+                    branchList.push(String(b));
+                    branchList.push(String(b).padStart(2, '0'));
+                });
+                const branchStr = [...new Set(branchList)].join(',');
+                if (branchStr) {
+                    vendasFilterParts.push(`filial=in.(${branchStr})`);
+                    saldosFilterParts.push(`filial=in.(${branchStr})`);
+                }
+            }
+
+            // Filtro de Armazéns Vendas
+            if (typeof selectedVendasWarehouses !== 'undefined' && Array.isArray(selectedVendasWarehouses) && selectedVendasWarehouses.length > 0 && typeof activeVendasWarehouses !== 'undefined' && selectedVendasWarehouses.length < activeVendasWarehouses.length) {
+                const whList = [];
+                selectedVendasWarehouses.forEach(w => {
+                    whList.push(String(w));
+                    whList.push(String(w).padStart(2, '0'));
+                });
+                const whStr = [...new Set(whList)].join(',');
+                if (whStr) vendasFilterParts.push(`armazem=in.(${whStr})`);
+            }
+
+            // Filtro de Armazéns Saldos
+            if (typeof selectedSaldosWarehouses !== 'undefined' && Array.isArray(selectedSaldosWarehouses) && selectedSaldosWarehouses.length > 0 && typeof activeSaldosWarehouses !== 'undefined' && selectedSaldosWarehouses.length < activeSaldosWarehouses.length) {
+                const whList = [];
+                selectedSaldosWarehouses.forEach(w => {
+                    whList.push(String(w));
+                    whList.push(String(w).padStart(2, '0'));
+                });
+                const whStr = [...new Set(whList)].join(',');
+                if (whStr) saldosFilterParts.push(`armazem=in.(${whStr})`);
+            }
+
+            // Filtro de TES
+            if (typeof selectedTES !== 'undefined' && Array.isArray(selectedTES) && selectedTES.length > 0 && typeof activeTES !== 'undefined' && selectedTES.length < activeTES.length) {
+                const tesStr = selectedTES.map(t => String(t).trim()).filter(Boolean).join(',');
+                if (tesStr) vendasFilterParts.push(`tipo_saida=in.(${tesStr})`);
+            }
+
+            // Filtro de Produto / Busca Global
+            if (typeof globalSelectedProductCode !== 'undefined' && globalSelectedProductCode) {
+                const cod = String(globalSelectedProductCode).trim();
+                vendasFilterParts.push(`produto=eq.${encodeURIComponent(cod)}`);
+                saldosFilterParts.push(`produto=eq.${encodeURIComponent(cod)}`);
+                sb1FilterParts.push(`codigo=eq.${encodeURIComponent(cod)}`);
+            } else if (typeof globalSelectedSearchTerm !== 'undefined' && globalSelectedSearchTerm) {
+                const term = String(globalSelectedSearchTerm).trim().toLowerCase();
+                vendasFilterParts.push(`produto=ilike.*${encodeURIComponent(term)}*`);
+                saldosFilterParts.push(`produto=ilike.*${encodeURIComponent(term)}*`);
+                sb1FilterParts.push(`or=(codigo.ilike.*${encodeURIComponent(term)}*,descricao.ilike.*${encodeURIComponent(term)}*)`);
+            }
+
+            return {
+                vendas: vendasFilterParts.join('&'),
+                saldos: saldosFilterParts.join('&'),
+                sb1: sb1FilterParts.join('&')
+            };
+        }
+
         async function fetchSupabaseRestFast(endpoint, selectQuery, maxExpectedRows = 70000, extraFilter = '', onProgress = null) {
             const baseUrl = (typeof DEFAULT_SUPABASE_URL !== 'undefined' ? DEFAULT_SUPABASE_URL : 'https://wpwerdaiqyfhfhhioosp.supabase.co') + '/rest/v1/' + endpoint;
             const apiKey = typeof DEFAULT_SUPABASE_KEY !== 'undefined' ? DEFAULT_SUPABASE_KEY : 'sb_publishable_BGgecij1uLNAr-2XWMTPCA_y8_lT9Go';
@@ -11157,54 +11224,36 @@ function renderArmazemChart() {
                 'authorization': 'Bearer ' + apiKey
             };
 
-            const pageSize = 1000;
-            const concurrency = 5;
+            const pageSize = 2000;
             let allRows = [];
             let currentOffset = 0;
             let keepFetching = true;
 
             while (keepFetching && currentOffset < maxExpectedRows) {
-                const batchPromises = [];
-                for (let c = 0; c < concurrency; c++) {
-                    const offset = currentOffset + (c * pageSize);
-                    if (offset >= maxExpectedRows) break;
+                let queryUrl = `${baseUrl}?select=${selectQuery}&limit=${pageSize}&offset=${currentOffset}`;
+                if (extraFilter) queryUrl += '&' + extraFilter;
 
-                    let queryUrl = `${baseUrl}?select=${selectQuery}&limit=${pageSize}&offset=${offset}`;
-                    if (extraFilter) queryUrl += '&' + extraFilter;
+                try {
+                    const response = await fetch(queryUrl, { headers });
+                    if (!response.ok) break;
+                    const rows = await response.json();
 
-                    batchPromises.push(
-                        fetch(queryUrl, { headers })
-                        .then(r => r.ok ? r.json() : [])
-                        .catch(err => {
-                            console.warn(`Erro no fetch REST (${endpoint}):`, err);
-                            return [];
-                        })
-                    );
-                }
-
-                const batchResults = await Promise.all(batchPromises);
-                let reachedEnd = false;
-
-                for (const rows of batchResults) {
                     if (Array.isArray(rows) && rows.length > 0) {
                         allRows = allRows.concat(rows);
                         sd2ProgressTotalCount += rows.length;
                         if (onProgress) onProgress(sd2ProgressTotalCount);
 
                         if (rows.length < pageSize) {
-                            reachedEnd = true;
-                            break;
+                            keepFetching = false;
+                        } else {
+                            currentOffset += pageSize;
                         }
                     } else {
-                        reachedEnd = true;
-                        break;
+                        keepFetching = false;
                     }
-                }
-
-                if (reachedEnd) {
-                    keepFetching = false;
-                } else {
-                    currentOffset += concurrency * pageSize;
+                } catch (err) {
+                    console.warn(`Erro no fetch REST (${endpoint}):`, err);
+                    break;
                 }
             }
 
@@ -11225,7 +11274,7 @@ function renderArmazemChart() {
             if (overlay) overlay.classList.remove("hidden");
             if (timerEl) timerEl.innerText = "0.0s";
             if (countEl) countEl.innerText = "0 itens";
-            if (stepEl) stepEl.innerText = "Conectando ao Supabase...";
+            if (stepEl) stepEl.innerText = "Conectando ao Supabase com Server-Side Filtering...";
             if (pctEl) pctEl.innerText = "0%";
             if (barEl) barEl.style.width = "0%";
 
@@ -11246,26 +11295,35 @@ function renderArmazemChart() {
             try {
                 if (typeof initSupabase === "function" && !supabaseClient) initSupabase();
 
+                const sb1Table = currentSd2Sector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
+                const saldoTable = currentSd2Sector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
+                const sd2Table = currentSd2Sector === 'INDUSTRIA' ? 'sd2_industria' : 'sd2_comercio';
+
                 const sevenMonthsAgo = new Date();
                 sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-                const dateFilterStr = sevenMonthsAgo.toISOString().split('T')[0];
+                const dateFilterStr = 'emissao=gte.' + sevenMonthsAgo.toISOString().split('T')[0];
+
+                const serverFilters = buildSupabaseServerFilters();
+                const vendasExtraFilter = dateFilterStr + (serverFilters.vendas ? '&' + serverFilters.vendas : '');
+                const saldosExtraFilter = serverFilters.saldos;
+                const sb1ExtraFilter = serverFilters.sb1;
 
                 updateUIProgress(10, "Baixando filiais e dicionário de produtos...");
-                const dbFiliais = await fetchSupabaseRestFast('filiais', '*', 10, '', () => updateUIProgress(15, "Carregando filiais..."));
-                const dbSb1 = await fetchSupabaseRestFast('sb1_comercio', 'codigo,descricao,unidade,tags', 15000, '', () => {
-                    const pct = 15 + Math.min(25, (sd2ProgressTotalCount / 15000) * 25);
+                const dbFiliais = await fetchSupabaseRestFast('filiais', '*', 50, '', () => updateUIProgress(15, "Carregando filiais..."));
+                const dbSb1 = await fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags', 20000, sb1ExtraFilter, () => {
+                    const pct = 15 + Math.min(25, (sd2ProgressTotalCount / 5000) * 25);
                     updateUIProgress(pct, "Baixando dicionário de produtos...");
                 });
 
                 updateUIProgress(40, "Baixando saldos dos armazéns...");
-                const dbSaldos = await fetchSupabaseRestFast('saldo_comercio', 'produto,filial,armazem,quantidade', 6000, '', () => {
-                    const pct = 40 + Math.min(15, (sd2ProgressTotalCount / 20000) * 15);
+                const dbSaldos = await fetchSupabaseRestFast(saldoTable, 'produto,filial,armazem,quantidade', 20000, saldosExtraFilter, () => {
+                    const pct = 40 + Math.min(15, (sd2ProgressTotalCount / 10000) * 15);
                     updateUIProgress(pct, "Baixando saldos dos armazéns...");
                 });
 
-                updateUIProgress(55, "Baixando saídas do SD2 (vendas últimos 7 meses)...");
-                const dbSd2 = await fetchSupabaseRestFast('sd2_comercio', 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr, () => {
-                    const pct = 55 + Math.min(40, (sd2ProgressTotalCount / 85000) * 40);
+                updateUIProgress(55, "Baixando saídas do SD2 (vendas com filtros do servidor)...");
+                const dbSd2 = await fetchSupabaseRestFast(sd2Table, 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, vendasExtraFilter, () => {
+                    const pct = 55 + Math.min(40, (sd2ProgressTotalCount / 30000) * 40);
                     updateUIProgress(pct, "Baixando saídas do SD2...");
                 });
 
@@ -11281,7 +11339,7 @@ function renderArmazemChart() {
                     });
                 }
 
-                // 2. Processa sb1_comercio (Dicionário)
+                // 2. Processa dicionário de produtos
                 const descMap = {};
                 const umMap = {};
                 const tagMap = {};
@@ -11296,7 +11354,7 @@ function renderArmazemChart() {
                     return { Codigo: cod, Descricao: desc, Unidade: um, Grupo: item.tags || 'Geral' };
                 });
 
-                // 3. Processa saldo_comercio
+                // 3. Processa saldos dos armazéns
                 rawSaldos = dbSaldos.map(s => {
                     const cod = normalizeProductCode(s.produto);
                     return {
@@ -11310,7 +11368,7 @@ function renderArmazemChart() {
                     };
                 }).filter(s => s.Produto);
 
-                // 4. Processa sd2_comercio
+                // 4. Processa saídas do SD2
                 rawVendas = dbSd2.map(v => {
                     const cod = normalizeProductCode(v.produto);
                     return {
