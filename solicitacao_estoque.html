@@ -802,13 +802,21 @@
         const DEFAULT_SUPABASE_URL = 'https://wpwerdaiqyfhfhhioosp.supabase.co';
         const DEFAULT_SUPABASE_KEY = 'sb_publishable_BGgecij1uLNAr-2XWMTPCA_y8_lT9Go';
 
-        // --- HIGIENIZAÇÃO DE DESCRIÇÃO (REMOVE SUFIXOS COMO (IMP), (IMP.), IMP) ---
+        // --- HIGIENIZAÇÃO DE DESCRIÇÃO (REMOVE SUFIXOS COMO (IMP), CX 25, CX 24, PCT 10, C/ 25, ETC) ---
         function cleanProductDescription(desc) {
             if (!desc) return '';
             let s = String(desc).trim();
+
+            // 1. Remove marcas de importação (IMP), - IMP, IMP.
             s = s.replace(/\s*\(\s*IMP\.?\s*\)/gi, '');
             s = s.replace(/\s+-\s*IMP\.?/gi, '');
             s = s.replace(/\bIMP\.?\b/gi, '');
+
+            // 2. Remove indicação de embalagem, caixas e pacotes (CX 25, CX24, PCT 10, C/ 25, C/24, BOX 24, FD 10 etc)
+            s = s.replace(/\b(CX|CX\.|PCT|PCT\.|C\/|BOX|FD|ROLO|SACO|EMB|CART|PT)\s*[\.\-]?\s*\d+\b/gi, '');
+            s = s.replace(/\s+C\/\s*\d+\b/gi, '');
+
+            // 3. Normaliza espaços em branco
             s = s.replace(/\s+/g, ' ').trim();
             return s;
         }
