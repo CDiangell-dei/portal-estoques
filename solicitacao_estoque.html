@@ -1,0 +1,2900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vendas, Cobertura & Remanejamento (SD2) - Amazon Aço</title>
+    
+    <!-- Inicialização de Tema (PADRÃO: MODO CLARO) -->
+    <script>
+        if (localStorage.theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        amazonBlue: {
+                            50: '#f0f6fc', 100: '#e1edf8', 200: '#cbdcf2', 300: '#9cbce5',
+                            400: '#6495d4', 500: '#00529b', 600: '#003f7a', 700: '#002e5c',
+                            800: '#001e3d', 900: '#001024',
+                        },
+                        amazonRed: {
+                            50: '#fef2f2', 100: '#fee2e2', 200: '#fecaca',
+                            500: '#d91a21', 600: '#b71218', 700: '#940a0e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- ApexCharts para gráficos interativos -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- SheetJS (xlsx) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        :root {
+            --amazon-navy: #002f6c;
+            --amazon-red: #9c0e25;
+            --amazon-red-hover: #800b1d;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .dark ::-webkit-scrollbar-track { background: #1e293b; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* Estilização Dark Mode */
+        .dark body { background-color: #0f172a !important; color: #f1f5f9 !important; }
+        .dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+        .dark .bg-slate-50 { background-color: #0f172a !important; }
+        .dark .bg-slate-100 { background-color: #334155 !important; border-color: #475569 !important; }
+        .dark .text-slate-900, .dark .text-slate-800 { color: #ffffff !important; }
+        .dark .text-slate-700, .dark .text-slate-600 { color: #f1f5f9 !important; }
+        .dark .text-slate-500, .dark .text-slate-400 { color: #cbd5e1 !important; }
+        .dark input, .dark select, .dark textarea { background-color: #334155 !important; color: #ffffff !important; border-color: #475569 !important; }
+        .dark table th { background-color: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+        .dark table tr:hover { background-color: #334155/60 !important; }
+
+        /* Impressão */
+        @media print {
+            body { background-color: #ffffff !important; color: #000000 !important; font-size: 11px; }
+            .no-print { display: none !important; }
+            .print-card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; background-color: #ffffff !important; color: #000000 !important; margin-bottom: 1.25rem !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-800 dark:bg-[#0f172a] dark:text-slate-100 transition-colors">
+
+    <!-- OVERLAY DE PROGRESSO DE SINCRONIZAÇÃO SUPABASE -->
+    <div id="sd2ProgressOverlay" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/70 backdrop-blur-md transition-all duration-300 no-print">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg mx-4 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-emerald-500 to-blue-600"></div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-slate-700 text-[#002f6c] dark:text-blue-400 flex items-center justify-center shadow-inner flex-shrink-0">
+                    <i data-lucide="database" class="w-6 h-6 animate-bounce"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white leading-tight">Carregando Cadastro Filiais, SB1 &amp; SD2</h3>
+                    <p id="sd2ProgressSubtext" class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Sincronizando public.filiais e dicionário mestre com o Supabase...</p>
+                </div>
+            </div>
+
+            <!-- Tempo Decorrido & Registros -->
+            <div class="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 text-xs">
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tempo Decorrido</span>
+                    <span id="sd2ProgressTimer" class="text-sm font-black text-[#002f6c] dark:text-blue-400">0.0s</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Registros Baixados</span>
+                    <span id="sd2ProgressRecordCount" class="text-sm font-black text-slate-800 dark:text-slate-200">0 itens</span>
+                </div>
+            </div>
+
+            <!-- Barra de Progresso -->
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-black">
+                    <span id="sd2ProgressStepText" class="text-slate-600 dark:text-slate-300">Conectando ao banco...</span>
+                    <span id="sd2ProgressPercent" class="text-blue-600 dark:text-blue-400">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-3 rounded-full overflow-hidden p-0.5 shadow-inner">
+                    <div id="sd2ProgressBar" class="bg-gradient-to-r from-blue-600 to-emerald-500 h-full w-0 rounded-full transition-all duration-200"></div>
+                </div>
+            </div>
+
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 text-center font-bold">
+                ⚡ Sincronização direta com a tabela public.filiais do Supabase Cloud API
+            </p>
+        </div>
+    </div>
+
+    <!-- TOP HEADER DO PORTAL -->
+    <header class="bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 no-print transition-all shadow-sm">
+        <div class="w-full lg:max-w-[95%] mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- Logo Amazon Aço & Título -->
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center space-x-3">
+                    <img id="amazonLogo" 
+                         src="https://www.amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" 
+                         alt="Amazon Aço" 
+                         class="h-10 w-auto object-contain dark:brightness-100 transition-all"
+                         onerror="this.style.display='none'; document.getElementById('logoFallback').classList.remove('hidden');" />
+                    
+                    <div id="logoFallback" class="hidden flex items-center space-x-2">
+                        <div class="p-2 bg-[#9c0e25] rounded-lg text-white">
+                            <i data-lucide="shield" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-base font-black tracking-wider text-slate-900 dark:text-white leading-none">AMAZON AÇO</h1>
+                            <p class="text-[9px] tracking-widest text-[#9c0e25] dark:text-red-400 font-bold uppercase mt-0.5">Almoxarifado Alvorada</p>
+                        </div>
+                    </div>
+
+                    <div class="hidden sm:block border-l border-slate-200 dark:border-slate-800 pl-3">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <span>Portal de Controle de Estoques</span>
+                            <span class="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-[9px] px-2 py-0.5 rounded-full font-black border border-blue-200 dark:border-blue-800">V3.7 Diluição Geral</span>
+                        </p>
+                        <h1 class="text-sm font-black text-slate-900 dark:text-white leading-tight">Vendas, Cobertura &amp; Remanejamento (SD2)</h1>
+                    </div>
+                </div>
+
+                <!-- Status de Conexão Supabase -->
+                <div id="dbStatusBadge" class="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2.5 py-1 rounded-full text-xs font-bold text-slate-600 dark:text-slate-300">
+                    <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm"></span>
+                    <span id="statusText" class="text-[11px]">Supabase Conectado</span>
+                </div>
+            </div>
+
+            <!-- Botões de Ação e Controles -->
+            <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+                
+                <!-- Seletor de Setor (Comércio / Indústria) -->
+                <div class="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner">
+                    <button id="sd2SectorComercioBtn" onclick="switchSd2Sector('COMERCIO')" class="px-3.5 py-1 text-xs font-bold rounded-lg bg-[#002f6c] text-white shadow-sm transition-all flex items-center gap-1.5">
+                        <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> Comércio
+                    </button>
+                    <button id="sd2SectorIndustriaBtn" onclick="switchSd2Sector('INDUSTRIA')" class="px-3.5 py-1 text-xs font-bold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center gap-1.5">
+                        <i data-lucide="factory" class="w-3.5 h-3.5"></i> Indústria
+                    </button>
+                </div>
+
+                <!-- Botão Voltar ao Portal Principal -->
+                <a href="index.html" class="flex items-center space-x-1.5 bg-[#002f6c] hover:bg-[#001e3d] text-white px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-sm active:scale-95 cursor-pointer">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Voltar ao Portal Principal</span>
+                </a>
+
+                <!-- Toggle Tema Claro/Escuro (Padrão Claro) -->
+                <button onclick="toggleTheme()" class="p-2 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 transition-all" title="Alternar Tema Claro/Escuro">
+                    <i id="themeIcon" data-lucide="sun" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Botão Sincronizar Supabase -->
+                <button id="btnSyncSupabase" onclick="triggerSync()" class="flex items-center space-x-1.5 bg-amazonRed-500 hover:bg-amazonRed-600 text-white px-4 py-2 rounded-xl text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer">
+                    <i data-lucide="rotate-cw" id="sd2-sync-icon" class="w-3.5 h-3.5"></i>
+                    <span>Sincronizar Supabase</span>
+                </button>
+
+                <!-- Botão Imprimir -->
+                <button onclick="window.print()" class="flex items-center space-x-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition-all">
+                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                    <span>Imprimir</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- FEEDBACK TOAST ALERT -->
+    <div id="toast-container" class="hidden fixed top-5 right-4 sm:right-6 z-[300] no-print">
+        <div class="bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3 text-xs font-bold">
+            <i data-lucide="info" class="w-4 h-4 text-blue-400 flex-shrink-0"></i>
+            <span id="toast-message">---</span>
+            <button onclick="document.getElementById('toast-container').classList.add('hidden')" class="p-1 hover:bg-slate-800 rounded">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL DO MÓDULO SD2 -->
+    <main class="flex-grow w-full lg:max-w-[95%] mx-auto px-4 py-6 space-y-6">
+
+        <!-- HEADER HERO BANNER AZUL DEGRADÊ DO MÓDULO 2 -->
+        <div class="bg-gradient-to-r from-[#002f6c] to-[#00529b] text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black uppercase tracking-wider">Módulo 2</span>
+                    <h2 class="text-xl font-black tracking-tight">Vendas, Cobertura &amp; Remanejamento (SD2)</h2>
+                </div>
+                <p id="sd2SectorSubtext" class="text-xs text-blue-100 max-w-3xl">
+                    Dados integrados com a tabela <code>public.filiais</code> do Supabase Cloud (inclui <strong>Boa Vista</strong> e demais filiais) e <strong>Diluição Geral de Compras entre Unidades</strong>.
+                </p>
+                <div class="flex flex-wrap items-center gap-3 pt-2 text-[11px] text-blue-200 font-bold">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Conexão Supabase Ativa</span>
+                    <span id="sd2SectorBadge" class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-300"></span> Setor: Comércio</span>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                <div class="bg-black/20 border border-white/10 rounded-2xl px-4 py-2 text-right">
+                    <span class="text-[9px] text-blue-200 font-bold uppercase tracking-wider block">Último Sync Supabase</span>
+                    <span id="sd2-last-sync-time" class="text-xs font-black text-white mt-0.5">Não sincronizado</span>
+                </div>
+                <button onclick="triggerSync()" class="py-2.5 px-5 bg-amazonRed-500 hover:bg-amazonRed-600 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                    <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+                    <span>Sincronizar Supabase</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- BARRA DE FILTROS GLOBAIS EM LINHA -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4 no-print">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                
+                <!-- 1. Filtro de Filiais (Conectado com public.filiais) -->
+                <div class="space-y-1.5 relative">
+                    <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-600"></i> Filiais (public.filiais)</span>
+                        <span id="branch-count-badge" class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-extrabold border border-blue-200">Todas</span>
+                    </label>
+                    <button onclick="toggleDropdown(event, 'branch')" id="branch-dropdown-btn" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none flex items-center justify-between cursor-pointer">
+                        <span class="truncate" id="branch-selected-text">Carregando filiais...</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+                    <div id="branch-dropdown-list" class="hidden absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-3 z-50 space-y-2 max-h-60 overflow-y-auto font-medium text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-1">
+                            <button onclick="selectBranches(true)" class="text-[10px] text-blue-600 hover:underline font-black uppercase">Todas</button>
+                            <button onclick="selectBranches(false)" class="text-[10px] text-slate-400 hover:underline font-black uppercase">Nenhuma</button>
+                        </div>
+                        <div id="branch-checkboxes-container" class="space-y-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- 2. Filtro Armazéns Estoque -->
+                <div class="space-y-1.5 relative">
+                    <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i data-lucide="warehouse" class="w-3.5 h-3.5 text-emerald-600"></i> Armazéns Estoque</span>
+                        <span id="saldos-warehouse-count-badge" class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-extrabold border border-emerald-200">Todos</span>
+                    </label>
+                    <button onclick="toggleWarehouseDropdown(event, 'saldos')" id="saldos-warehouse-dropdown-btn" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none flex items-center justify-between cursor-pointer">
+                        <span class="truncate" id="saldos-warehouse-selected-text">Todos os armazéns</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+                    <div id="saldos-warehouse-dropdown-list" class="hidden absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-3 z-50 space-y-2 max-h-60 overflow-y-auto font-medium text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-1">
+                            <button onclick="selectWarehouses('saldos', true)" class="text-[10px] text-emerald-600 hover:underline font-black uppercase">Todos</button>
+                            <button onclick="selectWarehouses('saldos', false)" class="text-[10px] text-slate-400 hover:underline font-black uppercase">Nenhum</button>
+                        </div>
+                        <div id="saldos-warehouse-checkboxes-container" class="space-y-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- 3. Filtro Armazéns Vendas -->
+                <div class="space-y-1.5 relative">
+                    <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i data-lucide="shopping-cart" class="w-3.5 h-3.5 text-indigo-600"></i> Armazéns Vendas</span>
+                        <span id="vendas-warehouse-count-badge" class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded font-extrabold border border-indigo-200">Todos</span>
+                    </label>
+                    <button onclick="toggleWarehouseDropdown(event, 'vendas')" id="vendas-warehouse-dropdown-btn" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none flex items-center justify-between cursor-pointer">
+                        <span class="truncate" id="vendas-warehouse-selected-text">Todos os armazéns</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+                    <div id="vendas-warehouse-dropdown-list" class="hidden absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-3 z-50 space-y-2 max-h-60 overflow-y-auto font-medium text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-1">
+                            <button onclick="selectWarehouses('vendas', true)" class="text-[10px] text-indigo-600 hover:underline font-black uppercase">Todos</button>
+                            <button onclick="selectWarehouses('vendas', false)" class="text-[10px] text-slate-400 hover:underline font-black uppercase">Nenhum</button>
+                        </div>
+                        <div id="vendas-warehouse-checkboxes-container" class="space-y-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- 4. Filtro TES (Tipos de Saída) -->
+                <div class="space-y-1.5 relative">
+                    <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i data-lucide="tag" class="w-3.5 h-3.5 text-purple-600"></i> TES / Tipo Saída</span>
+                        <span id="tes-count-badge" class="text-[10px] text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded font-extrabold border border-purple-200">Todas</span>
+                    </label>
+                    <button onclick="toggleDropdown(event, 'tes')" id="tes-dropdown-btn" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none flex items-center justify-between cursor-pointer">
+                        <span class="truncate" id="tes-selected-text">Todas as TES</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+                    <div id="tes-dropdown-list" class="hidden absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-3 z-50 space-y-2 max-h-60 overflow-y-auto font-medium text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-1">
+                            <button onclick="selectTES(true)" class="text-[10px] text-purple-600 hover:underline font-black uppercase">Todas</button>
+                            <button onclick="selectTES(false)" class="text-[10px] text-slate-400 hover:underline font-black uppercase">Nenhuma</button>
+                        </div>
+                        <div id="tes-checkboxes-container" class="space-y-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- 5. Filtro Global de Produto & Botão Limpar -->
+                <div class="space-y-1.5 relative">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="barcode" class="w-3.5 h-3.5 text-blue-600"></i> Busca Mestre SB1
+                        </label>
+                        <span id="global-um-badge" class="text-[9px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded font-black uppercase">Todos</span>
+                    </div>
+                    <div class="relative flex items-center gap-2">
+                        <div class="relative flex-1">
+                            <input type="text" id="global-product-code" placeholder="Digite código ou descrição..."
+                                   class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl pl-8 pr-7 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none focus:border-blue-600 transition"
+                                   oninput="handleGlobalProductInput(this.value)"
+                                   onkeydown="handleGlobalProductKeyDown(event)">
+                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400"></i>
+                            <button id="btn-clear-global-product" onclick="clearGlobalProduct()" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                        <button onclick="clearFilters()" title="Limpar todos os filtros" class="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-2xl border border-slate-200 dark:border-slate-600 transition cursor-pointer">
+                            <i data-lucide="filter-x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div id="global-autocomplete-list" class="hidden absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 font-medium text-xs"></div>
+                </div>
+            </div>
+
+            <!-- Banner de Material Ativo com Indicador de Consolidação -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-slate-600">
+                        <i data-lucide="package-search" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span id="banner-active-type" class="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider">Material Ativo em Análise (Cadastro SB1 Mestre)</span>
+                        <h3 id="sim-product-desc" class="text-xs font-extrabold text-slate-800 dark:text-slate-100">Nenhum material selecionado. Use o campo de busca acima para filtrar.</h3>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 italic text-left md:text-right">* Selecione um produto ou família consolidada para simulação exata de cobertura por filial.</p>
+            </div>
+
+            <!-- BARRA DE NAVEGAÇÃO DAS 4 SUB-ABAS (SIMULADOR | VENDAS | ESTOQUE | GIRO) -->
+            <div class="flex border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-2xl gap-2 shadow-xs font-black text-xs overflow-x-auto no-scrollbar">
+                <button onclick="switchSd2SubTab('remanejamento')" id="sd2-tab-btn-remanejamento" class="flex-1 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all bg-[#002f6c] text-white shadow-sm cursor-pointer whitespace-nowrap">
+                    <i data-lucide="scale" class="w-4 h-4"></i>
+                    <span>Simulador de Remanejamento</span>
+                </button>
+                <button onclick="switchSd2SubTab('vendas')" id="sd2-tab-btn-vendas" class="flex-1 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 cursor-pointer whitespace-nowrap">
+                    <i data-lucide="line-chart" class="w-4 h-4"></i>
+                    <span>Dashboard de Vendas</span>
+                </button>
+                <button onclick="switchSd2SubTab('estoque')" id="sd2-tab-btn-estoque" class="flex-1 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 cursor-pointer whitespace-nowrap">
+                    <i data-lucide="warehouse" class="w-4 h-4"></i>
+                    <span>Monitoramento de Estoque</span>
+                </button>
+                <button onclick="switchSd2SubTab('analitico')" id="sd2-tab-btn-analitico" class="flex-1 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 cursor-pointer whitespace-nowrap">
+                    <i data-lucide="list-checks" class="w-4 h-4"></i>
+                    <span>Giro &amp; Detalhado</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- PAINEL 1: SIMULADOR DE REMANEJAMENTO & SOLICITAÇÃO GERAL DISTRIBUÍDA -->
+        <div id="sd2-tab-remanejamento" class="space-y-6">
+            
+            <!-- BARRA DE SELEÇÃO DE MODO DE SIMULAÇÃO (REMANEJAMENTO VS SOLICITAÇÃO GERAL DILUÍDA) -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-2xl border border-blue-100 dark:border-slate-600">
+                        <i data-lucide="git-merge" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-slate-800 dark:text-slate-100">Modo de Análise da Solicitação</h4>
+                        <p class="text-[11px] text-slate-400 font-bold">Alterne entre Remanejamento Único ou Solicitação Geral Distribuída</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 font-black text-xs">
+                    <button id="sim-mode-remanejamento-btn" onclick="setSimMode('remanejamento')" class="px-4 py-2 rounded-xl transition-all bg-[#002f6c] text-white shadow-xs flex items-center gap-2 cursor-pointer">
+                        <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+                        <span>Remanejamento Direto</span>
+                    </button>
+                    <button id="sim-mode-dilution-btn" onclick="setSimMode('dilution')" class="px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-500"></i>
+                        <span>Solicitação Geral Distribuída</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulário Dinâmico do Simulador -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-sm space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+                    
+                    <!-- Campo Quantidade -->
+                    <div id="sim-qty-container" class="md:col-span-5 space-y-1.5">
+                        <label id="sim-qty-label" class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="truck" class="w-4 h-4 text-blue-600"></i> Quantidade a Solicitar (PC/KG)
+                        </label>
+                        <input type="number" id="sim-qty" value="0" min="0"
+                               class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 font-black focus:outline-none focus:border-blue-600 transition"
+                               onchange="sanitizeQuantityInput()"
+                               oninput="sanitizeQuantityInputOnInput()">
+                    </div>
+
+                    <!-- Campo Multiplicador / Lote de Embalagem (Palete) -->
+                    <div id="sim-multiplier-container" class="hidden md:col-span-3 space-y-1.5">
+                        <label class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="package" class="w-4 h-4 text-emerald-600"></i> Lote / Multiplicador (Palete)
+                        </label>
+                        <input type="number" id="sim-multiplier" value="1" min="1" step="1"
+                               placeholder="Ex: 1000 (1 Palete)"
+                               class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 font-black focus:outline-none focus:border-emerald-600 transition"
+                               onchange="recalculateSimulation()"
+                               oninput="recalculateSimulation()">
+                    </div>
+
+                    <!-- Campo Destino / Método de Diluição -->
+                    <div id="sim-target-container" class="md:col-span-4 space-y-1.5">
+                        <label id="sim-target-label" class="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="building" class="w-4 h-4 text-blue-600"></i> Filial Destinatária (Solicitante)
+                        </label>
+                        
+                        <!-- Select Destinatário para Remanejamento Direto -->
+                        <select id="sim-target-branch" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-100 font-black focus:outline-none focus:border-blue-600 transition cursor-pointer"
+                                onchange="recalculateSimulation()">
+                        </select>
+
+                        <!-- Select Método para Solicitação Geral Distribuída -->
+                        <select id="sim-dilution-method" class="hidden w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-100 font-black focus:outline-none focus:border-blue-600 transition cursor-pointer"
+                                onchange="recalculateSimulation()">
+                            <option value="balanced">Diluição Inteligente por Demanda (Nivelar Coberturas)</option>
+                            <option value="equal">Adicionar Valor Solicitado Igual em Todas as Unidades</option>
+                        </select>
+                    </div>
+
+                    <!-- Box Resumo -->
+                    <div id="sim-summary-box" class="md:col-span-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-3 text-center flex flex-col justify-center h-[66px] shadow-xs">
+                        <p id="sim-summary-title" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-wider">Saldo Total Pós-Envio</p>
+                        <h4 id="sim-total-saldo-pos" class="text-lg font-black text-emerald-600 dark:text-emerald-300 mt-0.5">0 PC</h4>
+                    </div>
+                </div>
+
+                <!-- Botão de Ação para Solicitação Geral -->
+                <div id="dilution-action-btn-row" class="hidden pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                    <button onclick="recalculateSimulation()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer active:scale-95">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <span>Executar Diluição entre Todas as Unidades</span>
+                    </button>
+                </div>
+
+                <p id="sim-footer-note" class="text-[11px] text-slate-400 italic">* A cobertura de estoque baseia-se no Saldo Pós-Envio dividido pela Média Mensal de Saídas (últimos 7 meses).</p>
+            </div>
+
+            <!-- Box de Alertas de Viabilidade / Resumo de Diluição -->
+            <div id="sim-alert-box" class="hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-3 font-medium">
+                <h4 id="sim-alert-title" class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 animate-pulse"></i> Análise de Viabilidade do Remanejamento
+                </h4>
+                <div id="sim-alerts-container" class="space-y-2 text-xs"></div>
+            </div>
+
+            <!-- Tabela Principal de Cobertura e Saldos -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm overflow-hidden space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 id="sim-table-title" class="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wider">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                        Simulador de Cobertura de Estoque por Filial
+                    </h3>
+                    <span class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-xl font-bold uppercase tracking-wider">Ordenado por Código de Filial</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr id="sim-table-header" class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
+                                <th class="py-3 px-4">Filiais</th>
+                                <th class="py-3 px-3 text-center">ABC</th>
+                                <th class="py-3 px-3 text-center">Status</th>
+                                <th class="py-3 px-3 text-center">Cobertura (Mês)</th>
+                                <th class="py-3 px-3 text-right">Saldo Atual</th>
+                                <th class="py-3 px-3 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Saldo Pós-Envio</th>
+                                <th class="py-3 px-3 text-right">Saídas (7M)</th>
+                                <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
+                                <th class="py-3 px-3 text-right">Fat. Médio/Mês</th>
+                                <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sim-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200">
+                            <tr><td colspan="10" class="py-6 text-center text-slate-400 font-bold">Aguardando sincronização de dados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tabela Mensal Fatiada -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Análise Mensal Fatiada de Saídas (Qtde)</h3>
+                    <span class="text-[10px] text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-black border border-emerald-200 dark:border-emerald-800">Histórico de Demanda (7 Meses)</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr id="sim-fatiada-thead" class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
+                                <th class="py-3 px-4">Filiais</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sim-fatiada-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAINEL 2: DASHBOARD DE VENDAS -->
+        <div id="sd2-tab-vendas" class="hidden space-y-6">
+            <!-- Seletor de Período de Análise -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 flex flex-col xl:flex-row items-start xl:items-center gap-4 justify-between shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-2xl border border-blue-100 dark:border-slate-600">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-slate-800 dark:text-slate-100">Período de Análise de Faturamento</h4>
+                        <p class="text-[11px] text-slate-400 font-bold">Filtre gráficos e estatísticas por intervalo</p>
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-3 w-full xl:w-auto font-black text-xs">
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button id="btn-period-current" onclick="setPeriod('current')" class="flex-1 xl:flex-none px-3 py-1.5 rounded-xl transition-all text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer">Mês Atual</button>
+                        <button id="btn-period-6months" onclick="setPeriod('6months')" class="flex-1 xl:flex-none px-3 py-1.5 rounded-xl transition-all text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer">6 Meses</button>
+                        <button id="btn-period-1year" onclick="setPeriod('1year')" class="flex-1 xl:flex-none px-3 py-1.5 rounded-xl transition-all text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer">1 Ano</button>
+                        <button id="btn-period-custom" onclick="setPeriod('custom')" class="flex-1 xl:flex-none px-3 py-1.5 rounded-xl transition-all bg-blue-600 text-white shadow-xs cursor-pointer">Personalizado</button>
+                    </div>
+                    <div id="custom-period-selectors" class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <div class="flex items-center gap-1.5 w-full sm:w-auto">
+                            <span class="text-[11px] text-slate-400 font-bold">De:</span>
+                            <select id="sales-period-from" class="bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none" onchange="applyCustomPeriod()"></select>
+                        </div>
+                        <div class="flex items-center gap-1.5 w-full sm:w-auto">
+                            <span class="text-[11px] text-slate-400 font-bold">Até:</span>
+                            <select id="sales-period-to" class="bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-100 font-bold focus:outline-none" onchange="applyCustomPeriod()"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 relative overflow-hidden shadow-sm">
+                    <div class="absolute right-4 bottom-4 w-10 h-10 bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center">
+                        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Faturamento Total</p>
+                    <h3 id="kpi-faturamento" class="text-lg font-black text-slate-900 dark:text-slate-100 mt-1">R$ 0,00</h3>
+                </div>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 relative overflow-hidden shadow-sm">
+                    <div class="absolute right-4 bottom-4 w-10 h-10 bg-red-50 dark:bg-slate-700 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center">
+                        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Quantidade Saída</p>
+                    <div class="mt-1 flex flex-col font-black">
+                        <span id="kpi-qtd-vendas-pc" class="text-sm text-slate-900 dark:text-slate-100">0 PC</span>
+                        <span id="kpi-qtd-vendas-kg" class="text-xs text-red-500 font-bold">0,00 KG</span>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 relative overflow-hidden shadow-sm">
+                    <div class="absolute right-4 bottom-4 w-10 h-10 bg-emerald-50 dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center">
+                        <i data-lucide="boxes" class="w-5 h-5"></i>
+                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Estoque Físico Total</p>
+                    <div class="mt-1 flex flex-col font-black">
+                        <span id="kpi-estoque-pc" class="text-sm text-slate-900 dark:text-slate-100">0 PC</span>
+                        <span id="kpi-estoque-kg" class="text-xs text-emerald-600 font-bold">0,00 KG</span>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 relative overflow-hidden shadow-sm">
+                    <div class="absolute right-4 bottom-4 w-10 h-10 bg-amber-50 dark:bg-slate-700 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Ticket Médio por Doc.</p>
+                    <h3 id="kpi-ticket" class="text-lg font-black text-slate-900 dark:text-slate-100 mt-1">R$ 0,00</h3>
+                </div>
+            </div>
+
+            <!-- Gráficos ApexCharts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 lg:col-span-2 shadow-sm space-y-3">
+                    <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center justify-between">
+                        <span>Evolução de Faturamento por Filial</span>
+                        <span class="text-[10px] text-slate-400 font-bold">Gráfico de Linhas</span>
+                    </h3>
+                    <div id="sales-trend-chart" class="h-80 w-full flex items-center justify-center text-slate-400 text-xs font-bold">Clique em Sincronizar para carregar o gráfico.</div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-3">
+                    <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Faturamento Acumulado por Filial</h3>
+                    <div id="sales-branch-chart" class="h-80 w-full flex items-center justify-center text-slate-400 text-xs font-bold">Clique em Sincronizar para carregar o gráfico.</div>
+                </div>
+            </div>
+
+            <!-- Ranking de Produtos -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4 font-medium">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Ranking dos Itens Mais Vendidos</h3>
+                    <span class="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase">Top 10 Materiais</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
+                                <th class="py-3 px-4">Código / Produto</th>
+                                <th class="py-3 px-4">Qtd. Total Saídas</th>
+                                <th class="py-3 px-4">Faturamento Bruto</th>
+                                <th class="py-3 px-4">Preço Médio Praticado</th>
+                                <th class="py-3 px-4 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-products-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200">
+                            <tr><td colspan="5" class="py-6 text-center text-slate-400 font-bold">Nenhum dado carregado.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAINEL 3: MONITORAMENTO DE ESTOQUE -->
+        <div id="sd2-tab-estoque" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-3">
+                    <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Distribuição de Saldo por Filial</h3>
+                    <div id="stock-distribution-chart" class="h-80 w-full flex items-center justify-center text-slate-400 text-xs font-bold">Clique em Sincronizar para carregar.</div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Resumo Geral do Inventário</h3>
+                        <p class="text-[11px] text-slate-400 font-bold mt-0.5">Controle integrado do Supabase</p>
+                    </div>
+                    <div class="space-y-3 flex-1 flex flex-col justify-center text-xs">
+                        <div class="p-3.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between">
+                            <span class="font-black text-slate-600 dark:text-slate-300">Referências no Cadastro Mestre (SB1)</span>
+                            <span id="summary-unique-skus" class="font-black text-slate-900 dark:text-slate-100 text-sm">0</span>
+                        </div>
+                        <div class="p-3.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between">
+                            <span class="font-black text-slate-600 dark:text-slate-300">Unidades de Medida</span>
+                            <span id="summary-common-unit" class="font-black text-slate-900 dark:text-slate-100 text-sm">PC / KG</span>
+                        </div>
+                        <div class="p-3.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between">
+                            <span class="font-black text-slate-600 dark:text-slate-300">Armazéns Mapeados</span>
+                            <span id="summary-active-warehouses" class="font-black text-slate-900 dark:text-slate-100 text-sm">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Ruptura Crítica -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4 font-medium">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Alertas de Ruptura Crítica (Estoque &lt; 50% das Vendas dos Últimos 6 Meses)</h3>
+                        <p class="text-[11px] text-slate-400 font-bold mt-0.5">Identifica itens zerados ou abaixo do giro nas filiais ativas</p>
+                    </div>
+                    <span class="px-2.5 py-1 text-[9px] font-black uppercase rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 border border-red-200 dark:border-red-800">Atenção Prioritária</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
+                                <th class="py-3 px-4">Código</th>
+                                <th class="py-3 px-4">Descrição Comercial</th>
+                                <th class="py-3 px-4">Filial</th>
+                                <th class="py-3 px-4">Estoque vs Giro (6M)</th>
+                                <th class="py-3 px-4 text-right">Status do Nível</th>
+                            </tr>
+                        </thead>
+                        <tbody id="critical-stock-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200">
+                            <tr><td colspan="5" class="py-6 text-center text-slate-400 font-bold">Nenhum alerta detectado.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAINEL 4: GIRO & DETALHADO -->
+        <div id="sd2-tab-analitico" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4 font-medium">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Giro &amp; Consulta Individual de Inventário</h3>
+                        <p class="text-[11px] text-slate-400 font-bold mt-0.5">Posição física detalhada dos lotes por filial e armazém</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase font-black tracking-wider bg-slate-50 dark:bg-slate-700/50">
+                                <th class="py-3 px-4">Código</th>
+                                <th class="py-3 px-4">Descrição Comercial</th>
+                                <th class="py-3 px-4">Grupo / Tag</th>
+                                <th class="py-3 px-4">Filial</th>
+                                <th class="py-3 px-4">Armazém</th>
+                                <th class="py-3 px-4 text-right">Qtde. Disponível</th>
+                            </tr>
+                        </thead>
+                        <tbody id="search-results-tbody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200">
+                            <tr><td colspan="6" class="py-6 text-center text-slate-400 font-bold">Aguardando dados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER CORPORATIVO -->
+    <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-6 mt-8 no-print">
+        <div class="w-full lg:max-w-[95%] mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2 font-medium">
+            <div class="flex justify-center items-center space-x-2 text-slate-900 dark:text-white font-black text-xs mb-1">
+                <i data-lucide="shield" class="w-4 h-4 text-[#9c0e25] dark:text-red-400"></i>
+                <span>AMAZON AÇO - SISTEMA DE GERENCIAMENTO DE ESTOQUES</span>
+            </div>
+            <p>&copy; 2026. Desenvolvido para Análise Integrada de Saldos e Vendas SD2 via Supabase API.</p>
+        </div>
+    </footer>
+
+    <!-- MOTOR JAVASCRIPT COMPLETO COM CONEXÃO PUBLIC.FILIAIS & DILUIÇÃO INTELIGENTE DE SOLICITAÇÃO GERAL -->
+    <script>
+        lucide.createIcons();
+
+        // DICIONÁRIO DE FILIAIS (POPOULADO DINAMICAMENTE DA TABELA PUBLIC.FILIAIS NO SUPABASE)
+        let DIC_FILIAIS = {};
+
+        const MONTH_NAMES = {
+            "01": "Jan", "02": "Fev", "03": "Mar", "04": "Abr",
+            "05": "Mai", "06": "Jun", "07": "Jul", "08": "Ago",
+            "09": "Set", "10": "Out", "11": "Nov", "12": "Dez"
+        };
+
+        let currentSd2Sector = 'COMERCIO';
+        let currentSd2SubTab = 'remanejamento';
+        let simMode = 'remanejamento'; // 'remanejamento' | 'dilution'
+        let supabaseClient = null;
+
+        let rawSaldos = [];
+        let rawVendas = [];
+        let rawDicionario = [];
+
+        let filteredSaldos = [];
+        let filteredVendas = [];
+
+        let activeBranches = [];
+        let selectedBranches = [];
+
+        let activeSaldosWarehouses = [];
+        let selectedSaldosWarehouses = [];
+
+        let activeVendasWarehouses = [];
+        let selectedVendasWarehouses = [];
+
+        let activeTES = [];
+        let selectedTES = [];
+
+        // ESTRUTURA DE SELEÇÃO DE PRODUTO
+        let globalSelectedProductCodes = [];
+        let globalSelectedProductDesc = "";
+        let globalIsConsolidated = false;
+
+        let salesFromPeriod = "";
+        let salesToPeriod = "";
+        let currentPeriodType = 'custom';
+
+        let chartSalesTrend = null;
+        let chartSalesBranch = null;
+        let chartStockDistribution = null;
+        let MONTHS_ANALYSIS = [];
+
+        let sd2ProgressTotalCount = 0;
+
+        const DEFAULT_SUPABASE_URL = 'https://wpwerdaiqyfhfhhioosp.supabase.co';
+        const DEFAULT_SUPABASE_KEY = 'sb_publishable_BGgecij1uLNAr-2XWMTPCA_y8_lT9Go';
+
+        // --- HIGIENIZAÇÃO DE DESCRIÇÃO (REMOVE SUFIXOS COMO (IMP), (IMP.), IMP) ---
+        function cleanProductDescription(desc) {
+            if (!desc) return '';
+            let s = String(desc).trim();
+            s = s.replace(/\s*\(\s*IMP\.?\s*\)/gi, '');
+            s = s.replace(/\s+-\s*IMP\.?/gi, '');
+            s = s.replace(/\bIMP\.?\b/gi, '');
+            s = s.replace(/\s+/g, ' ').trim();
+            return s;
+        }
+
+        // --- ALGORITMO MATEMÁTICO DE DILUIÇÃO EQUILIBRADA COM SUPORTE A MULTIPLICADOR DE LOTES / PALETES ---
+        function calculateBalancedDilution(totalQty, branches, method = 'balanced', multiplier = 1) {
+            const allocations = {};
+            branches.forEach(b => { allocations[b.filialId] = 0; });
+
+            if (totalQty <= 0 || branches.length === 0) return allocations;
+
+            const mult = Math.max(1, parseFloat(multiplier) || 1);
+
+            // SE O MULTIPLICADOR FOR MAIOR QUE 1 (EX: 1.000 KG = 1 PALETE), TRABALHA EM LOTES INTEIROS
+            if (mult > 1) {
+                const totalPallets = Math.floor(totalQty / mult);
+                if (totalPallets <= 0) return allocations;
+
+                if (method === 'equal') {
+                    const share = Math.floor(totalPallets / branches.length);
+                    const remainder = totalPallets % branches.length;
+                    branches.forEach((b, idx) => {
+                        const pallets = share + (idx < remainder ? 1 : 0);
+                        allocations[b.filialId] = pallets * mult;
+                    });
+                    return allocations;
+                }
+
+                // Método Inteligente por Demanda (Nivelar Coberturas em Lotes/Paletes)
+                let low = 0;
+                let high = 1000;
+                for (let iter = 0; iter < 60; iter++) {
+                    const mid = (low + high) / 2;
+                    let neededPallets = 0;
+                    branches.forEach(b => {
+                        const currentCov = b.mediaMesQtd > 0 ? (b.saldoAtual / b.mediaMesQtd) : (b.saldoAtual > 0 ? 999 : 0);
+                        if (currentCov < mid && b.mediaMesQtd > 0) {
+                            const neededQty = b.mediaMesQtd * (mid - currentCov);
+                            neededPallets += neededQty / mult;
+                        }
+                    });
+
+                    if (neededPallets < totalPallets) {
+                        low = mid;
+                    } else {
+                        high = mid;
+                    }
+                }
+
+                const targetCoverage = low;
+                let allocatedPalletsSum = 0;
+
+                branches.forEach(b => {
+                    const currentCov = b.mediaMesQtd > 0 ? (b.saldoAtual / b.mediaMesQtd) : (b.saldoAtual > 0 ? 999 : 0);
+                    if (currentCov < targetCoverage && b.mediaMesQtd > 0) {
+                        const pallets = Math.round((b.mediaMesQtd * (targetCoverage - currentCov)) / mult);
+                        allocations[b.filialId] = pallets * mult;
+                        allocatedPalletsSum += pallets;
+                    }
+                });
+
+                let remainingPallets = totalPallets - allocatedPalletsSum;
+                const totalDemand = branches.reduce((acc, b) => acc + Math.max(0, b.mediaMesQtd), 0);
+
+                if (remainingPallets > 0 && totalDemand > 0) {
+                    const sortedByDemand = [...branches].sort((a, b) => b.mediaMesQtd - a.mediaMesQtd);
+                    for (let p = 0; p < remainingPallets; p++) {
+                        const targetBranchObj = sortedByDemand[p % sortedByDemand.length];
+                        allocations[targetBranchObj.filialId] += mult;
+                    }
+                } else if (remainingPallets < 0) {
+                    let excess = -remainingPallets;
+                    const sortedByAllocated = [...branches].sort((a, b) => (allocations[b.filialId] || 0) - (allocations[a.filialId] || 0));
+                    for (let p = 0; p < excess; p++) {
+                        const targetBranchObj = sortedByAllocated[p % sortedByAllocated.length];
+                        if (allocations[targetBranchObj.filialId] >= mult) {
+                            allocations[targetBranchObj.filialId] -= mult;
+                        }
+                    }
+                }
+
+                return allocations;
+            }
+
+            // DILUIÇÃO EM UNIDADES INDIVIDUAIS (MULTIPLICADOR === 1)
+            const totalDemand = branches.reduce((acc, b) => acc + Math.max(0, b.mediaMesQtd), 0);
+
+            if (method === 'equal' || totalDemand <= 0) {
+                const share = Math.floor(totalQty / branches.length);
+                const remainder = totalQty % branches.length;
+                branches.forEach((b, idx) => {
+                    allocations[b.filialId] = share + (idx < remainder ? 1 : 0);
+                });
+                return allocations;
+            }
+
+            let low = 0;
+            let high = 1000;
+            for (let iter = 0; iter < 60; iter++) {
+                const mid = (low + high) / 2;
+                let needed = 0;
+                branches.forEach(b => {
+                    const currentCov = b.mediaMesQtd > 0 ? (b.saldoAtual / b.mediaMesQtd) : (b.saldoAtual > 0 ? 999 : 0);
+                    if (currentCov < mid && b.mediaMesQtd > 0) {
+                        needed += b.mediaMesQtd * (mid - currentCov);
+                    }
+                });
+
+                if (needed < totalQty) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
+            }
+
+            const targetCoverage = low;
+            let allocatedSum = 0;
+
+            branches.forEach(b => {
+                const currentCov = b.mediaMesQtd > 0 ? (b.saldoAtual / b.mediaMesQtd) : (b.saldoAtual > 0 ? 999 : 0);
+                if (currentCov < targetCoverage && b.mediaMesQtd > 0) {
+                    const qty = Math.round(b.mediaMesQtd * (targetCoverage - currentCov));
+                    allocations[b.filialId] = qty;
+                    allocatedSum += qty;
+                }
+            });
+
+            let remaining = totalQty - allocatedSum;
+            if (remaining > 0) {
+                branches.forEach(b => {
+                    if (totalDemand > 0) {
+                        const addExtra = Math.floor(remaining * (b.mediaMesQtd / totalDemand));
+                        allocations[b.filialId] += addExtra;
+                    }
+                });
+
+                let currentTotal = Object.values(allocations).reduce((a, c) => a + c, 0);
+                let rem2 = totalQty - currentTotal;
+                if (rem2 > 0) {
+                    const sortedByDemand = [...branches].sort((a, b) => b.mediaMesQtd - a.mediaMesQtd);
+                    if (sortedByDemand.length > 0) {
+                        allocations[sortedByDemand[0].filialId] += rem2;
+                    }
+                }
+            }
+
+            return allocations;
+        }
+
+        // --- MUDANÇA DE MODO DE SIMULAÇÃO (REMANEJAMENTO VS DILUIÇÃO) ---
+        function setSimMode(mode) {
+            simMode = mode;
+            const btnRem = document.getElementById("sim-mode-remanejamento-btn");
+            const btnDil = document.getElementById("sim-mode-dilution-btn");
+
+            const labelQty = document.getElementById("sim-qty-label");
+            const labelTarget = document.getElementById("sim-target-label");
+            const selectTarget = document.getElementById("sim-target-branch");
+            const selectMethod = document.getElementById("sim-dilution-method");
+            const actionRow = document.getElementById("dilution-action-btn-row");
+            const summaryTitle = document.getElementById("sim-summary-title");
+
+            const qtyContainer = document.getElementById("sim-qty-container");
+            const multContainer = document.getElementById("sim-multiplier-container");
+            const targetContainer = document.getElementById("sim-target-container");
+            const summaryBox = document.getElementById("sim-summary-box");
+
+            if (mode === 'remanejamento') {
+                if (btnRem) btnRem.className = "px-4 py-2 rounded-xl transition-all bg-[#002f6c] text-white shadow-xs flex items-center gap-2 cursor-pointer";
+                if (btnDil) btnDil.className = "px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer";
+                
+                if (labelQty) labelQty.innerHTML = `<i data-lucide="truck" class="w-4 h-4 text-blue-600"></i> Quantidade a Solicitar (PC/KG)`;
+                if (labelTarget) labelTarget.innerHTML = `<i data-lucide="building" class="w-4 h-4 text-blue-600"></i> Filial Destinatária (Solicitante)`;
+                
+                if (qtyContainer) qtyContainer.className = "md:col-span-5 space-y-1.5";
+                if (multContainer) multContainer.classList.add("hidden");
+                if (targetContainer) targetContainer.className = "md:col-span-4 space-y-1.5";
+                if (summaryBox) summaryBox.className = "md:col-span-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-3 text-center flex flex-col justify-center h-[66px] shadow-xs";
+
+                if (selectTarget) selectTarget.classList.remove("hidden");
+                if (selectMethod) selectMethod.classList.add("hidden");
+                if (actionRow) actionRow.classList.add("hidden");
+                if (summaryTitle) summaryTitle.innerText = "Saldo Total Pós-Envio";
+            } else {
+                if (btnDil) btnDil.className = "px-4 py-2 rounded-xl transition-all bg-emerald-600 text-white shadow-xs flex items-center gap-2 cursor-pointer";
+                if (btnRem) btnRem.className = "px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer";
+
+                if (labelQty) labelQty.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-emerald-600"></i> Solicitação Geral a Diluir (PC/KG)`;
+                if (labelTarget) labelTarget.innerHTML = `<i data-lucide="sliders" class="w-4 h-4 text-emerald-600"></i> Regra de Diluição entre Unidades`;
+                
+                if (qtyContainer) qtyContainer.className = "md:col-span-4 space-y-1.5";
+                if (multContainer) multContainer.classList.remove("hidden");
+                if (targetContainer) targetContainer.className = "md:col-span-3 space-y-1.5";
+                if (summaryBox) summaryBox.className = "md:col-span-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-3 text-center flex flex-col justify-center h-[66px] shadow-xs";
+
+                if (selectTarget) selectTarget.classList.add("hidden");
+                if (selectMethod) selectMethod.classList.remove("hidden");
+                if (actionRow) actionRow.classList.remove("hidden");
+                if (summaryTitle) summaryTitle.innerText = "Saldo Total do Grupo";
+            }
+
+            saveFiltersToLocalStorage();
+            recalculateSimulation();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // --- PERSISTÊNCIA NO LOCALSTORAGE ---
+        function saveFiltersToLocalStorage() {
+            try {
+                const state = {
+                    sector: currentSd2Sector,
+                    subTab: currentSd2SubTab,
+                    simMode: simMode,
+                    selectedBranches: selectedBranches,
+                    selectedSaldosWarehouses: selectedSaldosWarehouses,
+                    selectedVendasWarehouses: selectedVendasWarehouses,
+                    selectedTES: selectedTES,
+                    globalProductCodes: globalSelectedProductCodes,
+                    globalProductDesc: globalSelectedProductDesc,
+                    globalIsConsolidated: globalIsConsolidated,
+                    salesPeriodType: currentPeriodType,
+                    salesFromPeriod: salesFromPeriod,
+                    salesToPeriod: salesToPeriod,
+                    simQty: document.getElementById("sim-qty") ? document.getElementById("sim-qty").value : "0",
+                    simMultiplier: document.getElementById("sim-multiplier") ? document.getElementById("sim-multiplier").value : "1",
+                    simTargetBranch: document.getElementById("sim-target-branch") ? document.getElementById("sim-target-branch").value : "1",
+                    dilutionMethod: document.getElementById("sim-dilution-method") ? document.getElementById("sim-dilution-method").value : "balanced"
+                };
+                localStorage.setItem(`sd2_saved_filters_${currentSd2Sector}`, JSON.stringify(state));
+                localStorage.setItem('sd2_active_sector', currentSd2Sector);
+            } catch (e) {
+                console.error("Erro ao salvar filtros no localStorage:", e);
+            }
+        }
+
+        function restoreFiltersFromLocalStorage() {
+            try {
+                const savedSector = localStorage.getItem('sd2_active_sector');
+                if (savedSector && (savedSector === 'COMERCIO' || savedSector === 'INDUSTRIA')) {
+                    currentSd2Sector = savedSector;
+                    updateSectorUI();
+                }
+
+                const savedKey = `sd2_saved_filters_${currentSd2Sector}`;
+                const saved = localStorage.getItem(savedKey);
+                if (!saved) return false;
+                const state = JSON.parse(saved);
+
+                if (state.subTab) {
+                    currentSd2SubTab = state.subTab;
+                }
+
+                if (state.simMode) {
+                    simMode = state.simMode;
+                }
+
+                if (Array.isArray(state.selectedBranches) && state.selectedBranches.length > 0) {
+                    selectedBranches = state.selectedBranches.filter(b => activeBranches.includes(b));
+                }
+
+                if (Array.isArray(state.selectedSaldosWarehouses) && state.selectedSaldosWarehouses.length > 0) {
+                    selectedSaldosWarehouses = state.selectedSaldosWarehouses.filter(w => activeSaldosWarehouses.includes(w));
+                }
+
+                if (Array.isArray(state.selectedVendasWarehouses) && state.selectedVendasWarehouses.length > 0) {
+                    selectedVendasWarehouses = state.selectedVendasWarehouses.filter(w => activeVendasWarehouses.includes(w));
+                }
+
+                if (Array.isArray(state.selectedTES) && state.selectedTES.length > 0) {
+                    selectedTES = state.selectedTES.filter(t => activeTES.includes(t));
+                }
+
+                if (Array.isArray(state.globalProductCodes) && state.globalProductCodes.length > 0) {
+                    globalSelectedProductCodes = state.globalProductCodes;
+                    globalSelectedProductDesc = state.globalProductDesc || "";
+                    globalIsConsolidated = !!state.globalIsConsolidated;
+                } else if (state.globalProductCode) {
+                    globalSelectedProductCodes = [state.globalProductCode];
+                    globalSelectedProductDesc = "";
+                    globalIsConsolidated = false;
+                }
+
+                if (state.salesPeriodType) {
+                    currentPeriodType = state.salesPeriodType;
+                    if (state.salesFromPeriod) salesFromPeriod = state.salesFromPeriod;
+                    if (state.salesToPeriod) salesToPeriod = state.salesToPeriod;
+                }
+
+                if (state.simQty !== undefined && document.getElementById("sim-qty")) {
+                    document.getElementById("sim-qty").value = state.simQty;
+                }
+
+                if (state.simMultiplier !== undefined && document.getElementById("sim-multiplier")) {
+                    document.getElementById("sim-multiplier").value = state.simMultiplier;
+                }
+
+                if (state.simTargetBranch !== undefined && document.getElementById("sim-target-branch")) {
+                    document.getElementById("sim-target-branch").value = state.simTargetBranch;
+                }
+
+                if (state.dilutionMethod !== undefined && document.getElementById("sim-dilution-method")) {
+                    document.getElementById("sim-dilution-method").value = state.dilutionMethod;
+                }
+
+                setSimMode(simMode);
+                return true;
+            } catch (e) {
+                console.error("Erro ao restaurar filtros do localStorage:", e);
+                return false;
+            }
+        }
+
+        function switchSd2Sector(sector) {
+            if (currentSd2Sector === sector) return;
+
+            saveFiltersToLocalStorage();
+
+            currentSd2Sector = sector;
+            updateSectorUI();
+
+            selectedBranches = [];
+            selectedSaldosWarehouses = [];
+            selectedVendasWarehouses = [];
+            selectedTES = [];
+            globalSelectedProductCodes = [];
+            globalSelectedProductDesc = "";
+            globalIsConsolidated = false;
+
+            const inputEl = document.getElementById("global-product-code");
+            if (inputEl) inputEl.value = "";
+            const badgeUm = document.getElementById("global-um-badge");
+            if (badgeUm) badgeUm.innerText = "Todos";
+            const btnClear = document.getElementById("btn-clear-global-product");
+            if (btnClear) btnClear.classList.add("hidden");
+            const descEl = document.getElementById("sim-product-desc");
+            if (descEl) descEl.innerText = "Nenhum material selecionado. Use o campo de busca acima para filtrar.";
+
+            localStorage.setItem('sd2_active_sector', currentSd2Sector);
+            triggerSync();
+        }
+
+        function updateSectorUI() {
+            const btnComercio = document.getElementById("sd2SectorComercioBtn");
+            const btnIndustria = document.getElementById("sd2SectorIndustriaBtn");
+            const badge = document.getElementById("sd2SectorBadge");
+            const subtext = document.getElementById("sd2SectorSubtext");
+
+            if (currentSd2Sector === 'COMERCIO') {
+                if (btnComercio) btnComercio.className = "px-3.5 py-1 text-xs font-bold rounded-lg bg-[#002f6c] text-white shadow-sm transition-all flex items-center gap-1.5";
+                if (btnIndustria) btnIndustria.className = "px-3.5 py-1 text-xs font-bold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center gap-1.5";
+                if (badge) badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-300"></span> Setor: Comércio`;
+                if (subtext) subtext.innerHTML = `Dados integrados com a tabela <code>public.filiais</code> do Supabase Cloud (inclui <strong>Boa Vista</strong> e demais filiais) e <strong>Diluição Geral de Compras entre Unidades</strong>.`;
+            } else {
+                if (btnIndustria) btnIndustria.className = "px-3.5 py-1 text-xs font-bold rounded-lg bg-amber-600 text-white shadow-sm transition-all flex items-center gap-1.5";
+                if (btnComercio) btnComercio.className = "px-3.5 py-1 text-xs font-bold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center gap-1.5";
+                if (badge) badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Setor: Indústria`;
+                if (subtext) subtext.innerHTML = `Dados integrados com a tabela <code>public.filiais</code> do Supabase Cloud (inclui <strong>Boa Vista</strong> e demais filiais) e <strong>Diluição Geral de Compras entre Unidades</strong>.`;
+            }
+        }
+
+        // Alternador Tema Claro/Escuro (PADRÃO: MODO CLARO)
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+                if (icon) icon.setAttribute('data-lucide', 'sun');
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+                if (icon) icon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+            if (typeof ApexCharts !== 'undefined') {
+                renderCharts();
+            }
+        }
+
+        function showAlert(msg, type = 'info') {
+            const toast = document.getElementById("toast-container");
+            const msgEl = document.getElementById("toast-message");
+            if (msgEl) msgEl.innerText = msg;
+            if (toast) toast.classList.remove("hidden");
+            setTimeout(() => { if (toast) toast.classList.add("hidden"); }, 4000);
+        }
+
+        function initSupabase() {
+            try {
+                if (typeof supabase !== 'undefined' && supabase.createClient) {
+                    supabaseClient = supabase.createClient(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
+                    return true;
+                }
+            } catch (e) {
+                console.error("Erro Supabase init:", e);
+            }
+            return false;
+        }
+
+        function toggleDropdown(event, idPrefix) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            const targetId = `${idPrefix}-dropdown-list`;
+            const targetEl = document.getElementById(targetId);
+
+            ['branch', 'saldos-warehouse', 'vendas-warehouse', 'tes'].forEach(d => {
+                if (d !== idPrefix) {
+                    const el = document.getElementById(`${d}-dropdown-list`);
+                    if (el) el.classList.add("hidden");
+                }
+            });
+
+            if (targetEl) {
+                targetEl.classList.toggle("hidden");
+            }
+        }
+
+        function toggleWarehouseDropdown(event, type) {
+            toggleDropdown(event, `${type}-warehouse`);
+        }
+
+        window.addEventListener('click', function(e) {
+            ['branch', 'saldos-warehouse', 'vendas-warehouse', 'tes'].forEach(d => {
+                const dropdown = document.getElementById(`${d}-dropdown-list`);
+                const btn = document.getElementById(`${d}-dropdown-btn`);
+                if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                    dropdown.classList.add("hidden");
+                }
+            });
+
+            const autocomplete = document.getElementById("global-autocomplete-list");
+            if (autocomplete && !autocomplete.contains(e.target) && e.target.id !== "global-product-code") {
+                autocomplete.classList.add("hidden");
+            }
+        });
+
+        function normalizeProductCode(code) {
+            if (code === undefined || code === null) return '';
+            let cleanStr = String(code).trim();
+            if (cleanStr.includes('.')) {
+                cleanStr = cleanStr.split('.')[0];
+            }
+            if (/^\d+$/.test(cleanStr)) {
+               let numStr = cleanStr.replace(/^0+/, ''); 
+               if (numStr === '') return '00000000';
+               return numStr.padStart(8, '0'); 
+            }
+            return cleanStr;
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+        }
+
+        function getFilialName(id) {
+            return DIC_FILIAIS[id] || `Filial ${id}`;
+        }
+
+        // FETCH PARALELO CONCORRENTE VIA REST API
+        async function fetchSupabaseRestFast(endpoint, selectQuery, maxExpectedRows = 70000, extraFilter = '', onProgress = null) {
+            const baseUrl = DEFAULT_SUPABASE_URL + '/rest/v1/' + endpoint;
+            const apiKey = DEFAULT_SUPABASE_KEY;
+            const headers = {
+                'apikey': apiKey,
+                'authorization': 'Bearer ' + apiKey
+            };
+
+            const pageSize = 1000;
+            const concurrency = 5;
+            let allRows = [];
+            let currentOffset = 0;
+            let keepFetching = true;
+
+            while (keepFetching && currentOffset < maxExpectedRows) {
+                const batchPromises = [];
+                for (let c = 0; c < concurrency; c++) {
+                    const offset = currentOffset + (c * pageSize);
+                    if (offset >= maxExpectedRows) break;
+
+                    let queryUrl = `${baseUrl}?select=${selectQuery}&limit=${pageSize}&offset=${offset}`;
+                    if (extraFilter) queryUrl += '&' + extraFilter;
+
+                    batchPromises.push(
+                        fetch(queryUrl, { headers })
+                        .then(r => r.ok ? r.json() : [])
+                        .catch(err => [])
+                    );
+                }
+
+                const batchResults = await Promise.all(batchPromises);
+                let reachedEnd = false;
+
+                for (const rows of batchResults) {
+                    if (Array.isArray(rows) && rows.length > 0) {
+                        allRows = allRows.concat(rows);
+                        sd2ProgressTotalCount += rows.length;
+                        if (onProgress) onProgress(sd2ProgressTotalCount);
+
+                        if (rows.length < pageSize) {
+                            reachedEnd = true;
+                            break;
+                        }
+                    } else {
+                        reachedEnd = true;
+                        break;
+                    }
+                }
+
+                if (reachedEnd) {
+                    keepFetching = false;
+                } else {
+                    currentOffset += concurrency * pageSize;
+                }
+            }
+
+            return allRows;
+        }
+
+        // SINCRONIZAÇÃO EM TEMPO REAL COM BARRA DE PROGRESSO (CONEXÃO PUBLIC.FILIAIS)
+        async function triggerSync() {
+            const syncIcon = document.getElementById("sd2-sync-icon");
+            if (syncIcon) syncIcon.classList.add("animate-spin");
+
+            const overlay = document.getElementById("sd2ProgressOverlay");
+            const timerEl = document.getElementById("sd2ProgressTimer");
+            const countEl = document.getElementById("sd2ProgressRecordCount");
+            const stepEl = document.getElementById("sd2ProgressStepText");
+            const pctEl = document.getElementById("sd2ProgressPercent");
+            const barEl = document.getElementById("sd2ProgressBar");
+
+            if (overlay) overlay.classList.remove("hidden");
+            if (timerEl) timerEl.innerText = "0.0s";
+            if (countEl) countEl.innerText = "0 itens";
+            if (stepEl) stepEl.innerText = "Conectando ao Supabase...";
+            if (pctEl) pctEl.innerText = "0%";
+            if (barEl) barEl.style.width = "0%";
+
+            sd2ProgressTotalCount = 0;
+            const startTime = performance.now();
+            const timerInterval = setInterval(() => {
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                if (timerEl) timerEl.innerText = `${elapsed}s`;
+            }, 100);
+
+            const updateUIProgress = (pct, stepName) => {
+                if (barEl) barEl.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+                if (pctEl) pctEl.innerText = `${Math.min(100, Math.max(0, Math.round(pct)))}%`;
+                if (stepEl && stepName) stepEl.innerText = stepName;
+                if (countEl) countEl.innerText = `${sd2ProgressTotalCount.toLocaleString('pt-BR')} itens`;
+            };
+
+            try {
+                if (!supabaseClient) initSupabase();
+
+                const sevenMonthsAgo = new Date();
+                sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+                const dateFilterStr = sevenMonthsAgo.toISOString().split('T')[0];
+
+                const sb1Table = currentSd2Sector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
+                const saldoTable = currentSd2Sector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
+                const sd2Table = currentSd2Sector === 'INDUSTRIA' ? 'sd2_industria' : 'sd2_comercio';
+
+                updateUIProgress(10, `Baixando filiais da tabela public.filiais e dicionário mestre (${sb1Table})...`);
+                const dbFiliais = await fetchSupabaseRestFast('filiais', '*', 50, '', () => updateUIProgress(15, "Carregando filiais da public.filiais..."));
+                const dbSb1 = await fetchSupabaseRestFast(sb1Table, 'codigo,descricao,unidade,tags', 30000, '', () => {
+                    const pct = 15 + Math.min(25, (sd2ProgressTotalCount / 20000) * 25);
+                    updateUIProgress(pct, "Baixando cadastro mestre de produtos (SB1)...");
+                });
+
+                updateUIProgress(40, `Baixando saldos dos armazéns (${saldoTable})...`);
+                const dbSaldos = await fetchSupabaseRestFast(saldoTable, 'produto,filial,armazem,quantidade', 6000, '', () => {
+                    const pct = 40 + Math.min(15, (sd2ProgressTotalCount / 25000) * 15);
+                    updateUIProgress(pct, "Baixando saldos dos armazéns...");
+                });
+
+                updateUIProgress(55, `Baixando saídas do SD2 (${sd2Table})...`);
+                const dbSd2 = await fetchSupabaseRestFast(sd2Table, 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr, () => {
+                    const pct = 55 + Math.min(40, (sd2ProgressTotalCount / 90000) * 40);
+                    updateUIProgress(pct, "Baixando saídas do SD2...");
+                });
+
+                updateUIProgress(95, "Processando relatórios e integrando filiais...");
+
+                // 1. POPOULAR DICIONÁRIO DE FILIAIS EXCLUSIVAMENTE A PARTIR DA TABELA PUBLIC.FILIAIS DO SUPABASE
+                DIC_FILIAIS = {};
+                if (dbFiliais && dbFiliais.length > 0) {
+                    dbFiliais.forEach(f => {
+                        const num = parseInt(f.num_filial, 10);
+                        if (!isNaN(num)) {
+                            const formatted = String(f.num_filial).padStart(2, '0');
+                            DIC_FILIAIS[num] = `${formatted} - ${f.nome_filial}`;
+                        }
+                    });
+                } else {
+                    DIC_FILIAIS = {
+                        1: "01 - Alvorada", 2: "02 - Matriz CD", 4: "04 - Raiz",
+                        5: "05 - Cidade Nova", 6: "06 - Jorge Teixeira", 12: "12 - Boa Vista"
+                    };
+                }
+
+                // 2. SB1 (Dicionário Mestre de Produtos)
+                const descMap = {};
+                const cleanDescMap = {};
+                const umMap = {};
+                const tagMap = {};
+
+                rawDicionario = dbSb1.map(item => {
+                    const cod = normalizeProductCode(item.codigo || item.Codigo);
+                    const desc = item.descricao || item["Descr.Espec."] || 'SEM DESCRIÇÃO';
+                    const cleanDesc = cleanProductDescription(desc);
+                    const um = item.unidade || item.Unidade || 'PC';
+                    descMap[cod] = desc;
+                    cleanDescMap[cod] = cleanDesc;
+                    umMap[cod] = um;
+                    tagMap[cod] = item.tags || 'Geral';
+                    return { Codigo: cod, Descricao: desc, CleanDescricao: cleanDesc, Unidade: um, Grupo: item.tags || 'Geral' };
+                });
+
+                // 3. Saldos
+                rawSaldos = dbSaldos.map(s => {
+                    const cod = normalizeProductCode(s.produto);
+                    const filialNum = parseInt(s.filial, 10) || 1;
+                    if (!DIC_FILIAIS[filialNum]) {
+                        DIC_FILIAIS[filialNum] = `${String(filialNum).padStart(2, '0')} - Filial ${filialNum}`;
+                    }
+
+                    if (!descMap[cod]) {
+                        const descFallback = `PRODUTO ${cod}`;
+                        const clean = cleanProductDescription(descFallback);
+                        descMap[cod] = descFallback;
+                        cleanDescMap[cod] = clean;
+                        umMap[cod] = 'PC';
+                        tagMap[cod] = 'Outros';
+                        rawDicionario.push({ Codigo: cod, Descricao: descFallback, CleanDescricao: clean, Unidade: 'PC', Grupo: 'Outros' });
+                    }
+                    return {
+                        Produto: cod,
+                        Filial: filialNum,
+                        Armazem: parseInt(s.armazem, 10) || 1,
+                        "Qtde.1a.U.M.": parseFloat(s.quantidade) || 0,
+                        Descricao: descMap[cod],
+                        CleanDescricao: cleanDescMap[cod],
+                        Unidade: umMap[cod],
+                        Grupo: tagMap[cod]
+                    };
+                }).filter(s => s.Produto);
+
+                // 4. SD2 (Vendas)
+                rawVendas = dbSd2.map(v => {
+                    const cod = normalizeProductCode(v.produto);
+                    const filialNum = parseInt(v.filial, 10) || 1;
+                    if (!DIC_FILIAIS[filialNum]) {
+                        DIC_FILIAIS[filialNum] = `${String(filialNum).padStart(2, '0')} - Filial ${filialNum}`;
+                    }
+
+                    if (!descMap[cod]) {
+                        const descFallback = `PRODUTO ${cod}`;
+                        const clean = cleanProductDescription(descFallback);
+                        descMap[cod] = descFallback;
+                        cleanDescMap[cod] = clean;
+                        umMap[cod] = 'PC';
+                        tagMap[cod] = 'Geral';
+                        rawDicionario.push({ Codigo: cod, Descricao: descFallback, CleanDescricao: clean, Unidade: 'PC', Grupo: 'Geral' });
+                    }
+                    return {
+                        Filial: filialNum,
+                        Produto: cod,
+                        Quantidade: parseFloat(v.quantidade) || 0,
+                        "Vlr.Unitario": parseFloat(v.vlr_unitario) || 0,
+                        "Vlr.Total": parseFloat(v.vlr_total) || 0,
+                        Emissao: v.emissao ? String(v.emissao).split('T')[0] : 'Data N/D',
+                        Armazem: parseInt(v.armazem, 10) || 1,
+                        TES: String(v.tipo_saida || '').trim(),
+                        "Num. Docto.": String(v.num_documento || '-').trim(),
+                        Descricao: descMap[cod],
+                        CleanDescricao: cleanDescMap[cod],
+                        Unidade: umMap[cod]
+                    };
+                }).filter(v => v.Produto);
+
+                const timeNow = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const dateNow = new Date().toLocaleDateString('pt-BR');
+                const syncTimeStr = `${dateNow} às ${timeNow}`;
+                const syncEl = document.getElementById("sd2-last-sync-time");
+                if (syncEl) syncEl.innerText = syncTimeStr;
+
+                buildDynamicMonths();
+                buildTargetBranchSelect();
+                buildWarehouseFilters();
+                buildTESFilters();
+                buildBranchFilters();
+                populateSalesPeriods();
+
+                // RESTAURAR FILTROS SALVOS NO LOCALSTORAGE
+                const restored = restoreFiltersFromLocalStorage();
+                if (restored) {
+                    renderBranchCheckboxes();
+                    renderWarehouseCheckboxes('saldos');
+                    renderWarehouseCheckboxes('vendas');
+                    renderTESCheckboxes();
+                    if (globalSelectedProductCodes && globalSelectedProductCodes.length > 0) {
+                        selectConsolidatedProduct(globalSelectedProductDesc || globalSelectedProductCodes[0], globalSelectedProductCodes);
+                    }
+                    switchSd2SubTab(currentSd2SubTab);
+                    setPeriod(currentPeriodType);
+                }
+
+                applyFilters();
+
+                updateUIProgress(100, "Sincronização concluída com sucesso!");
+                const sectorLabel = currentSd2Sector === 'INDUSTRIA' ? 'Indústria' : 'Comércio';
+                showAlert(`Sincronização Supabase (${sectorLabel}) realizada em ${((performance.now() - startTime) / 1000).toFixed(1)}s! ${Object.keys(DIC_FILIAIS).length} filiais conectadas.`, "success");
+            } catch (err) {
+                console.error("Erro na sincronização Supabase:", err);
+                showAlert("Erro ao sincronizar dados com o Supabase.", "error");
+            } finally {
+                clearInterval(timerInterval);
+                if (syncIcon) syncIcon.classList.remove("animate-spin");
+                setTimeout(() => {
+                    if (overlay) overlay.classList.add("hidden");
+                }, 400);
+            }
+        }
+
+        function buildDynamicMonths() {
+            let maxDateStr = "";
+            if (rawVendas && rawVendas.length > 0) {
+                rawVendas.forEach(v => {
+                    if (v.Emissao && v.Emissao !== 'Data N/D') {
+                        if (v.Emissao > maxDateStr) maxDateStr = v.Emissao;
+                    }
+                });
+            }
+
+            let baseDate = new Date();
+            if (maxDateStr) {
+                const parts = maxDateStr.split('-');
+                if (parts.length >= 2) baseDate = new Date(parts[0], parts[1] - 1, 15);
+            }
+
+            MONTHS_ANALYSIS = [];
+            const monthNames = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+
+            for (let i = 0; i < 7; i++) {
+                let d = new Date(baseDate);
+                d.setMonth(d.getMonth() - i);
+                const yr = d.getFullYear();
+                const moNum = String(d.getMonth() + 1).padStart(2, '0');
+                const moLabel = monthNames[d.getMonth()];
+
+                MONTHS_ANALYSIS.push({
+                    key: `${yr}-${moNum}`,
+                    label: `${moLabel}/${String(yr).substring(2)}`
+                });
+            }
+
+            const theadFat = document.getElementById("sim-fatiada-thead");
+            if (theadFat) {
+                theadFat.innerHTML = `<th class="py-3 px-4">Filiais</th>` +
+                    MONTHS_ANALYSIS.map(m => `<th class="py-3 px-3 text-right">${m.label}</th>`).join('') +
+                    `<th class="py-3 px-4 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Total 7M</th>`;
+            }
+        }
+
+        function buildTargetBranchSelect() {
+            const selectEl = document.getElementById("sim-target-branch");
+            if (!selectEl) return;
+            const currentVal = selectEl.value;
+            selectEl.innerHTML = "";
+            const listToUse = (selectedBranches && selectedBranches.length > 0) ? selectedBranches : activeBranches;
+            const sortedIds = listToUse.slice().sort((a, b) => a - b);
+            sortedIds.forEach(id => {
+                const opt = document.createElement("option");
+                opt.value = id;
+                opt.innerText = DIC_FILIAIS[id] || `Filial ${id}`;
+                selectEl.appendChild(opt);
+            });
+            if (sortedIds.includes(parseInt(currentVal, 10))) {
+                selectEl.value = currentVal;
+            } else if (sortedIds.length > 0) {
+                selectEl.value = sortedIds[0];
+            }
+        }
+
+        function buildBranchFilters() {
+            const setBranches = new Set();
+            Object.keys(DIC_FILIAIS).forEach(id => setBranches.add(parseInt(id, 10)));
+            rawSaldos.forEach(s => { if (s.Filial !== undefined) setBranches.add(parseInt(s.Filial, 10)); });
+            rawVendas.forEach(v => { if (v.Filial !== undefined) setBranches.add(parseInt(v.Filial, 10)); });
+
+            activeBranches = Array.from(setBranches).sort((a, b) => a - b);
+            if (selectedBranches.length === 0) selectedBranches = [...activeBranches];
+            renderBranchCheckboxes();
+            buildTargetBranchSelect();
+        }
+
+        function renderBranchCheckboxes() {
+            const container = document.getElementById("branch-checkboxes-container");
+            if (!container) return;
+            container.innerHTML = "";
+            if (activeBranches.length === 0) {
+                container.innerHTML = `<span class="text-xs text-slate-400">Nenhuma filial.</span>`;
+                return;
+            }
+            activeBranches.forEach(bId => {
+                const isChecked = selectedBranches.includes(bId);
+                const div = document.createElement("div");
+                div.className = "flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700 p-1.5 rounded-xl transition";
+                div.innerHTML = `
+                    <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-200 w-full font-bold">
+                        <input type="checkbox" value="${bId}" ${isChecked ? 'checked' : ''} onchange="toggleBranchSelection(this, ${bId})" class="rounded text-blue-600 focus:ring-0">
+                        <span>${getFilialName(bId)}</span>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+            updateBranchText();
+        }
+
+        function toggleBranchSelection(cb, val) {
+            if (cb.checked) { if (!selectedBranches.includes(val)) selectedBranches.push(val); }
+            else { selectedBranches = selectedBranches.filter(v => v !== val); }
+            updateBranchText();
+            buildTargetBranchSelect();
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function selectBranches(selectAll) {
+            selectedBranches = selectAll ? [...activeBranches] : [];
+            const checkboxes = document.querySelectorAll("#branch-checkboxes-container input[type='checkbox']");
+            checkboxes.forEach(cb => { cb.checked = selectAll; });
+            updateBranchText();
+            buildTargetBranchSelect();
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function updateBranchText() {
+            const badge = document.getElementById("branch-count-badge");
+            const btnText = document.getElementById("branch-selected-text");
+            if (!badge || !btnText) return;
+            if (selectedBranches.length === activeBranches.length && activeBranches.length > 0) {
+                badge.innerText = "Todas";
+                badge.className = "text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-extrabold border border-blue-200";
+                btnText.innerText = "Todas as Filiais";
+            } else if (selectedBranches.length === 0) {
+                badge.innerText = "Nenhuma";
+                badge.className = "text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-extrabold border border-red-200";
+                btnText.innerText = "Nenhuma filial";
+            } else {
+                badge.innerText = `${selectedBranches.length}/${activeBranches.length}`;
+                badge.className = "text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-extrabold border border-blue-200";
+                btnText.innerText = `${selectedBranches.length} filial(is)`;
+            }
+        }
+
+        function buildWarehouseFilters() {
+            const setSaldos = new Set();
+            const setVendas = new Set();
+            rawSaldos.forEach(s => { if (s.Armazem !== undefined) setSaldos.add(parseInt(s.Armazem, 10)); });
+            rawVendas.forEach(v => { if (v.Armazem !== undefined) setVendas.add(parseInt(v.Armazem, 10)); });
+
+            activeSaldosWarehouses = Array.from(setSaldos).sort((a, b) => a - b);
+            if (selectedSaldosWarehouses.length === 0) selectedSaldosWarehouses = [...activeSaldosWarehouses];
+
+            activeVendasWarehouses = Array.from(setVendas).sort((a, b) => a - b);
+            if (selectedVendasWarehouses.length === 0) selectedVendasWarehouses = [...activeVendasWarehouses];
+
+            renderWarehouseCheckboxes('saldos');
+            renderWarehouseCheckboxes('vendas');
+        }
+
+        function renderWarehouseCheckboxes(type) {
+            const container = document.getElementById(`${type}-warehouse-checkboxes-container`);
+            if (!container) return;
+            container.innerHTML = "";
+            const activeList = type === 'saldos' ? activeSaldosWarehouses : activeVendasWarehouses;
+            const selectedList = type === 'saldos' ? selectedSaldosWarehouses : selectedVendasWarehouses;
+
+            if (activeList.length === 0) {
+                container.innerHTML = `<span class="text-xs text-slate-400">Nenhum armazém.</span>`;
+                return;
+            }
+            activeList.forEach(arm => {
+                const isChecked = selectedList.includes(arm);
+                const div = document.createElement("div");
+                div.className = "flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700 p-1.5 rounded-xl transition";
+                div.innerHTML = `
+                    <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-200 w-full font-bold">
+                        <input type="checkbox" value="${arm}" ${isChecked ? 'checked' : ''} onchange="toggleWarehouseSelection(this, '${type}', ${arm})" class="rounded text-blue-600 focus:ring-0">
+                        <span>Armazém ${arm}</span>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+            updateWarehouseText(type);
+        }
+
+        function toggleWarehouseSelection(cb, type, val) {
+            if (type === 'saldos') {
+                if (cb.checked) { if (!selectedSaldosWarehouses.includes(val)) selectedSaldosWarehouses.push(val); }
+                else { selectedSaldosWarehouses = selectedSaldosWarehouses.filter(v => v !== val); }
+            } else {
+                if (cb.checked) { if (!selectedVendasWarehouses.includes(val)) selectedVendasWarehouses.push(val); }
+                else { selectedVendasWarehouses = selectedVendasWarehouses.filter(v => v !== val); }
+            }
+            updateWarehouseText(type);
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function selectWarehouses(type, selectAll) {
+            if (type === 'saldos') {
+                selectedSaldosWarehouses = selectAll ? [...activeSaldosWarehouses] : [];
+            } else {
+                selectedVendasWarehouses = selectAll ? [...activeVendasWarehouses] : [];
+            }
+            const checkboxes = document.querySelectorAll(`#${type}-warehouse-checkboxes-container input[type='checkbox']`);
+            checkboxes.forEach(cb => { cb.checked = selectAll; });
+            updateWarehouseText(type);
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function updateWarehouseText(type) {
+            const badge = document.getElementById(`${type}-warehouse-count-badge`);
+            const btnText = document.getElementById(`${type}-warehouse-selected-text`);
+            const activeList = type === 'saldos' ? activeSaldosWarehouses : activeVendasWarehouses;
+            const selectedList = type === 'saldos' ? selectedSaldosWarehouses : selectedVendasWarehouses;
+            if (!badge || !btnText) return;
+
+            if (selectedList.length === activeList.length && activeList.length > 0) {
+                badge.innerText = "Todos";
+                badge.className = `text-[10px] ${type === 'saldos' ? 'text-emerald-600 bg-emerald-50' : 'text-indigo-600 bg-indigo-50'} px-1.5 py-0.5 rounded font-extrabold border border-slate-200`;
+                btnText.innerText = "Todos os armazéns";
+            } else if (selectedList.length === 0) {
+                badge.innerText = "Nenum";
+                badge.className = "text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-extrabold border border-red-200";
+                btnText.innerText = "Nenhum armazém";
+            } else {
+                badge.innerText = `${selectedList.length}/${activeList.length}`;
+                badge.className = `text-[10px] ${type === 'saldos' ? 'text-emerald-600 bg-emerald-50' : 'text-indigo-600 bg-indigo-50'} px-1.5 py-0.5 rounded font-extrabold border border-slate-200`;
+                btnText.innerText = `${selectedList.length} armazém(ns)`;
+            }
+        }
+
+        function buildTESFilters() {
+            const setTES = new Set();
+            rawVendas.forEach(v => { if (v.TES) setTES.add(v.TES); });
+            activeTES = Array.from(setTES).sort();
+            if (selectedTES.length === 0) selectedTES = [...activeTES];
+            renderTESCheckboxes();
+        }
+
+        function renderTESCheckboxes() {
+            const container = document.getElementById("tes-checkboxes-container");
+            if (!container) return;
+            container.innerHTML = "";
+            if (activeTES.length === 0) {
+                container.innerHTML = `<span class="text-xs text-slate-400">Nenhuma TES.</span>`;
+                return;
+            }
+            activeTES.forEach(tes => {
+                const isChecked = selectedTES.includes(tes);
+                const div = document.createElement("div");
+                div.className = "flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700 p-1.5 rounded-xl transition";
+                div.innerHTML = `
+                    <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-200 w-full font-bold">
+                        <input type="checkbox" value="${tes}" ${isChecked ? 'checked' : ''} onchange="toggleTESSelection(this, '${tes}')" class="rounded text-purple-600 focus:ring-0">
+                        <span>TES ${tes}</span>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+            updateTESText();
+        }
+
+        function toggleTESSelection(cb, val) {
+            if (cb.checked) { if (!selectedTES.includes(val)) selectedTES.push(val); }
+            else { selectedTES = selectedTES.filter(v => v !== val); }
+            updateTESText();
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function selectTES(selectAll) {
+            selectedTES = selectAll ? [...activeTES] : [];
+            const checkboxes = document.querySelectorAll("#tes-checkboxes-container input[type='checkbox']");
+            checkboxes.forEach(cb => { cb.checked = selectAll; });
+            updateTESText();
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function updateTESText() {
+            const badge = document.getElementById("tes-count-badge");
+            const btnText = document.getElementById("tes-selected-text");
+            if (!badge || !btnText) return;
+
+            if (selectedTES.length === activeTES.length && activeTES.length > 0) {
+                badge.innerText = "Todas";
+                badge.className = "text-[10px] text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded font-extrabold border border-purple-200";
+                btnText.innerText = "Todas as TES";
+            } else if (selectedTES.length === 0) {
+                badge.innerText = "Nenhuma";
+                badge.className = "text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-extrabold border border-red-200";
+                btnText.innerText = "Nenhuma TES";
+            } else {
+                badge.innerText = `${selectedTES.length}/${activeTES.length}`;
+                badge.className = "text-[10px] text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded font-extrabold border border-purple-200";
+                btnText.innerText = `${selectedTES.length} TES`;
+            }
+        }
+
+        // --- SISTEMA DE AUTOCOMPLETE MESTRE SB1 & CONSOLIDAÇÃO DE DESCRIÇÕES IGUAIS ---
+        function handleGlobalProductInput(val) {
+            const listEl = document.getElementById("global-autocomplete-list");
+            if (!listEl) return;
+            listEl.innerHTML = "";
+            const searchVal = val.toLowerCase().trim();
+            if (!searchVal) {
+                listEl.classList.add("hidden");
+                return;
+            }
+
+            const normTyped = normalizeProductCode(val).toLowerCase().trim();
+            const searchClean = cleanProductDescription(val).toLowerCase().trim();
+
+            const matchedItems = rawDicionario.filter(d => {
+                const codMatch = d.Codigo.toLowerCase().includes(searchVal) || d.Codigo.toLowerCase().includes(normTyped);
+                const descMatch = d.Descricao.toLowerCase().includes(searchVal) || d.CleanDescricao.toLowerCase().includes(searchClean);
+                return codMatch || descMatch;
+            });
+
+            if (matchedItems.length === 0) {
+                listEl.classList.add("hidden");
+                return;
+            }
+
+            const groupedMap = new Map();
+            matchedItems.forEach(d => {
+                const key = d.CleanDescricao;
+                if (!groupedMap.has(key)) {
+                    groupedMap.set(key, { cleanDesc: key, items: [] });
+                }
+                groupedMap.get(key).items.push(d);
+            });
+
+            const groupList = Array.from(groupedMap.values()).map(g => {
+                const sortedCodes = Array.from(new Set(g.items.map(i => i.Codigo))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                g.items.sort((a, b) => a.Codigo.localeCompare(b.Codigo, undefined, { numeric: true }));
+                return {
+                    cleanDesc: g.cleanDesc,
+                    items: g.items,
+                    codes: sortedCodes,
+                    primaryCode: sortedCodes[0] || '99999999'
+                };
+            });
+
+            groupList.sort((a, b) => a.primaryCode.localeCompare(b.primaryCode, undefined, { numeric: true }));
+            const groups = groupList.slice(0, 20);
+
+            groups.forEach(g => {
+                const codes = g.codes;
+                const isMulti = codes.length > 1;
+
+                const div = document.createElement("div");
+                div.className = "p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs text-slate-700 dark:text-slate-200 cursor-pointer transition font-bold border-b border-slate-100 dark:border-slate-700";
+
+                if (isMulti) {
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="space-y-0.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 text-[9px] font-black uppercase border border-blue-200">
+                                        Consolidar ${codes.length} Códigos
+                                    </span>
+                                    <span class="font-black text-slate-900 dark:text-white">${g.cleanDesc}</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-semibold">Códigos: ${codes.join(', ')}</p>
+                            </div>
+                            <i data-lucide="layers" class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0"></i>
+                        </div>
+                    `;
+                    div.onclick = function() {
+                        selectConsolidatedProduct(g.cleanDesc, codes);
+                        listEl.classList.add("hidden");
+                    };
+                } else {
+                    const singleItem = g.items[0];
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-blue-600 dark:text-blue-400">${singleItem.Codigo}</span>
+                                <span class="font-bold text-slate-800 dark:text-slate-100">${singleItem.Descricao}</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                        </div>
+                    `;
+                    div.onclick = function() {
+                        selectSingleProduct(singleItem.Codigo);
+                        listEl.classList.add("hidden");
+                    };
+                }
+                listEl.appendChild(div);
+            });
+
+            listEl.classList.remove("hidden");
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function handleGlobalProductKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const listEl = document.getElementById("global-autocomplete-list");
+                const firstOpt = listEl ? listEl.querySelector("div") : null;
+                if (firstOpt) firstOpt.click();
+                else {
+                    const typed = e.target.value.trim();
+                    if (typed) selectSingleProduct(typed);
+                }
+                if (listEl) listEl.classList.add("hidden");
+            }
+        }
+
+        function selectConsolidatedProduct(cleanDesc, codesArray) {
+            globalSelectedProductCodes = codesArray;
+            globalSelectedProductDesc = cleanDesc;
+            globalIsConsolidated = codesArray.length > 1;
+
+            const inputEl = document.getElementById("global-product-code");
+            if (inputEl) inputEl.value = cleanDesc;
+
+            const sampleCode = codesArray[0];
+            const sampleSb1 = rawDicionario.find(d => d.Codigo === sampleCode);
+            const umName = sampleSb1 ? sampleSb1.Unidade : 'PC';
+
+            const badgeUm = document.getElementById("global-um-badge");
+            const btnClear = document.getElementById("btn-clear-global-product");
+            const descEl = document.getElementById("sim-product-desc");
+
+            if (badgeUm) badgeUm.innerText = `UM: ${umName}`;
+            if (btnClear) btnClear.classList.remove("hidden");
+
+            if (descEl) {
+                if (codesArray.length > 1) {
+                    descEl.innerHTML = `<span class="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 text-[10px] font-black uppercase border border-blue-200 mr-2">CONSOLIDADO (${codesArray.length} CÓDIGOS: ${codesArray.join(', ')})</span> ${cleanDesc.toUpperCase()}`;
+                } else {
+                    descEl.innerText = `${codesArray[0]} — ${cleanDesc.toUpperCase()}`;
+                }
+            }
+
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function selectSingleProduct(code) {
+            const normCode = normalizeProductCode(code);
+            const itemSb1 = rawDicionario.find(d => d.Codigo === normCode);
+            const descName = itemSb1 ? itemSb1.Descricao : `MATERIAL ${normCode}`;
+            selectConsolidatedProduct(descName, [normCode]);
+        }
+
+        function selectGlobalProduct(code) {
+            selectSingleProduct(code);
+        }
+
+        function clearGlobalProduct() {
+            globalSelectedProductCodes = [];
+            globalSelectedProductDesc = "";
+            globalIsConsolidated = false;
+
+            const inputEl = document.getElementById("global-product-code");
+            const badgeUm = document.getElementById("global-um-badge");
+            const btnClear = document.getElementById("btn-clear-global-product");
+            const descEl = document.getElementById("sim-product-desc");
+
+            if (inputEl) inputEl.value = "";
+            if (badgeUm) badgeUm.innerText = "Todos";
+            if (btnClear) btnClear.classList.add("hidden");
+            if (descEl) descEl.innerText = "Nenhum material selecionado. Use o campo de busca acima para filtrar.";
+
+            const listEl = document.getElementById("global-autocomplete-list");
+            if (listEl) listEl.classList.add("hidden");
+
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+        }
+
+        function clearFilters() {
+            selectedBranches = [...activeBranches];
+            selectedSaldosWarehouses = [...activeSaldosWarehouses];
+            selectedVendasWarehouses = [...activeVendasWarehouses];
+            selectedTES = [...activeTES];
+            globalSelectedProductCodes = [];
+            globalSelectedProductDesc = "";
+            globalIsConsolidated = false;
+
+            const inputEl = document.getElementById("global-product-code");
+            if (inputEl) inputEl.value = "";
+            const badgeUm = document.getElementById("global-um-badge");
+            if (badgeUm) badgeUm.innerText = "Todos";
+            const btnClear = document.getElementById("btn-clear-global-product");
+            if (btnClear) btnClear.classList.add("hidden");
+            const descEl = document.getElementById("sim-product-desc");
+            if (descEl) descEl.innerText = "Nenhum material selecionado. Use o campo de busca acima para filtrar.";
+
+            renderBranchCheckboxes();
+            renderWarehouseCheckboxes('saldos');
+            renderWarehouseCheckboxes('vendas');
+            renderTESCheckboxes();
+
+            saveFiltersToLocalStorage();
+            applyFilters();
+            recalculateSimulation();
+            showAlert(`Filtros do setor ${currentSd2Sector === 'INDUSTRIA' ? 'Indústria' : 'Comércio'} redefinidos para os valores padrão.`, "info");
+        }
+
+        function getPeriodKeys() {
+            const uniquePeriods = new Set();
+            rawVendas.forEach(v => {
+                if (v.Emissao && v.Emissao !== 'Data N/D') {
+                    const yrMo = v.Emissao.substring(0, 7);
+                    if (/^\d{4}-\d{2}$/.test(yrMo)) uniquePeriods.add(yrMo);
+                }
+            });
+            return Array.from(uniquePeriods).sort();
+        }
+
+        function populateSalesPeriods() {
+            const fromEl = document.getElementById("sales-period-from");
+            const toEl = document.getElementById("sales-period-to");
+            if (!fromEl || !toEl) return;
+
+            const sortedPeriods = getPeriodKeys();
+            const prevFrom = fromEl.value;
+            const prevTo = toEl.value;
+
+            fromEl.innerHTML = "";
+            toEl.innerHTML = "";
+
+            if (sortedPeriods.length === 0) {
+                const opt = document.createElement("option");
+                opt.value = ""; opt.innerText = "Nenhum período";
+                fromEl.appendChild(opt);
+                toEl.appendChild(opt.cloneNode(true));
+                return;
+            }
+
+            const monthNamesPt = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            sortedPeriods.forEach(p => {
+                const [yr, mo] = p.split("-");
+                const label = `${monthNamesPt[parseInt(mo, 10) - 1] || mo} / ${yr}`;
+                const optFrom = document.createElement("option");
+                optFrom.value = p; optFrom.innerText = label;
+                fromEl.appendChild(optFrom);
+
+                const optTo = document.createElement("option");
+                optTo.value = p; optTo.innerText = label;
+                toEl.appendChild(optTo);
+            });
+
+            if (sortedPeriods.includes(prevFrom)) fromEl.value = prevFrom;
+            else fromEl.value = sortedPeriods[0];
+
+            if (sortedPeriods.includes(prevTo)) toEl.value = prevTo;
+            else toEl.value = sortedPeriods[sortedPeriods.length - 1];
+
+            salesFromPeriod = fromEl.value;
+            salesToPeriod = toEl.value;
+        }
+
+        function setPeriod(type) {
+            currentPeriodType = type;
+            const buttons = ['current', '6months', '1year', 'custom'];
+            buttons.forEach(t => {
+                const btn = document.getElementById(`btn-period-${t}`);
+                if (btn) {
+                    if (t === type) {
+                        btn.className = "flex-1 xl:flex-none px-3 py-1.5 rounded-xl transition-all bg-blue-600 text-white shadow-xs cursor-pointer";
+                    } else {
+                        btn.className = "flex-1 xl:flex-none px-3 py-1.5 rounded-xl transition-all text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer";
+                    }
+                }
+            });
+
+            const sortedPeriods = getPeriodKeys();
+            if (sortedPeriods.length === 0) return;
+
+            let lastPeriod = sortedPeriods[sortedPeriods.length - 1];
+            let parts = lastPeriod.split('-');
+            let baseDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 15);
+
+            let fromKey = sortedPeriods[0];
+            let toKey = lastPeriod;
+
+            if (type === 'current') {
+                fromKey = lastPeriod;
+                toKey = lastPeriod;
+            } else if (type === '6months') {
+                let d = new Date(baseDate);
+                d.setMonth(d.getMonth() - 5);
+                fromKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            } else if (type === '1year') {
+                let d = new Date(baseDate);
+                d.setMonth(d.getMonth() - 11);
+                fromKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            } else if (type === 'custom') {
+                const fromEl = document.getElementById("sales-period-from");
+                const toEl = document.getElementById("sales-period-to");
+                if (fromEl && toEl) {
+                    salesFromPeriod = fromEl.value;
+                    salesToPeriod = toEl.value;
+                }
+                saveFiltersToLocalStorage();
+                applyFilters();
+                return;
+            }
+
+            salesFromPeriod = fromKey;
+            salesToPeriod = toKey;
+            const fromEl = document.getElementById("sales-period-from");
+            const toEl = document.getElementById("sales-period-to");
+            if (fromEl && Array.from(fromEl.options).some(o => o.value === fromKey)) fromEl.value = fromKey;
+            if (toEl && Array.from(toEl.options).some(o => o.value === toKey)) toEl.value = toKey;
+
+            saveFiltersToLocalStorage();
+            applyFilters();
+        }
+
+        function applyCustomPeriod() {
+            const fromEl = document.getElementById("sales-period-from");
+            const toEl = document.getElementById("sales-period-to");
+            if (fromEl && toEl) {
+                if (fromEl.value > toEl.value) fromEl.value = toEl.value;
+                salesFromPeriod = fromEl.value;
+                salesToPeriod = toEl.value;
+            }
+            saveFiltersToLocalStorage();
+            applyFilters();
+        }
+
+        function switchSd2SubTab(subTab) {
+            currentSd2SubTab = subTab;
+            const tabs = ['remanejamento', 'vendas', 'estoque', 'analitico'];
+            tabs.forEach(t => {
+                const panel = document.getElementById(`sd2-tab-${t}`);
+                const btn = document.getElementById(`sd2-tab-btn-${t}`);
+                if (panel) panel.classList.add("hidden");
+                if (btn) {
+                    btn.className = "flex-1 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 cursor-pointer whitespace-nowrap";
+                }
+            });
+
+            const activePanel = document.getElementById(`sd2-tab-${subTab}`);
+            const activeBtn = document.getElementById(`sd2-tab-btn-${subTab}`);
+            if (activePanel) activePanel.classList.remove("hidden");
+            if (activeBtn) {
+                activeBtn.className = "flex-1 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all bg-[#002f6c] text-white shadow-sm cursor-pointer whitespace-nowrap";
+            }
+
+            if (subTab === 'vendas' || subTab === 'estoque') {
+                setTimeout(() => { renderCharts(); }, 100);
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            saveFiltersToLocalStorage();
+        }
+
+        function applyFilters() {
+            filteredSaldos = rawSaldos.filter(item => {
+                const matchBranch = selectedBranches.includes(item.Filial);
+                const matchWh = selectedSaldosWarehouses.includes(item.Armazem);
+                const matchProd = (globalSelectedProductCodes.length === 0) || globalSelectedProductCodes.includes(item.Produto);
+                return matchBranch && matchWh && matchProd;
+            });
+
+            filteredVendas = rawVendas.filter(item => {
+                const matchBranch = selectedBranches.includes(item.Filial);
+                const matchWh = selectedVendasWarehouses.includes(item.Armazem);
+                const matchTES = selectedTES.includes(item.TES);
+                const matchProd = (globalSelectedProductCodes.length === 0) || globalSelectedProductCodes.includes(item.Produto);
+
+                let matchPeriod = true;
+                if (item.Emissao && item.Emissao !== 'Data N/D') {
+                    const yrMo = item.Emissao.substring(0, 7);
+                    if (salesFromPeriod && yrMo < salesFromPeriod) matchPeriod = false;
+                    if (salesToPeriod && yrMo > salesToPeriod) matchPeriod = false;
+                }
+                return matchBranch && matchWh && matchTES && matchProd && matchPeriod;
+            });
+
+            updateKPIs();
+            renderCharts();
+            renderTablesAndLists();
+        }
+
+        function updateKPIs() {
+            const faturamento = filteredVendas.reduce((acc, v) => acc + (v["Vlr.Total"] || 0), 0);
+            const numDoctos = new Set(filteredVendas.map(v => v["Num. Docto."])).size;
+            const ticketMedio = numDoctos > 0 ? (faturamento / numDoctos) : 0;
+
+            let qtdPC = 0, qtdKG = 0;
+            filteredVendas.forEach(v => {
+                const u = (v.Unidade || 'PC').toUpperCase();
+                if (u.includes('KG')) qtdKG += v.Quantidade;
+                else qtdPC += v.Quantidade;
+            });
+
+            let estPC = 0, estKG = 0;
+            filteredSaldos.forEach(s => {
+                const u = (s.Unidade || 'PC').toUpperCase();
+                if (u.includes('KG')) estKG += s["Qtde.1a.U.M."];
+                else estPC += s["Qtde.1a.U.M."];
+            });
+
+            const kpiFat = document.getElementById("kpi-faturamento");
+            const kpiTicket = document.getElementById("kpi-ticket");
+            const kpiQtdPc = document.getElementById("kpi-qtd-vendas-pc");
+            const kpiQtdKg = document.getElementById("kpi-qtd-vendas-kg");
+            const kpiEstPc = document.getElementById("kpi-estoque-pc");
+            const kpiEstKg = document.getElementById("kpi-estoque-kg");
+
+            if (kpiFat) kpiFat.innerText = formatCurrency(faturamento);
+            if (kpiTicket) kpiTicket.innerText = formatCurrency(ticketMedio);
+            if (kpiQtdPc) kpiQtdPc.innerText = `${qtdPC.toLocaleString('pt-BR')} PC`;
+            if (kpiQtdKg) kpiQtdKg.innerText = `${qtdKG.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} KG`;
+            if (kpiEstPc) kpiEstPc.innerText = `${estPC.toLocaleString('pt-BR')} PC`;
+            if (kpiEstKg) kpiEstKg.innerText = `${estKG.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} KG`;
+        }
+
+        function sanitizeQuantityInput() {
+            const inputEl = document.getElementById("sim-qty");
+            if (!inputEl) return;
+            let val = inputEl.value.trim();
+            if (val === '') inputEl.value = 0;
+            else {
+                let cleaned = val.replace(/^0+(?=\d)/, '');
+                if (cleaned === '') cleaned = '0';
+                inputEl.value = cleaned;
+            }
+            saveFiltersToLocalStorage();
+            recalculateSimulation();
+        }
+
+        function sanitizeQuantityInputOnInput() {
+            const inputEl = document.getElementById("sim-qty");
+            if (!inputEl) return;
+            let val = inputEl.value;
+            if (val.length > 1 && val.startsWith('0')) {
+                inputEl.value = val.replace(/^0+(?=\d)/, '');
+            }
+            saveFiltersToLocalStorage();
+            recalculateSimulation();
+        }
+
+        // --- CÁLCULO E RE-CÁLCULO DINÂMICO DA SIMULAÇÃO (SUPORTA DILUIÇÃO GERAL E REMANEJAMENTO) ---
+        function recalculateSimulation() {
+            const qtyInput = document.getElementById("sim-qty");
+            const multInput = document.getElementById("sim-multiplier");
+            const targetSelect = document.getElementById("sim-target-branch");
+            const methodSelect = document.getElementById("sim-dilution-method");
+
+            const qtyToRequest = qtyInput ? (parseFloat(qtyInput.value) || 0) : 0;
+            const simMultiplier = multInput ? (parseFloat(multInput.value) || 1) : 1;
+            const targetBranch = targetSelect ? (parseInt(targetSelect.value, 10) || 1) : 1;
+            const dilutionMethod = methodSelect ? methodSelect.value : 'balanced';
+
+            const tbodySim = document.getElementById("sim-tbody");
+            const tbodyFat = document.getElementById("sim-fatiada-tbody");
+            const totalPosEl = document.getElementById("sim-total-saldo-pos");
+            const alertBox = document.getElementById("sim-alert-box");
+            const alertTitle = document.getElementById("sim-alert-title");
+            const alertsContainer = document.getElementById("sim-alerts-container");
+            const simTableHeader = document.getElementById("sim-table-header");
+            const simTableTitle = document.getElementById("sim-table-title");
+
+            saveFiltersToLocalStorage();
+
+            if (!tbodySim) return;
+
+            if (!globalSelectedProductCodes || globalSelectedProductCodes.length === 0) {
+                tbodySim.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-400 font-bold">Selecione um produto ou família no campo de busca para iniciar a análise de cobertura.</td></tr>`;
+                if (tbodyFat) tbodyFat.innerHTML = "";
+                if (totalPosEl) totalPosEl.innerText = "0 PC";
+                if (alertBox) alertBox.classList.add("hidden");
+                return;
+            }
+
+            const prodSaldos = rawSaldos.filter(s => globalSelectedProductCodes.includes(s.Produto) && selectedSaldosWarehouses.includes(s.Armazem));
+            const prodVendas = rawVendas.filter(v => globalSelectedProductCodes.includes(v.Produto) && selectedVendasWarehouses.includes(v.Armazem) && selectedTES.includes(v.TES));
+
+            const sampleCode = globalSelectedProductCodes[0];
+            const pInfo = rawDicionario.find(d => d.Codigo === sampleCode) || rawSaldos.find(s => s.Produto === sampleCode) || rawVendas.find(v => v.Produto === sampleCode);
+            const activeUnit = pInfo ? (pInfo.Unidade || 'PC') : 'PC';
+
+            const analysisKeys = MONTHS_ANALYSIS.map(m => m.key);
+            const salesMap = {};
+            prodVendas.forEach(v => {
+                const yrMo = v.Emissao ? v.Emissao.substring(0, 7) : '';
+                if (analysisKeys.includes(yrMo)) {
+                    if (!salesMap[v.Filial]) salesMap[v.Filial] = {};
+                    if (!salesMap[v.Filial][yrMo]) salesMap[v.Filial][yrMo] = { qty: 0, val: 0 };
+                    salesMap[v.Filial][yrMo].qty += v.Quantidade;
+                    salesMap[v.Filial][yrMo].val += v["Vlr.Total"];
+                }
+            });
+
+            const branchProdQtyMap = {};
+            rawVendas.forEach(v => {
+                if (selectedVendasWarehouses.includes(v.Armazem) && selectedTES.includes(v.TES)) {
+                    if (!branchProdQtyMap[v.Filial]) branchProdQtyMap[v.Filial] = {};
+                    branchProdQtyMap[v.Filial][v.Produto] = (branchProdQtyMap[v.Filial][v.Produto] || 0) + v.Quantidade;
+                }
+            });
+
+            // APENAS AS FILIAIS MARCADAS/SELECIONADAS NO FILTRO SUPERIOR
+            const activeFiliaisList = selectedBranches.slice().sort((a, b) => a - b);
+            const branchBaseStats = [];
+
+            activeFiliaisList.forEach(filialId => {
+                const filialNome = getFilialName(filialId);
+                const filialSaldos = prodSaldos.filter(s => s.Filial === filialId);
+                const saldoAtual = filialSaldos.reduce((acc, curr) => acc + curr["Qtde.1a.U.M."], 0);
+
+                let totalQtdVendas = 0;
+                let totalValVendas = 0;
+                analysisKeys.forEach(m => {
+                    if (salesMap[filialId] && salesMap[filialId][m]) {
+                        totalQtdVendas += salesMap[filialId][m].qty;
+                        totalValVendas += salesMap[filialId][m].val;
+                    }
+                });
+
+                const numMonths = MONTHS_ANALYSIS.length || 7;
+                const mediaMesQtd = parseFloat((totalQtdVendas / numMonths).toFixed(1));
+                const mediaMesFat = parseFloat((totalValVendas / numMonths).toFixed(2));
+
+                branchBaseStats.push({ filialId, filialNome, saldoAtual, totalQtdVendas, mediaMesQtd, mediaMesFat });
+            });
+
+            // SE ESTIVER EM MODO DILUIÇÃO GERAL, CALCULA ALOCAÇÃO PROPORCIONAL POR MULTIPLICADOR DE LOTES
+            let dilutionAllocations = {};
+            if (simMode === 'dilution') {
+                dilutionAllocations = calculateBalancedDilution(qtyToRequest, branchBaseStats, dilutionMethod, simMultiplier);
+            }
+
+            // ATUALIZAR CABEÇALHOS DA TABELA DE ACORDO COM O MODO
+            if (simTableHeader && simTableTitle) {
+                if (simMode === 'dilution') {
+                    const multLabel = simMultiplier > 1 ? ` (Lotes de ${simMultiplier.toLocaleString('pt-BR')} ${activeUnit})` : '';
+                    simTableTitle.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Solicitação Geral Distribuída${multLabel} para ${activeFiliaisList.length} Unidades`;
+                    simTableHeader.innerHTML = `
+                        <th class="py-3 px-4">Filiais</th>
+                        <th class="py-3 px-3 text-center">ABC</th>
+                        <th class="py-3 px-3 text-center">Status</th>
+                        <th class="py-3 px-3 text-center">Nova Cobertura</th>
+                        <th class="py-3 px-3 text-right">Saldo Atual</th>
+                        <th class="py-3 px-3 text-right bg-emerald-50 dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 font-black">Qtd. Alocada (+ q)</th>
+                        <th class="py-3 px-3 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Saldo Pós-Entrada</th>
+                        <th class="py-3 px-3 text-right">Saídas (7M)</th>
+                        <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
+                        <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
+                    `;
+                } else {
+                    simTableTitle.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Simulador de Cobertura de Estoque por Filial`;
+                    simTableHeader.innerHTML = `
+                        <th class="py-3 px-4">Filiais</th>
+                        <th class="py-3 px-3 text-center">ABC</th>
+                        <th class="py-3 px-3 text-center">Status</th>
+                        <th class="py-3 px-3 text-center">Cobertura (Mês)</th>
+                        <th class="py-3 px-3 text-right">Saldo Atual</th>
+                        <th class="py-3 px-3 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Saldo Pós-Envio</th>
+                        <th class="py-3 px-3 text-right">Saídas (7M)</th>
+                        <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
+                        <th class="py-3 px-3 text-right">Fat. Médio/Mês</th>
+                        <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
+                    `;
+                }
+            }
+
+            let grandTotalSaldoPos = 0;
+            const simulatedBranches = [];
+
+            branchBaseStats.forEach(b => {
+                let curveABC = "C";
+                const branchSales = branchProdQtyMap[b.filialId] || {};
+                const sortedProds = Object.keys(branchSales).map(p => ({ code: p, qty: branchSales[p] })).sort((a, b) => b.qty - a.qty);
+                const totalBranchQty = sortedProds.reduce((acc, p) => acc + p.qty, 0);
+
+                if (totalBranchQty > 0) {
+                    let cumulativeQty = 0;
+                    for (let i = 0; i < sortedProds.length; i++) {
+                        const prodQty = sortedProds[i].qty;
+                        const prevPct = (cumulativeQty / totalBranchQty) * 100;
+                        cumulativeQty += prodQty;
+                        if (globalSelectedProductCodes.includes(sortedProds[i].code)) {
+                            if (prevPct < 80) curveABC = "A";
+                            else if (prevPct < 95) curveABC = "B";
+                            else curveABC = "C";
+                            break;
+                        }
+                    }
+                }
+
+                let allocatedQty = 0;
+                let saldoPosEnvio = b.saldoAtual;
+
+                if (simMode === 'dilution') {
+                    allocatedQty = dilutionAllocations[b.filialId] || 0;
+                    saldoPosEnvio = b.saldoAtual + allocatedQty;
+                    grandTotalSaldoPos += saldoPosEnvio;
+                } else {
+                    if (b.filialId === targetBranch) {
+                        saldoPosEnvio = b.saldoAtual + qtyToRequest;
+                        grandTotalSaldoPos = saldoPosEnvio;
+                    } else {
+                        saldoPosEnvio = b.saldoAtual - qtyToRequest;
+                    }
+                }
+
+                let cobertura = 0;
+                if (b.mediaMesQtd > 0) {
+                    cobertura = parseFloat((saldoPosEnvio / b.mediaMesQtd).toFixed(1));
+                } else {
+                    cobertura = saldoPosEnvio > 0 ? 99.0 : 0.0;
+                }
+
+                let statusText = "IDEAL";
+                let statusClass = "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800";
+
+                if (cobertura < 3.0) {
+                    statusText = "CRÍTICO";
+                    statusClass = "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800";
+                } else if (cobertura > 6.0) {
+                    statusText = "EXCESSO";
+                    statusClass = "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800";
+                }
+
+                const dif = b.saldoAtual - b.totalQtdVendas;
+
+                simulatedBranches.push({
+                    filialId: b.filialId, filialNome: b.filialNome, curveABC, statusText, statusClass, cobertura,
+                    saldoAtual: b.saldoAtual, allocatedQty, saldoPosEnvio, totalQtdVendas: b.totalQtdVendas,
+                    mediaMesQtd: b.mediaMesQtd, mediaMesFat: b.mediaMesFat, dif
+                });
+            });
+
+            if (totalPosEl) totalPosEl.innerText = `${grandTotalSaldoPos.toLocaleString('pt-BR')} ${activeUnit}`;
+
+            tbodySim.innerHTML = "";
+            simulatedBranches.forEach(b => {
+                const tr = document.createElement("tr");
+                const isTarget = simMode === 'remanejamento' && b.filialId === targetBranch;
+                tr.className = isTarget || (simMode === 'dilution' && b.allocatedQty > 0)
+                    ? "bg-emerald-50/40 dark:bg-slate-700/60 font-black border-l-4 border-emerald-600"
+                    : "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
+
+                if (simMode === 'dilution') {
+                    const palletCount = simMultiplier > 1 ? Math.floor(b.allocatedQty / simMultiplier) : 0;
+                    const palletBadge = palletCount > 0
+                        ? `<span class="ml-1 text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 px-1.5 py-0.5 rounded-full font-black border border-emerald-300">(${palletCount} ${palletCount === 1 ? 'Palete' : 'Paletes'})</span>`
+                        : '';
+
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            ${b.filialNome}
+                            ${b.allocatedQty > 0 ? `<span class="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">+ ${b.allocatedQty.toLocaleString('pt-BR')} ${activeUnit}</span>` : ''}
+                        </td>
+                        <td class="py-3 px-3 text-center font-black text-slate-500">${b.curveABC}</td>
+                        <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-full font-black text-[10px] border ${b.statusClass}">${b.statusText}</span></td>
+                        <td class="py-3 px-3 text-center font-black ${b.cobertura < 3.0 ? 'text-red-500' : 'text-slate-800 dark:text-slate-100'}">${b.cobertura === 99.0 ? '99+ M' : b.cobertura.toLocaleString('pt-BR')} M</td>
+                        <td class="py-3 px-3 text-right font-semibold text-slate-600 dark:text-slate-300">${b.saldoAtual.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right font-black ${b.allocatedQty > 0 ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40' : 'text-slate-400'}">+ ${b.allocatedQty.toLocaleString('pt-BR')}${palletBadge}</td>
+                        <td class="py-3 px-3 text-right font-black text-blue-600 bg-blue-50 dark:bg-slate-700">${b.saldoPosEnvio.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right text-slate-600 dark:text-slate-300">${b.totalQtdVendas.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right text-slate-800 dark:text-slate-200 font-bold">${b.mediaMesQtd.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-4 text-right font-black ${b.dif < 0 ? 'text-red-500' : 'text-emerald-600'}">${b.dif.toLocaleString('pt-BR')}</td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            ${b.filialNome}
+                            ${isTarget ? '<span class="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">Destino</span>' : ''}
+                        </td>
+                        <td class="py-3 px-3 text-center font-black text-slate-500">${b.curveABC}</td>
+                        <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-full font-black text-[10px] border ${b.statusClass}">${b.statusText}</span></td>
+                        <td class="py-3 px-3 text-center font-black ${b.cobertura < 3.0 ? 'text-red-500' : 'text-slate-800 dark:text-slate-100'}">${b.cobertura === 99.0 ? '99+ M' : b.cobertura.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right font-semibold text-slate-600 dark:text-slate-300">${b.saldoAtual.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right font-black ${isTarget ? 'text-blue-600 bg-blue-50 dark:bg-slate-700' : 'text-slate-800 dark:text-slate-200'}">${b.saldoPosEnvio.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right text-slate-600 dark:text-slate-300">${b.totalQtdVendas.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right text-slate-800 dark:text-slate-200 font-bold">${b.mediaMesQtd.toLocaleString('pt-BR')}</td>
+                        <td class="py-3 px-3 text-right text-slate-600 dark:text-slate-300">${formatCurrency(b.mediaMesFat)}</td>
+                        <td class="py-3 px-4 text-right font-black ${b.dif < 0 ? 'text-red-500' : 'text-emerald-600'}">${b.dif.toLocaleString('pt-BR')}</td>
+                    `;
+                }
+                tbodySim.appendChild(tr);
+            });
+
+            // Box de Alertas e Resumo
+            if (alertsContainer && alertBox) {
+                alertsContainer.innerHTML = "";
+                const alertsList = [];
+
+                if (simMode === 'dilution') {
+                    if (alertTitle) alertTitle.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-emerald-500"></i> Resumo da Diluição Geral entre Unidades`;
+                    if (qtyToRequest > 0) {
+                        const totalAllocated = Object.values(dilutionAllocations).reduce((a, c) => a + c, 0);
+                        if (simMultiplier > 1) {
+                            const totalPallets = Math.floor(totalAllocated / simMultiplier);
+                            const remainder = qtyToRequest - totalAllocated;
+                            alertsList.push(`<div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-800 flex items-center gap-2">✅ <span><strong>Diluição por Lotes/Paletes Concluída:</strong> Foram distribuídos <strong>${totalPallets} Lotes/Paletes inteiros</strong> (${totalAllocated.toLocaleString('pt-BR')} ${activeUnit}) de <strong>${simMultiplier.toLocaleString('pt-BR')} ${activeUnit} cada</strong> entre as filiais selecionadas.</span></div>`);
+                            if (remainder > 0) {
+                                alertsList.push(`<div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs font-bold text-amber-800 flex items-center gap-2">⚠️ <span><strong>Sobra de Lote:</strong> Restam <strong>${remainder.toLocaleString('pt-BR')} ${activeUnit}</strong> que não completam 1 lote inteiro de ${simMultiplier.toLocaleString('pt-BR')} ${activeUnit}.</span></div>`);
+                            }
+                        } else {
+                            alertsList.push(`<div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-800 flex items-center gap-2">✅ <span><strong>Diluição Concluída:</strong> A quantidade total de <strong>${totalAllocated.toLocaleString('pt-BR')} ${activeUnit}</strong> foi distribuída entre as unidades ativas para equilibrar e uniformizar o nível de cobertura de estoque de todas as filiais.</span></div>`);
+                        }
+                    } else {
+                        alertsList.push(`<div class="p-3 bg-blue-50 border border-blue-200 rounded-2xl text-xs font-bold text-blue-800 flex items-center gap-2">ℹ️ <span>Digite a quantidade total da solicitação no campo acima para visualizar a diluição proporcional automática entre todas as filiais.</span></div>`);
+                    }
+                } else {
+                    if (alertTitle) alertTitle.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 animate-pulse"></i> Análise de Viabilidade do Remanejamento`;
+                    if (qtyToRequest > 0) {
+                        simulatedBranches.forEach(b => {
+                            if (b.filialId !== targetBranch) {
+                                if (b.saldoPosEnvio < 0) {
+                                    alertsList.push(`<div class="p-3 bg-red-50 border border-red-200 rounded-2xl text-xs font-bold text-red-800 flex items-center gap-2">🛑 <span><strong>Impedimento:</strong> A transferência de ${qtyToRequest} ${activeUnit} causará saldo negativo (${b.saldoPosEnvio} ${activeUnit}) na filial <strong>${b.filialNome}</strong>.</span></div>`);
+                                } else if (b.saldoPosEnvio === 0 && b.saldoAtual > 0) {
+                                    alertsList.push(`<div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs font-bold text-amber-800 flex items-center gap-2">⚠️ <span><strong>Esgotamento:</strong> O remanejamento zerará o estoque da filial doadora <strong>${b.filialNome}</strong>.</span></div>`);
+                                } else if (b.cobertura < 3.0 && b.cobertura !== 99.0) {
+                                    alertsList.push(`<div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs font-bold text-amber-800 flex items-center gap-2">⚠️ <span><strong>Risco de Ruptura:</strong> A cobertura da filial doadora <strong>${b.filialNome}</strong> cairá para ${b.cobertura} meses.</span></div>`);
+                                } else if (b.statusText === "EXCESSO" || b.statusText === "IDEAL") {
+                                    alertsList.push(`<div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-800 flex items-center gap-2">✅ <span><strong>Envio Aprovado:</strong> A filial <strong>${b.filialNome}</strong> possui saldo seguro (${b.saldoPosEnvio} ${activeUnit} restantes pós-envio).</span></div>`);
+                                }
+                            }
+                        });
+                    }
+                }
+
+                if (alertsList.length > 0) {
+                    alertBox.classList.remove("hidden");
+                    alertsContainer.innerHTML = alertsList.join("");
+                } else {
+                    alertBox.classList.add("hidden");
+                }
+            }
+
+            // Tabela Mensal Fatiada
+            if (tbodyFat && MONTHS_ANALYSIS.length > 0) {
+                tbodyFat.innerHTML = "";
+                simulatedBranches.forEach(b => {
+                    const tr = document.createElement("tr");
+                    const isTarget = simMode === 'remanejamento' && b.filialId === targetBranch;
+                    tr.className = isTarget || (simMode === 'dilution' && b.allocatedQty > 0) ? "bg-emerald-50/40 dark:bg-slate-700/40 font-black" : "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
+                    let monthCells = "";
+                    MONTHS_ANALYSIS.forEach(m => {
+                        const mQty = (salesMap[b.filialId] && salesMap[b.filialId][m.key]) ? salesMap[b.filialId][m.key].qty : 0;
+                        monthCells += `<td class="py-3 px-3 text-right ${mQty > 0 ? 'font-black text-slate-900 dark:text-slate-100' : 'text-slate-400'}">${mQty.toLocaleString('pt-BR')}</td>`;
+                    });
+
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-black text-slate-800 dark:text-slate-100">${b.filialNome}</td>
+                        ${monthCells}
+                        <td class="py-3 px-4 text-right font-black bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300">${b.totalQtdVendas.toLocaleString('pt-BR')}</td>
+                    `;
+                    tbodyFat.appendChild(tr);
+                });
+            }
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function renderCharts() {
+            if (typeof ApexCharts === 'undefined') return;
+
+            const trendEl = document.querySelector("#sales-trend-chart");
+            const branchEl = document.querySelector("#sales-branch-chart");
+
+            if (filteredVendas.length === 0) {
+                if (chartSalesTrend) chartSalesTrend.destroy();
+                if (chartSalesBranch) chartSalesBranch.destroy();
+                chartSalesTrend = null;
+                chartSalesBranch = null;
+                if (trendEl) trendEl.innerHTML = "<div class='flex items-center justify-center h-full text-slate-400 text-xs font-bold'>Aguardando sincronização...</div>";
+                if (branchEl) branchEl.innerHTML = "<div class='flex items-center justify-center h-full text-slate-400 text-xs font-bold'>Aguardando sincronização...</div>";
+            } else {
+                const uniqueMonths = new Set();
+                filteredVendas.forEach(v => {
+                    if (v.Emissao && v.Emissao !== 'Data N/D') {
+                        const yrMo = v.Emissao.substring(0, 7);
+                        if (/^\d{4}-\d{2}$/.test(yrMo)) uniqueMonths.add(yrMo);
+                    }
+                });
+                const sortedMonths = Array.from(uniqueMonths).sort();
+                const activeFiliais = Array.from(new Set(filteredVendas.map(v => v.Filial))).sort((a, b) => a - b);
+                const colorPalette = ['#00529b', '#b71218', '#f59e0b', '#06b6d4', '#ec4899', '#8b5cf6', '#3b82f6'];
+
+                const seriesTrend = activeFiliais.map(bId => {
+                    const salesByMonth = {};
+                    filteredVendas.forEach(v => {
+                        if (v.Filial === bId && v.Emissao && v.Emissao !== 'Data N/D') {
+                            const yrMo = v.Emissao.substring(0, 7);
+                            salesByMonth[yrMo] = (salesByMonth[yrMo] || 0) + (v["Vlr.Total"] || 0);
+                        }
+                    });
+                    return {
+                        name: getFilialName(bId),
+                        data: sortedMonths.map(m => parseFloat((salesByMonth[m] || 0).toFixed(2)))
+                    };
+                });
+
+                const formattedLabels = sortedMonths.map(m => {
+                    const parts = m.split('-');
+                    return `${parts[1]}/${parts[0].substring(2)}`;
+                });
+
+                const optionsTrend = {
+                    series: seriesTrend,
+                    chart: { type: 'line', height: 300, toolbar: { show: false }, background: 'transparent' },
+                    colors: colorPalette,
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    xaxis: { categories: formattedLabels, labels: { style: { colors: '#64748b', fontSize: '11px', fontWeight: 700 } } },
+                    yaxis: { labels: { style: { colors: '#64748b', fontSize: '11px', fontWeight: 700 }, formatter: (val) => "R$ " + Math.round(val).toLocaleString('pt-BR') } },
+                    grid: { borderColor: '#e2e8f0' },
+                    tooltip: { theme: 'light' }
+                };
+
+                if (chartSalesTrend) chartSalesTrend.destroy();
+                if (trendEl) {
+                    trendEl.innerHTML = "";
+                    chartSalesTrend = new ApexCharts(trendEl, optionsTrend);
+                    chartSalesTrend.render();
+                }
+
+                const salesByBranch = {};
+                filteredVendas.forEach(v => {
+                    const bName = getFilialName(v.Filial);
+                    salesByBranch[bName] = (salesByBranch[bName] || 0) + (v["Vlr.Total"] || 0);
+                });
+
+                const branchLabels = Object.keys(salesByBranch);
+                const branchValues = branchLabels.map(b => parseFloat(salesByBranch[b].toFixed(2)));
+
+                const optionsBranch = {
+                    series: [{ name: 'Faturamento', data: branchValues }],
+                    chart: { type: 'bar', height: 300, toolbar: { show: false }, background: 'transparent' },
+                    colors: ['#00529b'],
+                    plotOptions: { bar: { borderRadius: 6, horizontal: true, distributed: true, barHeight: '55%' } },
+                    dataLabels: { enabled: false },
+                    xaxis: { categories: branchLabels, labels: { style: { colors: '#64748b', fontSize: '11px', fontWeight: 700 }, formatter: (val) => "R$ " + Math.round(val).toLocaleString('pt-BR') } },
+                    grid: { borderColor: '#e2e8f0' },
+                    legend: { show: false }
+                };
+
+                if (chartSalesBranch) chartSalesBranch.destroy();
+                if (branchEl) {
+                    branchEl.innerHTML = "";
+                    chartSalesBranch = new ApexCharts(branchEl, optionsBranch);
+                    chartSalesBranch.render();
+                }
+            }
+
+            // Chart 3: Stock Distribution
+            const stockEl = document.querySelector("#stock-distribution-chart");
+            if (filteredSaldos.length === 0) {
+                if (chartStockDistribution) chartStockDistribution.destroy();
+                chartStockDistribution = null;
+                if (stockEl) stockEl.innerHTML = "<div class='flex items-center justify-center h-full text-slate-400 text-xs font-bold'>Aguardando sincronização...</div>";
+            } else {
+                const stockByBranch = {};
+                filteredSaldos.forEach(s => {
+                    const bName = getFilialName(s.Filial);
+                    stockByBranch[bName] = (stockByBranch[bName] || 0) + s["Qtde.1a.U.M."];
+                });
+
+                const stockLabels = Object.keys(stockByBranch);
+                const stockValues = stockLabels.map(b => Math.round(stockByBranch[b]));
+
+                const optionsStock = {
+                    series: stockValues,
+                    labels: stockLabels,
+                    chart: { type: 'donut', height: 300, background: 'transparent' },
+                    colors: ['#00529b', '#b71218', '#f59e0b', '#06b6d4', '#ec4899', '#8b5cf6'],
+                    dataLabels: { enabled: true, style: { fontSize: '10px', fontWeight: '800' } },
+                    legend: { position: 'bottom', labels: { colors: '#64748b' } }
+                };
+
+                if (chartStockDistribution) chartStockDistribution.destroy();
+                if (stockEl) {
+                    stockEl.innerHTML = "";
+                    chartStockDistribution = new ApexCharts(stockEl, optionsStock);
+                    chartStockDistribution.render();
+                }
+            }
+        }
+
+        function renderTablesAndLists() {
+            // 1. Top Products Table
+            const topMap = {};
+            filteredVendas.forEach(v => {
+                if (!topMap[v.Produto]) topMap[v.Produto] = { qtd: 0, faturamento: 0 };
+                topMap[v.Produto].qtd += v.Quantidade;
+                topMap[v.Produto].faturamento += v["Vlr.Total"];
+            });
+
+            const sortedProds = Object.keys(topMap).map(cod => ({
+                code: cod,
+                qtd: topMap[cod].qtd,
+                faturamento: topMap[cod].faturamento,
+                mediaPrice: topMap[cod].qtd > 0 ? topMap[cod].faturamento / topMap[cod].qtd : 0
+            })).sort((a, b) => b.faturamento - a.faturamento).slice(0, 10);
+
+            const tbodyTop = document.getElementById("top-products-tbody");
+            if (tbodyTop) {
+                tbodyTop.innerHTML = "";
+                if (sortedProds.length === 0) {
+                    tbodyTop.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-bold">Nenhum lançamento no período.</td></tr>`;
+                } else {
+                    sortedProds.forEach((p, idx) => {
+                        const tr = document.createElement("tr");
+                        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
+                        tr.innerHTML = `
+                            <td class="py-3 px-4 font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-black flex items-center justify-center text-[10px] border border-slate-200 dark:border-slate-600">${idx + 1}</span>
+                                ${p.code}
+                            </td>
+                            <td class="py-3 px-4 font-bold text-slate-600 dark:text-slate-300">${p.qtd.toLocaleString('pt-BR')} PCS</td>
+                            <td class="py-3 px-4 text-emerald-600 font-black">${formatCurrency(p.faturamento)}</td>
+                            <td class="py-3 px-4 text-slate-500">${formatCurrency(p.mediaPrice)} / PC</td>
+                            <td class="py-3 px-4 text-right">
+                                <button onclick="selectSingleProduct('${p.code}')" class="px-3 py-1 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-[10px] border border-blue-200 transition font-black cursor-pointer">Analisar</button>
+                            </td>
+                        `;
+                        tbodyTop.appendChild(tr);
+                    });
+                }
+            }
+
+            // 2. Critical Stock Table
+            const stockMap = {};
+            const descMap = {};
+            const unitMap = {};
+
+            filteredSaldos.forEach(s => {
+                const key = `${s.Filial}-${s.Produto}`;
+                stockMap[key] = (stockMap[key] || 0) + s["Qtde.1a.U.M."];
+                descMap[s.Produto] = s.Descricao;
+                unitMap[s.Produto] = s.Unidade;
+            });
+
+            const salesSixMonths = {};
+            filteredVendas.forEach(v => {
+                const key = `${v.Filial}-${v.Produto}`;
+                salesSixMonths[key] = (salesSixMonths[key] || 0) + v.Quantidade;
+                if (!unitMap[v.Produto]) unitMap[v.Produto] = v.Unidade;
+                if (!descMap[v.Produto]) descMap[v.Produto] = v.Descricao;
+            });
+
+            const allKeys = new Set([...Object.keys(stockMap), ...Object.keys(salesSixMonths)]);
+            const criticalItems = [];
+
+            allKeys.forEach(key => {
+                const parts = key.split('-');
+                const filialId = parseInt(parts[0], 10);
+                const prodCode = parts[1];
+
+                if (!selectedBranches.includes(filialId)) return;
+                const stock = stockMap[key] || 0;
+                const salesQty = salesSixMonths[key] || 0;
+
+                if (salesQty > 0 && stock < (salesQty / 2)) {
+                    criticalItems.push({
+                        prodCode,
+                        filialId,
+                        stock,
+                        salesQty,
+                        unit: unitMap[prodCode] || 'PC',
+                        description: descMap[prodCode] || 'SEM DESCRIÇÃO',
+                        severity: salesQty - stock
+                    });
+                }
+            });
+
+            criticalItems.sort((a, b) => b.severity - a.severity);
+
+            const tbodyCritical = document.getElementById("critical-stock-tbody");
+            if (tbodyCritical) {
+                tbodyCritical.innerHTML = "";
+                if (criticalItems.length === 0) {
+                    tbodyCritical.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-emerald-600 font-bold"><i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i> Estoque equilibrado em relação às saídas dos últimos 6 meses!</td></tr>`;
+                } else {
+                    criticalItems.slice(0, 30).forEach(item => {
+                        const tr = document.createElement("tr");
+                        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
+                        const isZero = item.stock === 0;
+                        const statusClass = isZero
+                            ? "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/40 dark:text-red-400"
+                            : "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400";
+
+                        tr.innerHTML = `
+                            <td class="py-3 px-4 font-black text-slate-900 dark:text-slate-100">${item.prodCode}</td>
+                            <td class="py-3 px-4 truncate max-w-xs text-slate-600 dark:text-slate-300 font-medium">${item.description}</td>
+                            <td class="py-3 px-4 text-slate-500">${getFilialName(item.filialId)}</td>
+                            <td class="py-3 px-4">
+                                <span class="font-black text-slate-900 dark:text-slate-100">${item.stock.toLocaleString('pt-BR')} ${item.unit}</span>
+                                <span class="text-[10px] text-slate-400 block font-bold">Saídas (6M): ${item.salesQty.toLocaleString('pt-BR')}</span>
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black border ${statusClass} uppercase">
+                                    ${isZero ? 'Ruptura Total' : 'Crítico (< 50% Giro)'}
+                                </span>
+                            </td>
+                        `;
+                        tbodyCritical.appendChild(tr);
+                    });
+                }
+            }
+
+            // 3. Detailed Stock Table
+            const tbodySearch = document.getElementById("search-results-tbody");
+            if (tbodySearch) {
+                tbodySearch.innerHTML = "";
+                if (filteredSaldos.length === 0) {
+                    tbodySearch.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 font-bold">Nenhum saldo físico localizado. Clique em Sincronizar Supabase.</td></tr>`;
+                } else {
+                    filteredSaldos.sort((a, b) => a.Produto.localeCompare(b.Produto, undefined, { numeric: true })).slice(0, 50).forEach(s => {
+                        const tr = document.createElement("tr");
+                        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
+                        tr.innerHTML = `
+                            <td class="py-3 px-4 font-black text-slate-900 dark:text-slate-100">${s.Produto}</td>
+                            <td class="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">${s.Descricao}</td>
+                            <td class="py-3 px-4 text-slate-500">${s.Grupo}</td>
+                            <td class="py-3 px-4 text-blue-600 dark:text-blue-400 font-black">${getFilialName(s.Filial)}</td>
+                            <td class="py-3 px-4 text-slate-400">Armazém ${s.Armazem}</td>
+                            <td class="py-3 px-4 text-right font-black text-slate-800 dark:text-slate-200">${s["Qtde.1a.U.M."].toLocaleString('pt-BR')} ${s.Unidade}</td>
+                        `;
+                        tbodySearch.appendChild(tr);
+                    });
+                }
+            }
+
+            const uniqueSKUs = new Set(rawDicionario.map(d => d.Codigo)).size;
+            const skusEl = document.getElementById("summary-unique-skus");
+            if (skusEl) skusEl.innerText = uniqueSKUs.toLocaleString('pt-BR');
+
+            const uniqueWhs = new Set(filteredSaldos.map(s => s.Armazem)).size;
+            const whsEl = document.getElementById("summary-active-warehouses");
+            if (whsEl) whsEl.innerText = uniqueWhs;
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // Execução ao Carregar
+        window.onload = function() {
+            initSupabase();
+            const savedSec = localStorage.getItem('sd2_active_sector');
+            if (savedSec && (savedSec === 'COMERCIO' || savedSec === 'INDUSTRIA')) {
+                currentSd2Sector = savedSec;
+                updateSectorUI();
+            }
+            triggerSync();
+        };
+    </script>
+</body>
+</html>
