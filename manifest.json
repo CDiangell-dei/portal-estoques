@@ -8,14 +8,16 @@
   "description": "Sistema de Controle de Estoques - Amazon Aço",
   "icons": [
     {
-      "src": "https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png",
+      "src": "./icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png",
+      "src": "./icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
@@ -26,7 +28,7 @@
       "url": "./solicitacao_estoque.html",
       "icons": [
         {
-          "src": "https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png",
+          "src": "./icon.png",
           "sizes": "192x192"
         }
       ]
