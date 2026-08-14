@@ -2670,7 +2670,7 @@
             }
 
             closeCountModal();
-            applyInventoryFilters(false);
+            await loadInventoryData();
         }
 
         // --- LANÇAMENTO EM MASSA ---
@@ -3514,7 +3514,7 @@
                     
                     showAlert(`Saldo de ${currentSector === 'INDUSTRIA' ? 'Indústria' : 'Comércio'} importado com sucesso! (${totalItems.toLocaleString('pt-BR')} itens)`, "success");
                     closeImportSaldoModal();
-                    loadInventoryData();
+                    await loadInventoryData();
 
                 } catch (err) {
                     console.error("Erro na importação:", err);
