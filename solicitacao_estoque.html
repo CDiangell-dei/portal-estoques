@@ -513,7 +513,7 @@
                                placeholder="Ex: 1000 (1 Palete)"
                                class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 font-black focus:outline-none focus:border-emerald-600 transition"
                                onchange="recalculateSimulation()"
-                               oninput="recalculateSimulation()">
+                               oninput="debouncedRecalculate()">
                     </div>
 
                     <!-- Campo Destino / Método de Diluição -->
@@ -2741,6 +2741,14 @@
             if (kpiEstKg) kpiEstKg.innerText = `${estKG.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} KG`;
         }
 
+        let recalculateTimer = null;
+        function debouncedRecalculate() {
+            if (recalculateTimer) clearTimeout(recalculateTimer);
+            recalculateTimer = setTimeout(() => {
+                recalculateSimulation();
+            }, 300);
+        }
+
         function sanitizeQuantityInput() {
             const inputEl = document.getElementById("sim-qty");
             if (!inputEl) return;
@@ -2763,7 +2771,7 @@
                 inputEl.value = val.replace(/^0+(?=\d)/, '');
             }
             saveFiltersToLocalStorage();
-            recalculateSimulation();
+            debouncedRecalculate();
         }
 
         // --- CÁLCULO E RE-CÁLCULO DINÂMICO DA SIMULAÇÃO (SUPORTA DILUIÇÃO GERAL E REMANEJAMENTO) ---

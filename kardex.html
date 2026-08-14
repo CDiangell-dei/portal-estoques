@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="icon" type="image/png" href="./icon.png">
+    <link rel="shortcut icon" type="image/png" href="./icon.png">
+    <link rel="apple-touch-icon" href="./icon.png">
+    <title>Kardex de Contagem Física - Amazon Aço</title>
+    <script>
+        if (localStorage.theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f8fafc">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {} }
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- SheetJS (xlsx) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            -webkit-tap-highlight-color: transparent;
+        }
+        :root {
+            --amazon-navy: #002f6c;
+            --amazon-red: #9c0e25;
+            --amazon-red-hover: #800b1d;
+        }
+        .element-hidden { display: none !important; }
+        .touch-active:active { transform: scale(0.97); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print {
+            body { background-color: #ffffff !important; color: #000000 !important; font-size: 11px; }
+            .no-print { display: none !important; }
+            .print-card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; page-break-inside: avoid; background-color: #ffffff !important; color: #000000 !important; margin-bottom: 1.25rem !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+
+        .dark body { background-color: #0f172a !important; color: #ffffff !important; }
+        .dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+        .dark .bg-[#f8fafc] { background-color: #0f172a !important; }
+        .dark .text-slate-900, .dark .text-slate-800 { color: #ffffff !important; }
+        .dark .text-slate-700, .dark .text-slate-600 { color: #f1f5f9 !important; }
+        .dark .text-slate-500, .dark .text-slate-400 { color: #cbd5e1 !important; }
+        .dark .bg-slate-50, .dark .bg-slate-100 { background-color: #334155 !important; border-color: #475569 !important; color: #ffffff !important; }
+        .dark .border-slate-200, .dark .border-slate-300 { border-color: #334155 !important; }
+        .dark .border-slate-100 { border-color: #1e293b !important; }
+        .dark input, .dark select, .dark textarea { background-color: #334155 !important; color: #ffffff !important; border-color: #475569 !important; }
+        .dark table th { background-color: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
+        .dark table tr:hover { background-color: #334155 !important; }
+        .dark .shadow-sm, .dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3) !important; }
+        .dark .text-[#9c0e25] { color: #f87171 !important; }
+        .dark .bg-[#9c0e25] { background-color: #dc2626 !important; }
+        .dark .text-[#002f6c] { color: #60a5fa !important; }
+        .dark .bg-[#002f6c] { background-color: #2563eb !important; }
+        .dark img[alt="Amazon Aço"] { filter: brightness(0) invert(1) !important; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col relative pb-20 md:pb-10 bg-[#f8fafc]">
+
+    <!-- Spinner de Loading Global -->
+    <div id="globalLoader" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="flex flex-col items-center p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-2xl">
+            <svg class="animate-spin h-14 w-14 text-[#002f6c] dark:text-blue-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-slate-800 dark:text-white font-bold text-lg animate-pulse">Carregando Dados...</span>
+        </div>
+    </div>
+
+    <!-- FEEDBACK ALERT (TOAST) -->
+    <div id="feedbackAlert" class="hidden no-print z-[200] fixed top-5 right-4 sm:right-6">
+        <div id="alertContainer" class="p-4 rounded-2xl border flex items-center justify-between shadow-2xl transition-all duration-300 min-w-[320px] max-w-md">
+            <div class="flex items-center space-x-3">
+                <i id="alertIcon" data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                <p id="alertMessage" class="text-xs font-bold leading-snug mr-2"></p>
+            </div>
+            <button onclick="hideAlert()" class="p-1 hover:bg-slate-200/50 rounded-lg">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- HEADER PRINCIPAL -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <a href="index.html" class="flex items-center space-x-3 cursor-pointer">
+                <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" fetchpriority="high" loading="eager" class="h-10 w-auto flex-shrink-0 object-contain drop-shadow-sm">
+                <div class="border-l border-slate-200 pl-3 hidden sm:block">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <span>Portal de Controle de Estoques</span>
+                        <span class="bg-indigo-100 text-indigo-800 text-[9px] px-2 py-0.5 rounded-full font-black border border-indigo-200 shadow-xs">Kardex de Contagem</span>
+                    </p>
+                </div>
+            </a>
+
+            <!-- NAV DESKTOP -->
+            <div class="hidden md:flex items-center space-x-2">
+                <a href="index.html" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 cursor-pointer">
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                    <span>Início</span>
+                </a>
+
+                <a href="solicitacao_estoque.html" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-blue-50 hover:bg-blue-100 text-[#002f6c] dark:bg-blue-950 dark:text-blue-200 border border-blue-200 dark:border-blue-800 shadow-sm cursor-pointer">
+                    <i data-lucide="shopping-cart" class="w-4 h-4 text-blue-600"></i>
+                    <span>Solicitação de Estoque</span>
+                </a>
+
+                <!-- GRUPO ESTOQUE (ATIVO) -->
+                <div class="relative">
+                    <button onclick="toggleDesktopSubmenu('estoque')" id="desktopBtnEstoqueGroup" class="bg-white text-[#002f6c] border border-slate-200 shadow-sm px-3.5 py-2 rounded-2xl text-xs font-black inline-flex items-center space-x-1.5 transition-all cursor-pointer">
+                        <i data-lucide="boxes" class="w-4 h-4 text-[#002f6c]"></i>
+                        <span>Estoque</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+
+                    <div id="desktopEstoqueSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1 no-print">
+                        <a href="inventario.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
+                                <i data-lucide="boxes" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-800 dark:text-slate-200">Inventário Rotativo</p>
+                            </div>
+                        </a>
+                        <a href="kardex.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl bg-indigo-50 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-left transition-colors">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center">
+                                <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black">Kardex de Contagem</p>
+                            </div>
+                        </a>
+                        <a href="validade.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                                <i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-800 dark:text-slate-200">Controle de Validade</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- GRUPO ALMOXARIFADO -->
+                <div id="desktopAlmoxGroupContainer" class="relative hidden">
+                    <button onclick="toggleDesktopSubmenu('almox')" id="desktopBtnAlmoxGroup" class="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 px-3.5 py-2 rounded-2xl text-xs font-black inline-flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                        <span>Almoxarifado</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+
+                    <div id="desktopAlmoxSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1 no-print">
+                        <a href="luvas.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                                <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-800 dark:text-slate-200">Consumo de EPIs (Luvas)</p>
+                            </div>
+                        </a>
+                        <a href="minutas.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-800 dark:text-slate-200">Minutas & Recebimento</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- BOTÃO ADMIN -->
+                <a href="admin.html" id="desktopBtnAdmin" class="hidden px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-amber-500/10 text-amber-700 hover:text-amber-900 border border-amber-500/20 cursor-pointer">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>Admin</span>
+                </a>
+            </div>
+
+            <!-- PERFIL E CONTROLES -->
+            <div class="flex items-center space-x-3">
+                <div id="offlineSyncBadge" onclick="processOfflineQueue()" title="Itens aguardando sincronização offline." class="hidden items-center space-x-1 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black shadow-sm cursor-pointer transition-colors no-print">
+                    <i data-lucide="cloud-off" class="w-3.5 h-3.5 mr-1"></i>
+                    <span id="offlineSyncCount">0</span> pendente(s)
+                </div>
+
+                <div title="Status da Conexão com o Servidor" class="p-2 bg-slate-100 rounded-xl flex items-center space-x-1">
+                    <span id="appStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                </div>
+
+                <div class="flex flex-col text-right">
+                    <span id="headerUserName" class="text-xs font-black text-slate-900">Usuário</span>
+                    <span id="headerUserFilial" class="text-[10px] font-bold text-[#9c0e25] uppercase tracking-wider">Filial</span>
+                </div>
+
+                <button onclick="toggleDarkMode()" title="Modo Escuro" id="darkModeBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 dark:border-slate-600 p-2.5 rounded-xl border border-slate-200 transition-all touch-active">
+                    <i data-lucide="moon" class="w-4 h-4"></i>
+                </button>
+
+                <button onclick="confirmLogout()" title="Sair da Sessão" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-[#9c0e25] p-2.5 rounded-xl border border-slate-200 transition-all touch-active">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL: KARDEX -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-grow space-y-6 w-full flex flex-col">
+
+        <!-- CABEÇALHO DO KARDEX -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm print-card">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 bg-indigo-600 text-white rounded-2xl shadow-md">
+                    <i data-lucide="history" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-base font-black text-slate-900 leading-tight">Kardex de Contagem Física</h2>
+                    <p class="text-xs text-slate-500 font-semibold">Histórico completo e cronológico de contagens registradas por material, setor e armazém</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button type="button" onclick="exportKardexExcel()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center space-x-2">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>Exportar</span>
+                </button>
+                <button type="button" onclick="loadKardexData()" class="flex-1 sm:flex-none bg-[#002f6c] hover:bg-[#00204a] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center space-x-2">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    <span>Atualizar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTROS DO KARDEX -->
+        <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3 no-print">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <!-- FILTRO SETOR -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Setor</label>
+                    <select id="kardexSetorFilter" onchange="loadKardexData()" class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#002f6c] w-full">
+                        <option value="COMERCIO">Comércio (contagem_comercio)</option>
+                        <option value="INDUSTRIA">Indústria (contagem_industria)</option>
+                    </select>
+                </div>
+
+                <!-- FILTRO ARMAZÉM -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Armazém</label>
+                    <select id="kardexArmazemFilter" onchange="applyKardexFilters()" class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#002f6c] w-full">
+                        <option value="Todos">Todos os Armazéns</option>
+                    </select>
+                </div>
+
+                <!-- BUSCA PRODUTO / MATERIAL / CONFERENTE -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Buscar Material ou Conferente</label>
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                        <input type="text" id="kardexSearch" oninput="applyKardexFilters()" placeholder="Código, descrição ou conferente..." class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl pl-9 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#002f6c] w-full">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABELA DO KARDEX -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col print-card">
+            <div class="flex items-center justify-between border-b border-slate-100 p-4">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Histórico de Lançamentos de Contagem</h3>
+                <span id="kardexCounterLabel" class="text-xs font-bold text-slate-400">Exibindo 0 registros</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                            <th class="px-4 py-3">Data / Hora</th>
+                            <th class="px-3 py-3 text-center">Armazém</th>
+                            <th class="px-4 py-3">Código</th>
+                            <th class="px-4 py-3">Descrição do Material</th>
+                            <th class="px-4 py-3 text-right">Qtd. Sistema (na Hora)</th>
+                            <th class="px-4 py-3 text-right">Qtd. Contada</th>
+                            <th class="px-4 py-3 text-center">Apuração (Divergência)</th>
+                            <th class="px-4 py-3 text-center">Conferente Responsável</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kardexTableBody">
+                        <!-- Registros renderizados via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL CONFIRMAÇÃO DE LOGOUT -->
+    <div id="logoutModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl w-11/12 max-w-sm shadow-2xl scale-95 transition-transform duration-200">
+            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mx-auto mb-4">
+                <i data-lucide="log-out" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-black text-center text-slate-900 dark:text-white mb-2">Sair do Sistema?</h3>
+            <p class="text-sm text-center text-slate-500 dark:text-slate-400 mb-6 font-semibold">Tem certeza que deseja encerrar a sessão atual?</p>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeLogoutModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors">Cancelar</button>
+                <button type="button" onclick="executeLogout()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md shadow-red-200">Sim, Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMENUS FLUTUANTES (MOBILE) -->
+    <div id="mobileEstoqueSubmenu" class="hidden md:hidden fixed bottom-16 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl shadow-2xl z-50 p-2 space-y-1.5 no-print">
+        <div class="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Módulo de Estoque</span>
+            <button type="button" onclick="closeMobileSubmenus()" class="text-slate-400 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <a href="inventario.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-blue-50 text-[#002f6c] flex items-center justify-center">
+                <i data-lucide="boxes" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Inventário Rotativo</p>
+                <p class="text-[10px] font-bold text-slate-400">Contagens, saldos e divergências</p>
+            </div>
+        </a>
+        <a href="kardex.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl bg-indigo-50 text-indigo-800 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+                <i data-lucide="history" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black">Kardex de Contagem</p>
+                <p class="text-[10px] font-bold text-indigo-600">Histórico cronológico de lançamentos</p>
+            </div>
+        </a>
+        <a href="validade.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Controle de Validade</p>
+                <p class="text-[10px] font-bold text-slate-400">Ano/Mês, alertas e Armazém 50</p>
+            </div>
+        </a>
+    </div>
+
+    <div id="mobileAlmoxSubmenu" class="hidden md:hidden fixed bottom-16 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl shadow-2xl z-50 p-2 space-y-1.5 no-print">
+        <div class="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Módulo Almoxarifado</span>
+            <button type="button" onclick="closeMobileSubmenus()" class="text-slate-400 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <a href="luvas.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Consumo de EPIs</p>
+                <p class="text-[10px] font-bold text-slate-400">Entrega de luvas e controle por matrícula</p>
+            </div>
+        </a>
+        <a href="minutas.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Minutas & Recebimento</p>
+                <p class="text-[10px] font-bold text-slate-400">Entrada de NFs e canhotos de entrega</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- BOTTOM NAV (MOBILE) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 px-2 py-1.5 shadow-lg flex items-center justify-around no-print pb-safe">
+        <a href="index.html" id="bottomBtnHome" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-600">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Início</span>
+        </a>
+
+        <!-- GRUPO ESTOQUE (ATIVO) -->
+        <button onclick="toggleMobileSubmenu('estoque')" id="bottomBtnEstoqueGroup" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-[#002f6c]">
+            <i data-lucide="boxes" class="w-5 h-5"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5 flex items-center justify-center gap-0.5">Estoque <i data-lucide="chevron-up" class="w-3 h-3"></i></span>
+        </button>
+
+        <a href="solicitacao_estoque.html" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-blue-600">
+            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Compras</span>
+        </a>
+
+        <!-- GRUPO ALMOXARIFADO -->
+        <button onclick="toggleMobileSubmenu('almox')" id="bottomBtnAlmoxGroup" class="hidden flex-1 min-w-0 flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-600">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5 flex items-center justify-center gap-0.5">Almox. <i data-lucide="chevron-up" class="w-3 h-3"></i></span>
+        </button>
+        
+        <!-- ADMIN -->
+        <a href="admin.html" id="bottomBtnAdmin" class="hidden flex-1 min-w-0 flex-col items-center justify-center py-1 text-slate-400 hover:text-amber-600">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Admin</span>
+        </a>
+    </nav>
+
+    <!-- SHARED UTILS SCRIPT -->
+    <script src="shared.js"></script>
+
+    <!-- KARDEX CORE JS -->
+    <script>
+        let rawKardexDataset = [];
+        let filteredKardexDataset = [];
+        let rawSb1KardexDataset = [];
+
+        async function loadKardexData() {
+            if (!supabaseClient) return;
+            const loader = document.getElementById('globalLoader');
+            if (loader) loader.classList.remove('hidden');
+
+            const sector = document.getElementById('kardexSetorFilter') ? document.getElementById('kardexSetorFilter').value : 'COMERCIO';
+            const countTable = sector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
+            const sb1Table = sector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
+            const userFilialStr = currentUser ? String(currentUser.filial_atual).trim().replace(/^0+/, '') : '1';
+
+            const tbody = document.getElementById('kardexTableBody');
+            if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Carregando histórico do Kardex...</td></tr>`;
+
+            try {
+                // 1. Carrega SB1
+                let sb1Data = [];
+                let fromSb1 = 0, stepSb1 = 1000, fetchMoreSb1 = true;
+                while (fetchMoreSb1) {
+                    const { data, error } = await supabaseClient.from(sb1Table).select('codigo, descricao').range(fromSb1, fromSb1 + stepSb1 - 1);
+                    if (error || !data || data.length === 0) fetchMoreSb1 = false;
+                    else {
+                        sb1Data = sb1Data.concat(data);
+                        if (data.length < stepSb1) fetchMoreSb1 = false; else fromSb1 += stepSb1;
+                    }
+                }
+                const prodDescMap = {};
+                sb1Data.forEach(p => {
+                    if (p.codigo) prodDescMap[String(p.codigo).trim()] = p.descricao || '-';
+                });
+
+                // 2. Carrega Contagens
+                let confData = [];
+                let from = 0, step = 1000, fetchMore = true;
+                while (fetchMore) {
+                    const { data, error } = await supabaseClient.from(countTable)
+                        .select('*')
+                        .range(from, from + step - 1);
+                    if (error || !data || data.length === 0) fetchMore = false;
+                    else {
+                        confData = confData.concat(data);
+                        if (data.length < step) fetchMore = false; else from += step;
+                    }
+                }
+
+                rawKardexDataset = confData.map(c => {
+                    const cod = String(c.produto || '').trim();
+                    const arm = String(c.armazem_contagem || c.armazem || '1').trim().replace(/^0+/, '');
+                    const fil = String(c.filial || '1').trim().replace(/^0+/, '');
+                    const dt = c.created_at ? new Date(c.created_at) : new Date();
+                    const dateFormatted = dt.toLocaleDateString('pt-BR') + ' às ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const qtdSis = Number(c.quantidade_sistema !== undefined && c.quantidade_sistema !== null ? c.quantidade_sistema : (c.qtd_sistema !== undefined ? c.qtd_sistema : 0));
+                    const qtdCont = Number(c.quantidade_contada !== undefined && c.quantidade_contada !== null ? c.quantidade_contada : (c.qtd_contada || 0));
+                    const diff = qtdCont - qtdSis;
+
+                    return {
+                        id: c.id,
+                        created_at: dt,
+                        dataFormatada: dateFormatted,
+                        filial: fil,
+                        armazem: arm,
+                        codigo: cod,
+                        descricao: prodDescMap[cod] || c.descricao || '-',
+                        qtd_sistema: qtdSis,
+                        qtd_contada: qtdCont,
+                        diff: diff,
+                        conferente: c.quem_contou || c.conferente_nome || 'SISTEMA'
+                    };
+                }).filter(c => currentUser.eh_admin === true || c.filial === userFilialStr);
+
+                rawKardexDataset.sort((a, b) => b.created_at - a.created_at);
+
+                const kardexArmSelect = document.getElementById('kardexArmazemFilter');
+                if (kardexArmSelect) {
+                    const selVal = kardexArmSelect.value || 'Todos';
+                    const armsInKardex = [...new Set(rawKardexDataset.map(k => k.armazem).filter(Boolean))].sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+                    let opts = `<option value="Todos">Todos os Armazéns</option>`;
+                    armsInKardex.forEach(a => {
+                        opts += `<option value="${a}" ${selVal === a ? 'selected' : ''}>Armazém ${a.padStart(2, '0')}</option>`;
+                    });
+                    kardexArmSelect.innerHTML = opts;
+                }
+
+                applyKardexFilters();
+            } catch (err) {
+                console.error("Erro Kardex:", err);
+                if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-rose-500">Erro ao carregar dados do Kardex.</td></tr>`;
+            } finally {
+                if (loader) loader.classList.add('hidden');
+            }
+        }
+
+        function applyKardexFilters() {
+            const arm = document.getElementById('kardexArmazemFilter') ? document.getElementById('kardexArmazemFilter').value : 'Todos';
+            const term = document.getElementById('kardexSearch') ? document.getElementById('kardexSearch').value.toLowerCase().trim() : '';
+
+            filteredKardexDataset = rawKardexDataset.filter(item => {
+                if (arm !== 'Todos' && item.armazem !== arm) return false;
+                if (!term) return true;
+                const matchCod = item.codigo.toLowerCase().includes(term);
+                const matchDesc = item.descricao.toLowerCase().includes(term);
+                const matchConf = item.conferente.toLowerCase().includes(term);
+                return matchCod || matchDesc || matchConf;
+            });
+
+            renderKardexTable();
+        }
+
+        function renderKardexTable() {
+            const tbody = document.getElementById('kardexTableBody');
+            const label = document.getElementById('kardexCounterLabel');
+            if (!tbody) return;
+
+            if (label) label.innerText = `Exibindo ${filteredKardexDataset.length} registro(s)`;
+
+            if (filteredKardexDataset.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum lançamento de contagem encontrado com os filtros selecionados.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filteredKardexDataset.forEach(item => {
+                let badgeDiff = '';
+                if (item.diff > 0) {
+                    badgeDiff = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200" title="Sobra de Estoque / Ganho">
+                        <i data-lucide="trending-up" class="w-3 h-3 text-emerald-600"></i> +${item.diff.toLocaleString('pt-BR')} (Ganho)
+                    </span>`;
+                } else if (item.diff < 0) {
+                    badgeDiff = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-rose-50 text-rose-700 border border-rose-200" title="Falta de Estoque / Perda">
+                        <i data-lucide="trending-down" class="w-3 h-3 text-rose-600"></i> ${item.diff.toLocaleString('pt-BR')} (Perda)
+                    </span>`;
+                } else {
+                    badgeDiff = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-blue-50 text-blue-700 border border-blue-200" title="Estoque Acurado 100%">
+                        <i data-lucide="check-circle-2" class="w-3 h-3 text-blue-600"></i> 0 (Acurado)
+                    </span>`;
+                }
+
+                html += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 text-slate-700 text-xs transition-colors">
+                        <td class="px-4 py-3 font-semibold text-slate-500 whitespace-nowrap">${item.dataFormatada}</td>
+                        <td class="px-3 py-3 text-center">
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-black bg-slate-100 text-[#002f6c] border border-slate-200">
+                                Arm. ${item.armazem.padStart(2, '0')}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 font-bold text-slate-900 whitespace-nowrap">${item.codigo}</td>
+                        <td class="px-4 py-3 font-bold text-slate-800">${item.descricao}</td>
+                        <td class="px-4 py-3 text-right font-bold text-slate-600 text-xs">${item.qtd_sistema.toLocaleString('pt-BR')}</td>
+                        <td class="px-4 py-3 text-right font-black text-[#002f6c] text-sm">${item.qtd_contada.toLocaleString('pt-BR')}</td>
+                        <td class="px-4 py-3 text-center">${badgeDiff}</td>
+                        <td class="px-4 py-3 text-center font-bold text-slate-700">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-teal-50 text-teal-800 border border-teal-100">
+                                <i data-lucide="user" class="w-3 h-3 text-teal-600"></i> ${item.conferente}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function exportKardexExcel() {
+            if (!filteredKardexDataset || filteredKardexDataset.length === 0) {
+                showAlert("Nenhum dado para exportar.", "warning");
+                return;
+            }
+
+            const headers = ["Data / Hora", "Filial", "Armazém", "Código", "Descrição", "Qtd. Sistema", "Qtd. Contada", "Divergência", "Conferente"];
+            const rows = [headers];
+
+            filteredKardexDataset.forEach(item => {
+                rows.push([
+                    item.dataFormatada,
+                    item.filial,
+                    item.armazem,
+                    item.codigo,
+                    item.descricao,
+                    item.qtd_sistema,
+                    item.qtd_contada,
+                    item.diff,
+                    item.conferente
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, `kardex_${dateStr}`);
+            XLSX.writeFile(wb, `kardex_contagens_${dateStr}.xlsx`);
+        }
+
+        window.onload = async function() {
+            const user = await checkAuth();
+            if (!user) return;
+            await loadKardexData();
+        };
+    </script>
+</body>
+</html>
