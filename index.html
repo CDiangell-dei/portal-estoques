@@ -1820,7 +1820,7 @@
                     </div>
 
                     <!-- TECLADO CALCULADORA DA APLICAÇÃO (TOUCH INTELIGENTE - RECOLHÍVEL) -->
-                    <div id="appCalculatorKeypad" class="hidden bg-slate-900 text-white rounded-2xl p-3 shadow-lg space-y-2 border border-slate-800 transition-all duration-300">
+                    <div id="appCalculatorKeypad" class="hidden bg-slate-900 dark:bg-slate-950 text-white md:relative fixed md:bottom-auto bottom-0 md:left-auto left-0 md:right-auto right-0 md:w-auto w-full z-[100] md:rounded-2xl rounded-t-3xl p-4 md:p-3 shadow-2xl space-y-2 border-t md:border border-slate-800 transition-all duration-300 max-w-md mx-auto">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                             <span class="text-[10px] font-black uppercase text-teal-400 tracking-wider flex items-center gap-1">
                                 🧮 Calculadora Inteligente
@@ -5003,7 +5003,7 @@ function renderArmazemChart() {
                             <p class="text-[10px] font-bold text-slate-400 mt-0.5">Saldo Sis: ${sysQtyDisplay}</p>
                         </div>
                         <div class="w-40 text-right">
-                            <input type="text" inputmode="none" readonly data-armazem="${armazemCode}" data-factor="${factor}" data-mode="peso" id="countInput_${armazemCode}" onclick="onArmazemInputClick('${armazemCode}')" onfocus="onArmazemInputClick('${armazemCode}')" oninput="updateCountPreview('${armazemCode}')" class="count-warehouse-input w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 text-right cursor-pointer" placeholder="Toque para contar">
+                            <input type="text" inputmode="none" readonly data-armazem="${armazemCode}" data-factor="${factor}" data-mode="peso" id="countInput_${armazemCode}" onclick="this.blur(); onArmazemInputClick('${armazemCode}')" onfocus="this.blur(); onArmazemInputClick('${armazemCode}')" oninput="updateCountPreview('${armazemCode}')" class="count-warehouse-input w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 text-right cursor-pointer" placeholder="Toque para contar">
                         </div>
                     </div>
                     
@@ -5089,6 +5089,23 @@ function renderArmazemChart() {
             const label = document.getElementById('appCalcTargetLabel');
             if (label) {
                 label.innerText = armazemCode ? `Armazém ${armazemCode}` : `Toque no campo para digitar`;
+            }
+
+            // Remover destaque visual de todos os cards de armazém
+            document.querySelectorAll('[id^="armCard_"]').forEach(card => {
+                card.classList.remove('border-teal-500', 'ring-2', 'ring-teal-500/20', 'bg-teal-50/20');
+                card.classList.add('border-slate-200');
+            });
+
+            // Adicionar destaque visual no card ativo
+            if (armazemCode) {
+                const activeCard = document.getElementById(`armCard_${armazemCode}`);
+                if (activeCard) {
+                    activeCard.classList.remove('border-slate-200');
+                    activeCard.classList.add('border-teal-500', 'ring-2', 'ring-teal-500/20', 'bg-teal-50/20');
+                    // Scroll active card into view inside the container
+                    activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             }
         }
 
@@ -9716,13 +9733,17 @@ function renderArmazemChart() {
             recalculateSimulation();
         }
 
+        let recalculateTimerVendas = null;
         function sanitizeQuantityInputOnInput() {
             const inputEl = document.getElementById("sim-qty");
             let val = inputEl.value;
             if (val.length > 1 && val.startsWith('0')) {
                 inputEl.value = val.replace(/^0+(?=\d)/, '');
             }
-            recalculateSimulation();
+            if (recalculateTimerVendas) clearTimeout(recalculateTimerVendas);
+            recalculateTimerVendas = setTimeout(() => {
+                recalculateSimulation();
+            }, 300);
         }
 
         function recalculateSimulation() {
@@ -10831,6 +10852,7 @@ function renderArmazemChart() {
             recalculateSimulation();
         }
 
+        let recalculateTimerKardex = null;
         function sanitizeQuantityInputOnInput() {
             const inputEl = document.getElementById("sim-qty");
             if (!inputEl) return;
@@ -10838,7 +10860,10 @@ function renderArmazemChart() {
             if (val.length > 1 && val.startsWith('0')) {
                 inputEl.value = val.replace(/^0+(?=\d)/, '');
             }
-            recalculateSimulation();
+            if (recalculateTimerKardex) clearTimeout(recalculateTimerKardex);
+            recalculateTimerKardex = setTimeout(() => {
+                recalculateSimulation();
+            }, 300);
         }
 
         function matchesGlobalProduct(item) {
@@ -12025,6 +12050,7 @@ function renderArmazemChart() {
             recalculateSimulation();
         }
 
+        let recalculateTimerDilution = null;
         function sanitizeQuantityInputOnInput() {
             const inputEl = document.getElementById("sim-qty");
             if (!inputEl) return;
@@ -12032,7 +12058,10 @@ function renderArmazemChart() {
             if (val.length > 1 && val.startsWith('0')) {
                 inputEl.value = val.replace(/^0+(?=\d)/, '');
             }
-            recalculateSimulation();
+            if (recalculateTimerDilution) clearTimeout(recalculateTimerDilution);
+            recalculateTimerDilution = setTimeout(() => {
+                recalculateSimulation();
+            }, 300);
         }
 
         function recalculateSimulation() {
