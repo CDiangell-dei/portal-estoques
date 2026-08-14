@@ -705,8 +705,7 @@
 
                 document.getElementById('loginScreen').classList.add('hidden', 'opacity-0', 'pointer-events-none');
                 document.getElementById('appContainer').classList.remove('hidden');
-                document.getElementById('appContainer').classList.add('flex');
-
+                updateHeaderUserInfo(user);
                 updateRolePermissionsUI(user);
                 loadHomeData();
 
@@ -861,7 +860,7 @@
             if (user && user.matricula) {
                 document.getElementById('loginScreen').classList.add('hidden', 'opacity-0', 'pointer-events-none');
                 document.getElementById('appContainer').classList.remove('hidden');
-                document.getElementById('appContainer').classList.add('flex');
+                updateHeaderUserInfo(user);
                 updateRolePermissionsUI(user);
                 await loadHomeData();
             } else {

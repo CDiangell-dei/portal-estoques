@@ -145,10 +145,15 @@ function updateHeaderUserInfo(user) {
     const headerName = document.getElementById('headerUserName');
     const headerFilial = document.getElementById('headerUserFilial');
     const homeName = document.getElementById('homeUserName');
+    const homeBadge = document.getElementById('homeUserFilialBadge');
+
+    const filialVal = user.filial_atual || user.filial_comercio || '01';
+    const filialDisplay = getFilialDisplayName(filialVal);
 
     if (headerName) headerName.innerText = user.nome || 'Usuário';
-    if (headerFilial) headerFilial.innerText = getFilialDisplayName(user.filial_atual);
+    if (headerFilial) headerFilial.innerText = filialDisplay;
     if (homeName) homeName.innerText = user.nome || 'Usuário';
+    if (homeBadge) homeBadge.innerText = filialDisplay;
 }
 
 function updateRolePermissionsUI(user = null) {
@@ -231,13 +236,14 @@ function handleLogout() {
     confirmLogout();
 }
 
-// --- FORMATADORES E HELPERS DE FILIAL ---
 function getFilialDisplayName(numFilial, context = 'comercio') {
+    if (!numFilial) return "01 - Alvorada";
     const num = parseInt(numFilial, 10);
+    const padStr = String(numFilial).padStart(2, '0');
     if (context === 'industria') {
-        return DIC_FILIAIS_INDUSTRIA[num] || `Filial ${numFilial || 1}`;
+        return DIC_FILIAIS_INDUSTRIA[num] || `Filial ${padStr}`;
     }
-    return DIC_FILIAIS_MAP[num] || `Filial ${numFilial || 1}`;
+    return DIC_FILIAIS_MAP[num] || `Filial ${padStr}`;
 }
 
 // --- ALERTAS TOAST ---
