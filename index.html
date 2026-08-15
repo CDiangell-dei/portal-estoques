@@ -676,12 +676,23 @@
             const btn = document.getElementById('btnLoginSubmit');
             if (btn) { btn.disabled = true; btn.innerText = "Verificando..."; }
 
+            if (!supabaseClient) initSupabase();
+
             try {
                 const matNum = parseInt(mat, 10);
-                const { data, error } = await supabaseClient.rpc('autenticar_usuario', {
+                let { data, error } = await supabaseClient.rpc('login_usuario', {
                     p_matricula: matNum,
                     p_senha: pwd
                 });
+
+                if (error) {
+                    const fallback = await supabaseClient.rpc('autenticar_usuario', {
+                        p_matricula: matNum,
+                        p_senha: pwd
+                    });
+                    data = fallback.data;
+                    error = fallback.error;
+                }
 
                 if (error) {
                     showAlert(`Erro: ${error.message}`, "error");
@@ -734,15 +745,28 @@
             const btn = document.getElementById('btnRegSubmit');
             if (btn) { btn.disabled = true; btn.innerText = "Enviando..."; }
 
+            if (!supabaseClient) initSupabase();
+
             try {
                 const matNum = parseInt(mat, 10);
-                const { data, error } = await supabaseClient.rpc('solicitar_cadastro_usuario', {
+                let { data, error } = await supabaseClient.rpc('register_usuario', {
                     p_matricula: matNum,
                     p_nome: nome,
                     p_senha: senha,
                     p_filial: fil,
                     p_eh_almoxarife: ehAlmox
                 });
+
+                if (error) {
+                    const fallback = await supabaseClient.rpc('solicitar_cadastro_usuario', {
+                        p_matricula: matNum,
+                        p_nome: nome,
+                        p_senha: senha,
+                        p_filial: fil,
+                        p_eh_almoxarife: ehAlmox
+                    });
+                    error = fallback.error;
+                }
 
                 if (error) {
                     showAlert(`Erro no cadastro: ${error.message}`, "error");
@@ -773,8 +797,10 @@
             const btn = document.getElementById('btnResetSubmit');
             if (btn) { btn.disabled = true; btn.innerText = "Processando..."; }
 
+            if (!supabaseClient) initSupabase();
+
             try {
-                const { data, error } = await supabaseClient.rpc('redefinir_senha_com_admin', {
+                let { data, error } = await supabaseClient.rpc('reset_senha_usuario', {
                     p_target_matricula: parseInt(targetMat, 10),
                     p_new_senha: newPwd,
                     p_admin_matricula: parseInt(adminMat, 10),
@@ -782,7 +808,18 @@
                 });
 
                 if (error) {
-                    showAlert(`Erro: ${error.message}`, "error");
+                    const fallback = await supabaseClient.rpc('redefinir_senha_com_admin', {
+                        p_target_matricula: parseInt(targetMat, 10),
+                        p_new_senha: newPwd,
+                        p_admin_matricula: parseInt(adminMat, 10),
+                        p_admin_senha: adminPwd
+                    });
+                    data = fallback.data;
+                    error = fallback.error;
+                }
+
+                if (error || data === false) {
+                    showAlert(error ? `Erro: ${error.message}` : "Credenciais de Administrador inválidas.", "error");
                 } else {
                     showAlert("Senha redefinida com sucesso! O usuário já pode logar com a nova senha.", "success");
                     toggleAuthMode('LOGIN');
