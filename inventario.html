@@ -3486,6 +3486,18 @@
                         throw new Error("Nenhum registro válido localizado no arquivo CSV.");
                     }
 
+                    const tableName = currentSector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
+
+                    if (progressText) progressText.innerText = 'Limpando dados antigos do saldo...';
+                    if (progressPercent) progressPercent.innerText = '5%';
+                    if (progressBar) progressBar.style.width = '5%';
+
+                    // 1. Limpa a tabela correspondente no Supabase para evitar duplicidade e zerar saldos de materiais esgotados
+                    const { error: truncateError } = await supabaseClient.rpc('clear_saldo_table', {
+                        p_table: tableName
+                    });
+                    if (truncateError) throw truncateError;
+
                     if (progressText) progressText.innerText = `Importando ${totalItems.toLocaleString('pt-BR')} itens...`;
                     
                     const batchSize = 500;
