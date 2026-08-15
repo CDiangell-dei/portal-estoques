@@ -247,7 +247,11 @@
                     <p class="text-xs text-slate-500 font-semibold">Monitoramento de fabricação, vencimento por ano/mês e transferência de datas para o armazém de vencidos</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 w-full sm:w-auto">
+            <div class="flex items-center flex-wrap gap-2 w-full sm:w-auto">
+                <button type="button" onclick="exportValidadeToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center space-x-1.5 touch-active" title="Baixar planilha Excel (.xlsx)">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>Exportar Excel</span>
+                </button>
                 <button type="button" onclick="openNewValidadeModal()" class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center space-x-2 touch-active">
                     <i data-lucide="plus-circle" class="w-4 h-4"></i>
                     <span>+ Novo Lançamento</span>
@@ -621,7 +625,7 @@
                 let sb1Data = [];
                 let fromSb1 = 0, stepSb1 = 1000, fetchMoreSb1 = true;
                 while (fetchMoreSb1) {
-                    const { data, error } = await supabaseClient.from(sb1Table).select('codigo, descricao').range(fromSb1, fromSb1 + stepSb1 - 1);
+                    const { data, error } = await supabaseClient.from(sb1Table).select('codigo, descricao, unidade').range(fromSb1, fromSb1 + stepSb1 - 1);
                     if (error || !data || data.length === 0) fetchMoreSb1 = false;
                     else {
                         sb1Data = sb1Data.concat(data);
@@ -630,7 +634,8 @@
                 }
                 rawSb1Dataset = sb1Data.map(p => ({
                     Codigo: String(p.codigo || '').trim(),
-                    'Descr.Espec.': p.descricao || '-'
+                    'Descr.Espec.': p.descricao || '-',
+                    Unidade: p.unidade || 'UN'
                 }));
 
                 const targetFilial = getTargetFilialForSector();
@@ -1084,6 +1089,65 @@
                 console.error("Erro ao excluir validade:", err);
                 showAlert(`Erro ao excluir validade: ${err.message}`, "error");
             }
+        }
+
+        function exportValidadeToExcel() {
+            if (!filteredValidadeDataset || filteredValidadeDataset.length === 0) {
+                showAlert("Nenhum registro de validade encontrado para exportar.", "warning");
+                return;
+            }
+
+            const sb1Map = {};
+            rawSb1Dataset.forEach(p => {
+                const c = p.Codigo;
+                if (c) {
+                    sb1Map[c] = {
+                        descricao: p['Descr.Espec.'] || '-',
+                        unidade: p.Unidade || 'UN'
+                    };
+                }
+            });
+
+            // Ordem das colunas: Filial, Código Produto, Descrição, Unidade de Medida, Armazem, Qtde, Mês de Vencimento, Status
+            const exportData = filteredValidadeDataset.map(item => {
+                const sbInfo = sb1Map[item.produto] || { descricao: 'Material Não Cadastrado no SB1', unidade: 'UN' };
+                const status = getValidadeStatus(item.data_validade);
+                let statusText = 'No Prazo (OK)';
+                if (status === 'VENCIDO') statusText = 'Vencido';
+                else if (status === 'AVENCER') statusText = 'A Vencer (60d)';
+
+                return {
+                    "Filial": item.filial || '01',
+                    "Código Produto": item.produto || '',
+                    "Descrição": sbInfo.descricao,
+                    "Unidade de Medida": sbInfo.unidade,
+                    "Armazem": item.armazem || '',
+                    "Qtde": Number(item.quantidade || 0),
+                    "Mês de Vencimento": formatAnoMesDisplay(item.data_validade),
+                    "Status": statusText
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+
+            // Largura elegante das colunas
+            ws['!cols'] = [
+                { wch: 10 }, // Filial
+                { wch: 18 }, // Código Produto
+                { wch: 45 }, // Descrição
+                { wch: 20 }, // Unidade de Medida
+                { wch: 12 }, // Armazem
+                { wch: 12 }, // Qtde
+                { wch: 22 }, // Mês de Vencimento
+                { wch: 18 }  // Status
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Validades");
+
+            const today = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `Validades_${today}.xlsx`);
+            showAlert("Planilha de validades exportada com sucesso!", "success");
         }
 
         window.onload = async function() {
