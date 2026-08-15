@@ -338,7 +338,7 @@
                         <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
                             <th class="px-4 py-3">Filial</th>
                             <th class="px-4 py-3">Armazém</th>
-                            <th class="px-4 py-3">Código</th>
+                            <th class="px-4 py-3">Produto</th>
                             <th class="px-4 py-3">Descrição do Produto</th>
                             <th class="px-4 py-3 text-right">Qtd. Lote</th>
                             <th class="px-4 py-3 text-center">Fabricação (Mês/Ano)</th>
@@ -725,6 +725,40 @@
             return `${meses[idx] || mes}/${ano}`;
         }
 
+        function getValidadeStatusText(status) {
+            if (status === 'VENCIDO') return 'Vencido';
+            if (status === 'AVENCER') return 'A Vencer (60d)';
+            return 'No Prazo (OK)';
+        }
+
+        function sortValidadeDataset(list) {
+            if (!Array.isArray(list)) return [];
+            return list.sort((a, b) => {
+                // 1. Filial ASC
+                const filA = String(a.filial || '').trim();
+                const filB = String(b.filial || '').trim();
+                const compFil = filA.localeCompare(filB, undefined, { numeric: true, sensitivity: 'base' });
+                if (compFil !== 0) return compFil;
+
+                // 2. Status ASC (ordem alfabética do status)
+                const statusA = getValidadeStatusText(getValidadeStatus(a.data_validade));
+                const statusB = getValidadeStatusText(getValidadeStatus(b.data_validade));
+                const compStatus = statusA.localeCompare(statusB, undefined, { sensitivity: 'base' });
+                if (compStatus !== 0) return compStatus;
+
+                // 3. Código do Produto ASC
+                const prodA = String(a.produto || '').trim();
+                const prodB = String(b.produto || '').trim();
+                const compProd = prodA.localeCompare(prodB, undefined, { numeric: true, sensitivity: 'base' });
+                if (compProd !== 0) return compProd;
+
+                // 4. Armazém ASC (desempate)
+                const armA = String(a.armazem || '').trim();
+                const armB = String(b.armazem || '').trim();
+                return armA.localeCompare(armB, undefined, { numeric: true, sensitivity: 'base' });
+            });
+        }
+
         function applyValidadeFilters() {
             const filial = document.getElementById('valFilterFilial') ? document.getElementById('valFilterFilial').value : 'ALL';
             const armazem = document.getElementById('valFilterArmazem') ? document.getElementById('valFilterArmazem').value : 'ALL';
@@ -737,7 +771,7 @@
                 if (c) sb1Map[c] = p['Descr.Espec.'] || '-';
             });
 
-            filteredValidadeDataset = rawValidadeDataset.filter(v => {
+            const unSorted = rawValidadeDataset.filter(v => {
                 if (filial !== 'ALL' && v.filial !== filial) return false;
                 if (armazem !== 'ALL' && v.armazem !== armazem) return false;
                 
@@ -753,6 +787,8 @@
                 }
                 return true;
             });
+
+            filteredValidadeDataset = sortValidadeDataset(unSorted);
 
             renderValidadeDashboard();
             renderValidadeTable();
@@ -1108,7 +1144,7 @@
                 }
             });
 
-            // Ordem das colunas: Filial, Código Produto, Descrição, Unidade de Medida, Armazem, Qtde, Mês de Vencimento, Status
+            // Ordem das colunas: Filial, Produto, Descrição, Unidade de Medida, Armazem, Qtde, Mês de Vencimento, Status
             const exportData = filteredValidadeDataset.map(item => {
                 const sbInfo = sb1Map[item.produto] || { descricao: 'Material Não Cadastrado no SB1', unidade: 'UN' };
                 const status = getValidadeStatus(item.data_validade);
@@ -1118,7 +1154,7 @@
 
                 return {
                     "Filial": item.filial || '01',
-                    "Código Produto": item.produto || '',
+                    "Produto": item.produto || '',
                     "Descrição": sbInfo.descricao,
                     "Unidade de Medida": sbInfo.unidade,
                     "Armazem": item.armazem || '',
@@ -1133,7 +1169,7 @@
             // Largura elegante das colunas
             ws['!cols'] = [
                 { wch: 10 }, // Filial
-                { wch: 18 }, // Código Produto
+                { wch: 18 }, // Produto
                 { wch: 45 }, // Descrição
                 { wch: 20 }, // Unidade de Medida
                 { wch: 12 }, // Armazem
