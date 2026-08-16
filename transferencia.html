@@ -892,31 +892,28 @@
             showLoader(true, `Carregando catálogo e saldos (${currentSector})...`);
 
             try {
-                const sb1Table = currentSector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
                 const saldoTable = currentSector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
                 const contagemTable = currentSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
+                const padFilial = String(currentFilialId).padStart(2, '0');
+                const rawFilial = String(currentFilialId).replace(/^0+/, '');
 
-                // 1. Carregar SB1 Catálogo
-                const { data: sb1Data, error: sb1Err } = await supabaseClient.from(sb1Table).select('codigo, descricao, unidade');
-                if (sb1Err) console.warn("Erro ao carregar SB1:", sb1Err);
-                catalogMaster = sb1Data || [];
-
-                // 2. Carregar Saldos da Filial
+                // 1. Carregar Saldos da Filial (suporta '01' e '1')
                 const { data: saldoData, error: saldoErr } = await supabaseClient.from(saldoTable)
                     .select('*')
-                    .eq('filial', parseInt(currentFilialId, 10));
+                    .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`);
                 if (saldoErr) console.warn("Erro ao carregar saldos:", saldoErr);
                 balancesMaster = saldoData || [];
 
-                // 3. Carregar Últimas Contagens da Filial
+                // 2. Carregar Últimas Contagens da Filial
                 const { data: countData, error: countErr } = await supabaseClient.from(contagemTable)
                     .select('*')
+                    .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`)
                     .order('created_at', { ascending: false })
                     .limit(500);
                 if (countErr) console.warn("Erro ao carregar contagens:", countErr);
                 physicalCountsMaster = countData || [];
 
-                // 4. Atualizar lista dinâmica de armazéns existentes na filial
+                // 3. Atualizar lista dinâmica de armazéns existentes na filial
                 updateBranchWarehousesList();
 
             } catch (err) {
@@ -1132,51 +1129,86 @@
         }
 
         // --- BUSCA E DIAGNÓSTICO DO PRODUTO (QR CODE / AUTOCOMPLETE) ---
+        let searchDebounceTimer = null;
+
         function handleProductSearchInput(val) {
             const list = document.getElementById('productAutocompleteList');
             const btnClear = document.getElementById('btnClearProductSearch');
-            if (!val.trim()) {
+            
+            if (!val || !val.trim()) {
                 list.classList.add('hidden');
                 btnClear.classList.add('hidden');
                 return;
             }
             btnClear.classList.remove('hidden');
 
-            const query = val.toLowerCase().trim();
-            const matches = catalogMaster.filter(p => 
-                String(p.codigo).toLowerCase().includes(query) || 
-                String(p.descricao).toLowerCase().includes(query)
-            ).slice(0, 15);
-
-            if (matches.length === 0) {
-                list.innerHTML = `<div class="p-3 text-slate-400 font-semibold text-center">Nenhum produto encontrado.</div>`;
-                list.classList.remove('hidden');
-                return;
-            }
-
-            let html = '';
-            matches.forEach(p => {
-                html += `
-                    <div onclick="selectProductForTransfer('${p.codigo}')" class="p-2.5 hover:bg-blue-50 dark:hover:bg-slate-700 cursor-pointer flex items-center justify-between transition">
-                        <div>
-                            <span class="font-mono font-black text-[#002f6c] dark:text-blue-400 mr-2">${p.codigo}</span>
-                            <span class="font-bold text-slate-800 dark:text-slate-100">${p.descricao}</span>
-                        </div>
-                        <span class="text-[10px] font-black uppercase bg-slate-100 dark:bg-slate-600 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">${p.unidade || 'PC'}</span>
-                    </div>
-                `;
-            });
-            list.innerHTML = html;
+            const query = val.trim();
+            list.innerHTML = `<div class="p-3 text-slate-400 font-semibold text-center flex items-center justify-center gap-2">
+                <svg class="animate-spin h-4 w-4 text-[#002f6c]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Buscando no catálogo ${currentSector === 'INDUSTRIA' ? 'Indústria' : 'Comércio'}...</span>
+            </div>`;
             list.classList.remove('hidden');
+
+            if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(async () => {
+                await executeLiveProductSearch(query);
+            }, 250);
+        }
+
+        async function executeLiveProductSearch(query) {
+            const list = document.getElementById('productAutocompleteList');
+            if (!supabaseClient) initSupabase();
+
+            try {
+                const sb1Table = currentSector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
+                const clean = String(query).trim();
+
+                const { data, error } = await supabaseClient.from(sb1Table)
+                    .select('codigo, descricao, unidade')
+                    .or(`codigo.ilike.%${clean}%,descricao.ilike.%${clean}%`)
+                    .limit(25);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    list.innerHTML = `<div class="p-3 text-slate-400 font-semibold text-center">Nenhum produto encontrado para "${clean}" no catálogo de ${currentSector === 'INDUSTRIA' ? 'Indústria' : 'Comércio'}.</div>`;
+                    list.classList.remove('hidden');
+                    return;
+                }
+
+                let html = '';
+                data.forEach(p => {
+                    html += `
+                        <div onclick="selectProductForTransfer('${p.codigo}')" class="p-2.5 hover:bg-blue-50 dark:hover:bg-slate-700 cursor-pointer flex items-center justify-between transition">
+                            <div class="truncate mr-2">
+                                <span class="font-mono font-black text-[#002f6c] dark:text-blue-400 mr-2">${p.codigo}</span>
+                                <span class="font-bold text-slate-800 dark:text-slate-100">${p.descricao}</span>
+                            </div>
+                            <span class="text-[10px] font-black uppercase bg-slate-100 dark:bg-slate-600 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 flex-shrink-0">${p.unidade || 'PC'}</span>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+                list.classList.remove('hidden');
+
+            } catch (err) {
+                console.error("Erro na busca de produtos:", err);
+                list.innerHTML = `<div class="p-3 text-rose-500 font-semibold text-center text-xs">Erro ao consultar o catálogo. Tente novamente.</div>`;
+                list.classList.remove('hidden');
+            }
         }
 
         function handleProductSearchKeyDown(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const list = document.getElementById('productAutocompleteList');
-                const first = list.querySelector('div');
-                if (first) first.click();
-                else {
+                const first = list.querySelector('div[onclick]');
+                if (first) {
+                    first.click();
+                } else {
                     const typed = e.target.value.trim();
                     if (typed) selectProductForTransfer(typed);
                 }
@@ -1194,12 +1226,12 @@
             });
             availableWarehousesInBranch = Array.from(setArm).sort((a, b) => a.localeCompare(b));
             if (availableWarehousesInBranch.length === 0) {
-                availableWarehousesInBranch = ['02', '03', '04', '05', '06', '50'];
+                availableWarehousesInBranch = ['02', '03', '04', '05', '06', '11', '12', '24', '26', '30', '41', '50'];
             }
             populateOriginWarehousesDropdown();
         }
 
-        function populateOriginWarehousesDropdown(productCode = null, selectedArm = null) {
+        function populateOriginWarehousesDropdown(productCode = null, selectedArm = null, customBalances = null) {
             const selectEl = document.getElementById('selectArmazemOrigem');
             if (!selectEl) return '02';
 
@@ -1217,11 +1249,11 @@
             }
 
             // Quando temos um produto específico selecionado:
-            // 1. Agrupa saldos por armazém para esse produto
             const warehouseBalances = {};
             availableWarehousesInBranch.forEach(arm => warehouseBalances[arm] = 0);
 
-            balancesMaster.forEach(s => {
+            const sourceBalances = customBalances || balancesMaster;
+            sourceBalances.forEach(s => {
                 const sProd = String(s.produto || s.Produto || '').trim();
                 if (sProd === productCode) {
                     const arm = String(s.armazem || s.Armazem || '').trim().padStart(2, '0');
@@ -1267,7 +1299,7 @@
             }
 
             if (withoutStock.length > 0) {
-                html += `<optgroup label="⚠️ Armazéns Sem Saldo (0)">`;
+                html += `<optgroup label="⚠️ Outros Armazéns (Saldo: 0)">`;
                 withoutStock.forEach(w => {
                     const isSelected = w.arm === chosenArm ? 'selected' : '';
                     html += `<option value="${w.arm}" ${isSelected}>Armazém ${w.arm} (Zerado)</option>`;
@@ -1289,20 +1321,24 @@
             if (!container) return;
 
             if (withStock.length === 0) {
-                countNotice.className = "text-[10px] font-bold text-rose-600 dark:text-rose-400";
-                countNotice.innerText = "Sem saldo positivo nos armazéns";
+                if (countNotice) {
+                    countNotice.className = "text-[10px] font-bold text-rose-600 dark:text-rose-400";
+                    countNotice.innerText = "Sem saldo positivo nos armazéns";
+                }
                 container.innerHTML = `
                     <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-bold text-rose-700 dark:text-rose-300 w-full flex items-center gap-2">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 flex-shrink-0"></i>
-                        <span>Atenção: Este produto não possui saldo positivo registrado nos armazéns da filial.</span>
+                        <span>Atenção: Este produto não possui saldo positivo registrado nos armazéns desta filial.</span>
                     </div>
                 `;
                 lucide.createIcons();
                 return;
             }
 
-            countNotice.className = "text-[10px] font-bold text-emerald-600 dark:text-emerald-400";
-            countNotice.innerText = `${withStock.length} armazém(ns) com saldo disponível`;
+            if (countNotice) {
+                countNotice.className = "text-[10px] font-bold text-emerald-600 dark:text-emerald-400";
+                countNotice.innerText = `${withStock.length} armazém(ns) com saldo disponível`;
+            }
 
             let html = '';
             withStock.forEach(w => {
@@ -1340,32 +1376,79 @@
             const cleanCode = String(code).trim();
             document.getElementById('inputProductSearch').value = cleanCode;
 
-            // 1. Localiza no catálogo
-            const prod = catalogMaster.find(p => String(p.codigo).trim() === cleanCode) || {
-                codigo: cleanCode,
-                descricao: 'PRODUTO NÃO IDENTIFICADO NO CATÁLOGO',
-                unidade: 'PC'
-            };
+            if (!supabaseClient) initSupabase();
+            const sb1Table = currentSector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
+            const saldoTable = currentSector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
+            const contagemTable = currentSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
+            const padFilial = String(currentFilialId).padStart(2, '0');
+            const rawFilial = String(currentFilialId).replace(/^0+/, '');
+
+            // 1. Busca dados do produto no SB1 diretamente no Supabase
+            let prod = null;
+            try {
+                const pad8 = /^\d+$/.test(cleanCode) ? cleanCode.padStart(8, '0') : cleanCode;
+                const unpad = /^\d+$/.test(cleanCode) ? cleanCode.replace(/^0+/, '') : cleanCode;
+
+                const { data: prodData } = await supabaseClient.from(sb1Table)
+                    .select('codigo, descricao, unidade')
+                    .or(`codigo.eq.${cleanCode},codigo.eq.${pad8},codigo.eq.${unpad}`)
+                    .limit(1);
+
+                if (prodData && prodData.length > 0) {
+                    prod = prodData[0];
+                } else {
+                    // Tenta busca parcial por código ou descrição
+                    const { data: prodIlike } = await supabaseClient.from(sb1Table)
+                        .select('codigo, descricao, unidade')
+                        .or(`codigo.ilike.%${cleanCode}%,descricao.ilike.%${cleanCode}%`)
+                        .limit(1);
+                    if (prodIlike && prodIlike.length > 0) {
+                        prod = prodIlike[0];
+                    } else {
+                        prod = {
+                            codigo: cleanCode,
+                            descricao: 'PRODUTO NÃO IDENTIFICADO NO CATÁLOGO',
+                            unidade: 'PC'
+                        };
+                    }
+                }
+            } catch(e) {
+                console.warn("Erro ao obter produto:", e);
+                prod = { codigo: cleanCode, descricao: 'PRODUTO NÃO IDENTIFICADO', unidade: 'PC' };
+            }
 
             selectedProductForDiag = prod;
 
-            // 2. Atualiza a lista de armazéns dinamicamente com base nos saldos reais deste produto
-            const currentSelectedInDropdown = forceArmOrigem || document.getElementById('selectArmazemOrigem').value;
-            const armOrigem = populateOriginWarehousesDropdown(cleanCode, currentSelectedInDropdown);
+            // 2. Busca saldos reais do produto no Supabase
+            let prodSaldos = [];
+            try {
+                const pad8 = /^\d+$/.test(prod.codigo) ? prod.codigo.padStart(8, '0') : prod.codigo;
+                const unpad = /^\d+$/.test(prod.codigo) ? prod.codigo.replace(/^0+/, '') : prod.codigo;
 
-            // 3. Busca saldos no Armazém 01 (Destino) e no Armazém de Origem Selecionado
+                const { data: sData } = await supabaseClient.from(saldoTable)
+                    .select('*')
+                    .or(`produto.eq.${prod.codigo},produto.eq.${pad8},produto.eq.${unpad}`)
+                    .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`);
+                prodSaldos = sData || [];
+            } catch(e) {
+                console.warn("Erro ao obter saldos:", e);
+                prodSaldos = balancesMaster.filter(s => String(s.produto).trim() === prod.codigo);
+            }
+
+            // 3. Atualiza a lista de armazéns dinamicamente
+            const currentSelectedInDropdown = forceArmOrigem || document.getElementById('selectArmazemOrigem').value;
+            const armOrigem = populateOriginWarehousesDropdown(prod.codigo, currentSelectedInDropdown, prodSaldos);
+
+            // 4. Calcula saldos no Armazém 01 (Destino) e no Armazém de Origem Selecionado
             let saldo01 = 0;
             let saldoOrig = 0;
 
-            balancesMaster.forEach(s => {
-                const sProd = String(s.produto || s.Produto || '').trim();
-                if (sProd === cleanCode) {
-                    const arm = String(s.armazem || s.Armazem || '').trim().padStart(2, '0');
-                    const qtd = Number(s.quantidade !== undefined ? s.quantidade : (s['Qtde.1a.U.M.'] || 0));
+            prodSaldos.forEach(s => {
+                const arm = String(s.armazem || s.Armazem || '').trim().padStart(2, '0');
+                const qtd = Number(s.quantidade !== undefined ? s.quantidade : (s['Qtde.1a.U.M.'] || 0));
 
-                    if (arm === '01') saldo01 += qtd;
-                    if (arm === armOrigem) saldoOrig += qtd;
-                }
+                if (arm === '01') saldo01 += qtd;
+                if (arm === armOrigem) saldoOrig += qtd;
             });
 
             // Preenche UI Diagnóstico
@@ -1376,8 +1459,8 @@
             document.getElementById('diagSaldoOrigem').innerText = saldoOrig.toLocaleString('pt-BR');
             document.getElementById('diagOrigemLabel').innerText = `Origem (${armOrigem})`;
 
-            // 4. Busca situação de inventário física
-            await evaluateInventoryReliability(cleanCode, saldoOrig);
+            // 5. Busca situação de inventário física em tempo real
+            await evaluateInventoryReliability(prod.codigo, saldoOrig);
 
             // Abre o card de diagnóstico
             document.getElementById('productDiagnosisCard').classList.remove('hidden');
@@ -1392,8 +1475,27 @@
             const relBadge = document.getElementById('diagReliabilityBadge');
             const relIcon = document.getElementById('diagReliabilityIcon');
 
-            // Procura contagens físicas recentes do produto
-            const counts = physicalCountsMaster.filter(c => String(c.produto || '').trim() === prodCode);
+            if (!supabaseClient) initSupabase();
+            const contagemTable = currentSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
+            const padFilial = String(currentFilialId).padStart(2, '0');
+            const rawFilial = String(currentFilialId).replace(/^0+/, '');
+
+            let counts = [];
+            try {
+                const pad8 = /^\d+$/.test(prodCode) ? prodCode.padStart(8, '0') : prodCode;
+                const unpad = /^\d+$/.test(prodCode) ? prodCode.replace(/^0+/, '') : prodCode;
+
+                const { data } = await supabaseClient.from(contagemTable)
+                    .select('*')
+                    .or(`produto.eq.${prodCode},produto.eq.${pad8},produto.eq.${unpad}`)
+                    .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`)
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+                counts = data || [];
+            } catch(e) {
+                console.warn("Erro ao buscar contagem:", e);
+                counts = physicalCountsMaster.filter(c => String(c.produto || '').trim() === prodCode);
+            }
 
             if (counts.length === 0) {
                 relBox.className = "p-3 rounded-xl border border-rose-200 bg-rose-50/60 dark:bg-rose-950/30 flex items-start sm:items-center justify-between gap-3 text-xs font-semibold";
@@ -1417,7 +1519,7 @@
             if (daysAgo <= 30) {
                 relBox.className = "p-3 rounded-xl border border-emerald-200 bg-emerald-50/60 dark:bg-emerald-950/30 flex items-start sm:items-center justify-between gap-3 text-xs font-semibold";
                 relTitle.innerText = "Saldo Confiável (Inventariado Recentemente)";
-                relDetails.innerText = `Contado em ${countFormatted} (${daysAgo === 0 ? 'hoje' : 'há ' + daysAgo + ' dias'}) por ${conferente}. Quantidade física contada: ${countQty.toLocaleString('pt-BR')} ${selectedProductForDiag.unidade || 'PC'}.`;
+                relDetails.innerText = `Contado em ${countFormatted} (${daysAgo === 0 ? 'hoje' : 'há ' + daysAgo + ' dias'}) por ${conferente}. Quantidade física contada: ${countQty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}.`;
                 relBadge.className = "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-emerald-100 text-emerald-800 border border-emerald-200";
                 relBadge.innerText = "🟢 Confiável";
                 relIcon.setAttribute('data-lucide', 'shield-check');
@@ -1425,7 +1527,7 @@
             } else {
                 relBox.className = "p-3 rounded-xl border border-amber-200 bg-amber-50/60 dark:bg-amber-950/30 flex items-start sm:items-center justify-between gap-3 text-xs font-semibold";
                 relTitle.innerText = `Atenção: Inventariado há ${daysAgo} dias`;
-                relDetails.innerText = `Última contagem em ${countFormatted} por ${conferente} (${countQty.toLocaleString('pt-BR')} ${selectedProductForDiag.unidade || 'PC'}). Recomendado confirmar saldo físico no armazém.`;
+                relDetails.innerText = `Última contagem em ${countFormatted} por ${conferente} (${countQty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}). Recomendado confirmar saldo físico no armazém.`;
                 relBadge.className = "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-amber-100 text-amber-800 border border-amber-200";
                 relBadge.innerText = "🟡 +30 Dias";
                 relIcon.setAttribute('data-lucide', 'clock');
