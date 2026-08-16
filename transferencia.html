@@ -394,7 +394,7 @@
                             <h4 id="diagProductDesc" class="text-xs sm:text-sm font-black text-slate-900 dark:text-white mt-1">---</h4>
                         </div>
 
-                        <!-- SALDOS EM TEMPO REAL NOS ARMAZÉNS -->
+                    <!-- SALDOS EM TEMPO REAL NOS ARMAZÉNS -->
                         <div class="flex items-center gap-2">
                             <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-center min-w-[90px]">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Destino (01)</span>
@@ -404,6 +404,17 @@
                                 <span id="diagOrigemLabel" class="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider block">Origem (02)</span>
                                 <span id="diagSaldoOrigem" class="text-xs sm:text-sm font-black text-blue-700 dark:text-blue-300">0</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- SELEÇÃO RÁPIDA DE ARMAZÉNS COM SALDO (CHIPS) -->
+                    <div id="productWarehouseChipsSection" class="space-y-1.5 pt-1 border-b border-slate-200 dark:border-slate-700/80 pb-3">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Armazéns com Saldo Disponível (Clique para selecionar)</label>
+                            <span id="warehouseCountNotice" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">0 armazéns encontrados</span>
+                        </div>
+                        <div id="productWarehouseChipsContainer" class="flex flex-wrap gap-2 items-center">
+                            <!-- Inserido dinamicamente via JS -->
                         </div>
                     </div>
 
@@ -905,6 +916,9 @@
                 if (countErr) console.warn("Erro ao carregar contagens:", countErr);
                 physicalCountsMaster = countData || [];
 
+                // 4. Atualizar lista dinâmica de armazéns existentes na filial
+                updateBranchWarehousesList();
+
             } catch (err) {
                 console.error("Erro no carregamento de dados mestre:", err);
                 showAlert("Erro ao carregar dados do setor.", "error");
@@ -1169,7 +1183,159 @@
             }
         }
 
-        async function selectProductForTransfer(code) {
+        // --- GERENCIAMENTO DINÂMICO DE ARMAZÉNS & SALDOS ---
+        let availableWarehousesInBranch = [];
+
+        function updateBranchWarehousesList() {
+            const setArm = new Set();
+            balancesMaster.forEach(s => {
+                const arm = String(s.armazem || s.Armazem || '').trim().padStart(2, '0');
+                if (arm && arm !== '00') setArm.add(arm);
+            });
+            availableWarehousesInBranch = Array.from(setArm).sort((a, b) => a.localeCompare(b));
+            if (availableWarehousesInBranch.length === 0) {
+                availableWarehousesInBranch = ['02', '03', '04', '05', '06', '50'];
+            }
+            populateOriginWarehousesDropdown();
+        }
+
+        function populateOriginWarehousesDropdown(productCode = null, selectedArm = null) {
+            const selectEl = document.getElementById('selectArmazemOrigem');
+            if (!selectEl) return '02';
+
+            // Se não houver produto específico selecionado, preenche com os armazéns disponíveis da filial (exceto 01)
+            if (!productCode) {
+                let html = '';
+                const defaultArm = selectedArm || '02';
+                availableWarehousesInBranch.forEach(arm => {
+                    if (arm === '01') return; // 01 é destino fixo
+                    const isSelected = arm === defaultArm ? 'selected' : '';
+                    html += `<option value="${arm}" ${isSelected}>Armazém ${arm} ${arm === '02' ? '(Padrão)' : ''}</option>`;
+                });
+                selectEl.innerHTML = html;
+                return defaultArm;
+            }
+
+            // Quando temos um produto específico selecionado:
+            // 1. Agrupa saldos por armazém para esse produto
+            const warehouseBalances = {};
+            availableWarehousesInBranch.forEach(arm => warehouseBalances[arm] = 0);
+
+            balancesMaster.forEach(s => {
+                const sProd = String(s.produto || s.Produto || '').trim();
+                if (sProd === productCode) {
+                    const arm = String(s.armazem || s.Armazem || '').trim().padStart(2, '0');
+                    const qtd = Number(s.quantidade !== undefined ? s.quantidade : (s['Qtde.1a.U.M.'] || 0));
+                    warehouseBalances[arm] = (warehouseBalances[arm] || 0) + qtd;
+                }
+            });
+
+            // Separa armazéns com saldo positivo (excluindo armazém 01 que é destino)
+            const withStock = [];
+            const withoutStock = [];
+
+            Object.keys(warehouseBalances).forEach(arm => {
+                if (arm === '01') return; // Armazém 01 é destino fixo
+                const qty = warehouseBalances[arm];
+                if (qty > 0) {
+                    withStock.push({ arm, qty });
+                } else {
+                    withoutStock.push({ arm, qty: 0 });
+                }
+            });
+
+            // Ordena os com saldo: prioriza 02 se tiver saldo, depois maior quantidade
+            withStock.sort((a, b) => {
+                if (a.arm === '02') return -1;
+                if (b.arm === '02') return 1;
+                return b.qty - a.qty;
+            });
+
+            let chosenArm = selectedArm;
+            if (!chosenArm || (!withStock.some(w => w.arm === chosenArm) && withStock.length > 0)) {
+                chosenArm = withStock.length > 0 ? withStock[0].arm : (selectedArm || '02');
+            }
+
+            let html = '';
+            if (withStock.length > 0) {
+                html += `<optgroup label="✅ Armazéns com Saldo Disponível">`;
+                withStock.forEach(w => {
+                    const isSelected = w.arm === chosenArm ? 'selected' : '';
+                    html += `<option value="${w.arm}" ${isSelected}>Armazém ${w.arm} — Saldo: ${w.qty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}</option>`;
+                });
+                html += `</optgroup>`;
+            }
+
+            if (withoutStock.length > 0) {
+                html += `<optgroup label="⚠️ Armazéns Sem Saldo (0)">`;
+                withoutStock.forEach(w => {
+                    const isSelected = w.arm === chosenArm ? 'selected' : '';
+                    html += `<option value="${w.arm}" ${isSelected}>Armazém ${w.arm} (Zerado)</option>`;
+                });
+                html += `</optgroup>`;
+            }
+
+            selectEl.innerHTML = html;
+            selectEl.value = chosenArm;
+
+            // Renderiza os Chips interativos no card de diagnóstico
+            renderWarehouseChips(withStock, withoutStock, chosenArm);
+            return chosenArm;
+        }
+
+        function renderWarehouseChips(withStock, withoutStock, activeArm) {
+            const container = document.getElementById('productWarehouseChipsContainer');
+            const countNotice = document.getElementById('warehouseCountNotice');
+            if (!container) return;
+
+            if (withStock.length === 0) {
+                countNotice.className = "text-[10px] font-bold text-rose-600 dark:text-rose-400";
+                countNotice.innerText = "Sem saldo positivo nos armazéns";
+                container.innerHTML = `
+                    <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-bold text-rose-700 dark:text-rose-300 w-full flex items-center gap-2">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 flex-shrink-0"></i>
+                        <span>Atenção: Este produto não possui saldo positivo registrado nos armazéns da filial.</span>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            countNotice.className = "text-[10px] font-bold text-emerald-600 dark:text-emerald-400";
+            countNotice.innerText = `${withStock.length} armazém(ns) com saldo disponível`;
+
+            let html = '';
+            withStock.forEach(w => {
+                const isActive = w.arm === activeArm;
+                if (isActive) {
+                    html += `
+                        <button type="button" onclick="switchSelectedOriginWarehouse('${w.arm}')" class="px-3 py-1.5 rounded-xl text-xs font-black bg-[#002f6c] dark:bg-blue-600 text-white shadow-md border border-[#002f6c] flex items-center gap-1.5 cursor-pointer scale-105 transition">
+                            <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                            <span>Armazém ${w.arm}:</span>
+                            <span class="bg-white/20 px-1.5 py-0.5 rounded text-[11px] font-mono font-black">${w.qty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}</span>
+                        </button>
+                    `;
+                } else {
+                    html += `
+                        <button type="button" onclick="switchSelectedOriginWarehouse('${w.arm}')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-1.5 cursor-pointer transition">
+                            <span>Armazém ${w.arm}:</span>
+                            <span class="font-black text-blue-700 dark:text-blue-400 font-mono">${w.qty.toLocaleString('pt-BR')}</span>
+                        </button>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function switchSelectedOriginWarehouse(armCode) {
+            if (selectedProductForDiag) {
+                selectProductForTransfer(selectedProductForDiag.codigo, armCode);
+            }
+        }
+
+        async function selectProductForTransfer(code, forceArmOrigem = null) {
             document.getElementById('productAutocompleteList').classList.add('hidden');
             const cleanCode = String(code).trim();
             document.getElementById('inputProductSearch').value = cleanCode;
@@ -1183,21 +1349,22 @@
 
             selectedProductForDiag = prod;
 
-            // 2. Busca saldos no Armazém 01 e Origem
-            const armOrigem = document.getElementById('selectArmazemOrigem').value;
-            const filialNum = parseInt(currentFilialId, 10);
+            // 2. Atualiza a lista de armazéns dinamicamente com base nos saldos reais deste produto
+            const currentSelectedInDropdown = forceArmOrigem || document.getElementById('selectArmazemOrigem').value;
+            const armOrigem = populateOriginWarehousesDropdown(cleanCode, currentSelectedInDropdown);
 
+            // 3. Busca saldos no Armazém 01 (Destino) e no Armazém de Origem Selecionado
             let saldo01 = 0;
             let saldoOrig = 0;
 
             balancesMaster.forEach(s => {
                 const sProd = String(s.produto || s.Produto || '').trim();
                 if (sProd === cleanCode) {
-                    const arm = String(s.armazem || s.Armazem || '').trim().replace(/^0+/, '');
+                    const arm = String(s.armazem || s.Armazem || '').trim().padStart(2, '0');
                     const qtd = Number(s.quantidade !== undefined ? s.quantidade : (s['Qtde.1a.U.M.'] || 0));
 
-                    if (arm === '1') saldo01 += qtd;
-                    if (arm === armOrigem.replace(/^0+/, '')) saldoOrig += qtd;
+                    if (arm === '01') saldo01 += qtd;
+                    if (arm === armOrigem) saldoOrig += qtd;
                 }
             });
 
@@ -1209,7 +1376,7 @@
             document.getElementById('diagSaldoOrigem').innerText = saldoOrig.toLocaleString('pt-BR');
             document.getElementById('diagOrigemLabel').innerText = `Origem (${armOrigem})`;
 
-            // 3. Busca situação de inventário física
+            // 4. Busca situação de inventário física
             await evaluateInventoryReliability(cleanCode, saldoOrig);
 
             // Abre o card de diagnóstico
@@ -1270,7 +1437,8 @@
 
         function onArmazemOrigemChange() {
             if (selectedProductForDiag) {
-                selectProductForTransfer(selectedProductForDiag.codigo);
+                const currentArm = document.getElementById('selectArmazemOrigem').value;
+                selectProductForTransfer(selectedProductForDiag.codigo, currentArm);
             }
         }
 
@@ -1292,6 +1460,7 @@
             document.getElementById('productDiagnosisCard').classList.add('hidden');
             document.getElementById('productAutocompleteList').classList.add('hidden');
             document.getElementById('btnClearProductSearch').classList.add('hidden');
+            populateOriginWarehousesDropdown();
         }
 
         // --- ADIÇÃO DE ITEM AO LOTE ATIVO ---
