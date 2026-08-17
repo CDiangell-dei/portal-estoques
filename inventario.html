@@ -2547,56 +2547,74 @@
             const validadeEntries = [];
             const conferenteIdent = currentUser ? `${currentUser.matricula} - ${currentUser.nome}` : 'SISTEMA';
 
+            const userFilStr = currentUser ? String(currentUser.filial_atual).trim().padStart(2, '0') : '01';
+
             inputs.forEach(inp => {
                 const armazem = String(inp.getAttribute('data-armazem')).trim().padStart(2, '0');
                 const valStr = inp.value.trim();
                 const mode = inp.getAttribute('data-mode') || 'peso';
                 const factor = parseFloat(inp.getAttribute('data-factor')) || 1;
 
-                // Se o campo de quantidade estiver vazio (não digitado), desconsidera este armazém
-                if (valStr === '') {
-                    return;
-                }
+                const valInput = document.getElementById(`countValidade_${armazem}`);
+                const valDate = valInput ? valInput.value.trim() : '';
 
-                const evaluatedVal = parseSmartMathExpression(valStr);
-                if (evaluatedVal === null || isNaN(evaluatedVal) || evaluatedVal < 0) {
-                    return;
-                }
+                const existingVal = getProductValidadeForArmazem(codigo, armazem, userFilStr);
+                const prevValDate = existingVal ? String(existingVal.data_validade || '').trim() : '';
 
-                const qtdContada = (mode === 'peca') ? (evaluatedVal * factor) : evaluatedVal;
-                localCountsMap[`${armazem}_${codigo}`] = qtdContada;
-                
-                const userFilStr = currentUser ? String(currentUser.filial_atual).trim().padStart(2, '0') : '01';
                 const currentSysRecord = rawSaldoDataset.find(s => s.produto === codigo && s.armazem === armazem && s.filial === userFilStr);
                 const qtdSistema = currentSysRecord ? parseFloat(currentSysRecord.quantidade || 0) : 0;
 
-                insertsContagem.push({
-                    filial: rawFilial,
-                    armazem_contagem: armazem,
-                    produto: codigo,
-                    quantidade_contada: qtdContada,
-                    quantidade_sistema: qtdSistema,
-                    quem_contou: conferenteIdent
-                });
+                // Caso 1: O usuário digitou uma quantidade no campo de contagem
+                if (valStr !== '') {
+                    const evaluatedVal = parseSmartMathExpression(valStr);
+                    if (evaluatedVal !== null && !isNaN(evaluatedVal) && evaluatedVal >= 0) {
+                        const qtdContada = (mode === 'peca') ? (evaluatedVal * factor) : evaluatedVal;
+                        localCountsMap[`${armazem}_${codigo}`] = qtdContada;
 
-                // Captura validade APENAS para os armazéns onde uma quantidade foi explicitamente informada (ex: 0 ou mais)
-                const valInput = document.getElementById(`countValidade_${armazem}`);
-                const valDate = valInput ? valInput.value.trim() : '';
-                if (valDate) {
-                    validadeEntries.push({
-                        filial: rawFilial,
-                        armazem: armazem,
-                        produto: codigo,
-                        quantidade: qtdContada,
-                        data_validade: valDate,
-                        quem_registrou: currentUser ? currentUser.nome : 'SISTEMA',
-                        observacao: obs || `Lançado no inventário (Arm. ${armazem})`
-                    });
+                        insertsContagem.push({
+                            filial: rawFilial,
+                            armazem_contagem: armazem,
+                            produto: codigo,
+                            quantidade_contada: qtdContada,
+                            quantidade_sistema: qtdSistema,
+                            quem_contou: conferenteIdent
+                        });
+
+                        // Se há data informada no armazém contado
+                        if (valDate) {
+                            validadeEntries.push({
+                                filial: rawFilial,
+                                armazem: armazem,
+                                produto: codigo,
+                                quantidade: qtdContada, // se digitou 0, salva 0; se digitou 50, salva 50
+                                data_validade: valDate,
+                                quem_registrou: currentUser ? currentUser.nome : 'SISTEMA',
+                                observacao: obs || `Lançado no inventário (Arm. ${armazem})`
+                            });
+                        }
+                    }
+                } 
+                // Caso 2: O campo de quantidade foi deixado em branco (valStr === '')
+                else {
+                    // Se o usuário digitou/alterou uma data de validade nova ou diferente, preserva o saldo atual (nunca força 0)
+                    if (valDate !== '' && valDate !== prevValDate) {
+                        const qtdPreservada = existingVal ? Number(existingVal.quantidade || 0) : qtdSistema;
+                        validadeEntries.push({
+                            filial: rawFilial,
+                            armazem: armazem,
+                            produto: codigo,
+                            quantidade: qtdPreservada,
+                            data_validade: valDate,
+                            quem_registrou: currentUser ? currentUser.nome : 'SISTEMA',
+                            observacao: obs || `Atualização de data no inventário (Arm. ${armazem})`
+                        });
+                    }
+                    // Se valStr === '' e a data não foi alterada: IGNORA COMPLETAMENTE. Não altera contagem nem validade!
                 }
             });
 
             if (insertsContagem.length === 0 && validadeEntries.length === 0) {
-                showAlert("Preencha a contagem de pelo menos um armazém para salvar.", "warning");
+                showAlert("Preencha a contagem ou data de pelo menos um armazém para salvar.", "warning");
                 return;
             }
 
