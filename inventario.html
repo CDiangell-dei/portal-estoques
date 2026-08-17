@@ -1970,45 +1970,57 @@
                     plugins: {
                         legend: { position: 'top', labels: { boxWidth: 10, font: { weight: 'bold', size: 10 } } },
                         datalabels: { 
-                            display: true,
+                            display: function(context) {
+                                const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
+                                return val > 0;
+                            },
                             anchor: function(context) {
                                 const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
-                                return val < 40 ? 'end' : 'center';
+                                return val < 80 ? 'end' : 'end';
                             },
                             align: function(context) {
                                 const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
-                                return val < 40 ? 'top' : 'center';
+                                return val < 80 ? 'top' : 'bottom';
                             },
-                            offset: 4,
+                            offset: function(context) {
+                                const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
+                                return val < 80 ? 3 : 4;
+                            },
                             color: function(context) {
                                 const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
-                                if (val < 40) {
-                                    return document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#334155';
+                                const isDark = document.documentElement.classList.contains('dark');
+                                if (val < 80) {
+                                    return isDark ? '#f8fafc' : '#0f172a';
+                                } else {
+                                    return '#ffffff';
                                 }
-                                return context.datasetIndex === 0 ? (document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569') : '#ffffff';
                             },
                             backgroundColor: function(context) {
                                 const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
-                                if (val < 40) {
-                                    return document.documentElement.classList.contains('dark') ? '#334155' : '#f1f5f9';
+                                const isDark = document.documentElement.classList.contains('dark');
+                                if (val < 80) {
+                                    return isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                                } else {
+                                    return 'rgba(15, 23, 42, 0.85)';
                                 }
-                                return null;
                             },
                             borderColor: function(context) {
                                 const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
-                                if (val < 40) {
-                                    return document.documentElement.classList.contains('dark') ? '#475569' : '#cbd5e1';
+                                const isDark = document.documentElement.classList.contains('dark');
+                                if (val < 80) {
+                                    return isDark ? '#475569' : '#cbd5e1';
+                                } else {
+                                    return 'rgba(255, 255, 255, 0.35)';
                                 }
-                                return null;
                             },
-                            borderWidth: function(context) {
-                                const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
-                                return val < 40 ? 1 : 0;
-                            },
+                            borderWidth: 1,
                             borderRadius: 4,
                             padding: { top: 2, bottom: 2, left: 4, right: 4 },
                             font: { weight: 'bold', size: 9 }, 
-                            formatter: (v) => parseFloat(v) > 0 ? v + '%' : '' 
+                            formatter: function(v) {
+                                const num = parseFloat(v);
+                                return num > 0 ? num + '%' : '';
+                            }
                         }
                     },
                     scales: {
