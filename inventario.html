@@ -2362,15 +2362,6 @@
                         <div id="countPreviewCalc_${armazemCode}" class="text-[10px] font-black text-teal-700"></div>
                     </div>
 
-                    <!-- LINHA DE VALIDADE DO MATERIAL NO ARMAZÉM -->
-                    <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <label class="text-[10px] font-black text-slate-500 uppercase flex items-center gap-1">
-                            <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-amber-600"></i>
-                            <span>Validade (Mês/Ano):</span>
-                        </label>
-                        <input type="month" id="countValidade_${armazemCode}" value="${existingVal ? existingVal.data_validade : ''}" class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
-                    </div>
-
                     ${lastInfoHtml}
                 </div>
             `;
@@ -2609,7 +2600,6 @@
             
             const rawFilial = currentUser ? String(currentUser.filial_atual).trim() : '01';
             const insertsContagem = [];
-            const validadeEntries = [];
             const conferenteIdent = currentUser ? `${currentUser.matricula} - ${currentUser.nome}` : 'SISTEMA';
 
             const userFilStr = currentUser ? String(currentUser.filial_atual).trim().padStart(2, '0') : '01';
@@ -2620,22 +2610,15 @@
                 const mode = inp.getAttribute('data-mode') || 'peso';
                 const factor = parseFloat(inp.getAttribute('data-factor')) || 1;
 
-                const valInput = document.getElementById(`countValidade_${armazem}`);
-                const valDate = valInput ? valInput.value.trim() : '';
-
-                const existingVal = getProductValidadeForArmazem(codigo, armazem, userFilStr);
-                const prevValDate = existingVal ? String(existingVal.data_validade || '').trim() : '';
-
-                const currentSysRecord = rawSaldoDataset.find(s => s.produto === codigo && s.armazem === armazem && s.filial === userFilStr);
-                const qtdSistema = currentSysRecord ? parseFloat(currentSysRecord.quantidade || 0) : 0;
-
-                // Caso 1: O usuário digitou uma quantidade no campo de contagem
                 if (valStr !== '') {
                     const prevCount = parseFloat(inp.getAttribute('data-prev-count')) || 0;
                     const evaluatedVal = parseSmartMathExpression(valStr, prevCount);
                     if (evaluatedVal !== null && !isNaN(evaluatedVal) && evaluatedVal >= 0) {
                         const qtdContada = (mode === 'peca') ? (evaluatedVal * factor) : evaluatedVal;
                         localCountsMap[`${armazem}_${codigo}`] = qtdContada;
+
+                        const currentSysRecord = rawSaldoDataset.find(s => s.produto === codigo && s.armazem === armazem && s.filial === userFilStr);
+                        const qtdSistema = currentSysRecord ? parseFloat(currentSysRecord.quantidade || 0) : 0;
 
                         insertsContagem.push({
                             filial: rawFilial,
@@ -2645,111 +2628,35 @@
                             quantidade_sistema: qtdSistema,
                             quem_contou: conferenteIdent
                         });
-
-                        // Se há data informada no armazém contado
-                        if (valDate) {
-                            validadeEntries.push({
-                                filial: rawFilial,
-                                armazem: armazem,
-                                produto: codigo,
-                                quantidade: qtdContada, // se digitou 0, salva 0; se digitou 50, salva 50
-                                data_validade: valDate,
-                                quem_registrou: currentUser ? currentUser.nome : 'SISTEMA',
-                                observacao: obs || `Lançado no inventário (Arm. ${armazem})`
-                            });
-                        }
                     }
-                } 
-                // Caso 2: O campo de quantidade foi deixado em branco (valStr === '')
-                else {
-                    // Se o usuário digitou/alterou uma data de validade nova ou diferente, preserva o saldo atual (nunca força 0)
-                    if (valDate !== '' && valDate !== prevValDate) {
-                        const qtdPreservada = existingVal ? Number(existingVal.quantidade || 0) : qtdSistema;
-                        validadeEntries.push({
-                            filial: rawFilial,
-                            armazem: armazem,
-                            produto: codigo,
-                            quantidade: qtdPreservada,
-                            data_validade: valDate,
-                            quem_registrou: currentUser ? currentUser.nome : 'SISTEMA',
-                            observacao: obs || `Atualização de data no inventário (Arm. ${armazem})`
-                        });
-                    }
-                    // Se valStr === '' e a data não foi alterada: IGNORA COMPLETAMENTE. Não altera contagem nem validade!
                 }
             });
 
-            if (insertsContagem.length === 0 && validadeEntries.length === 0) {
-                showAlert("Preencha a contagem ou data de pelo menos um armazém para salvar.", "warning");
+            if (insertsContagem.length === 0) {
+                showAlert("Preencha a contagem de pelo menos um armazém para salvar.", "warning");
                 return;
             }
 
             const countTable = currentSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
-            const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
 
             let savedOnline = false;
             if (supabaseClient && currentUser && navigator.onLine) {
                 try {
-                    if (insertsContagem.length > 0) {
-                        const { error } = await supabaseClient.from(countTable).insert(insertsContagem);
-                        if (error) {
-                            const fallbackSemFilial = insertsContagem.map(i => {
-                                const { filial, ...rest } = i;
-                                return rest;
-                            });
-                            await supabaseClient.from(countTable).insert(fallbackSemFilial);
-                        }
+                    const { error } = await supabaseClient.from(countTable).insert(insertsContagem);
+                    if (error) {
+                        const fallbackSemFilial = insertsContagem.map(i => {
+                            const { filial, ...rest } = i;
+                            return rest;
+                        });
+                        await supabaseClient.from(countTable).insert(fallbackSemFilial);
                     }
-
-                    // Envia para o módulo de validade substituindo se já existir registro para aquele material/armazém
-                    if (validadeEntries.length > 0) {
-                        for (const vItem of validadeEntries) {
-                            const { data: existingRows } = await supabaseClient
-                                .from(valTable)
-                                .select('id')
-                                .eq('filial', vItem.filial)
-                                .eq('armazem', vItem.armazem)
-                                .eq('produto', vItem.produto);
-
-                            if (existingRows && existingRows.length > 0) {
-                                // Substitui registro existente
-                                await supabaseClient
-                                    .from(valTable)
-                                    .update({
-                                        data_validade: vItem.data_validade,
-                                        quantidade: vItem.quantidade,
-                                        quem_registrou: vItem.quem_registrou,
-                                        observacao: vItem.observacao
-                                    })
-                                    .eq('id', existingRows[0].id);
-                            } else {
-                                // Insere novo registro
-                                await supabaseClient.from(valTable).insert([vItem]);
-                            }
-                        }
-                    }
-
                     savedOnline = true;
                 } catch (e) {
-                    console.error("Erro ao salvar contagem/validade:", e);
-                    if (insertsContagem.length > 0) saveOfflineAction('insert', countTable, insertsContagem);
-                    if (validadeEntries.length > 0) saveOfflineAction('insert', valTable, validadeEntries);
+                    console.error("Erro ao salvar contagem:", e);
+                    saveOfflineAction('insert', countTable, insertsContagem);
                 }
             } else {
-                if (insertsContagem.length > 0) saveOfflineAction('insert', countTable, insertsContagem);
-                if (validadeEntries.length > 0) saveOfflineAction('insert', valTable, validadeEntries);
-            }
-
-            // Atualiza cache local de validades
-            if (validadeEntries.length > 0) {
-                validadeEntries.forEach(v => {
-                    const idx = rawValidadeDataset.findIndex(r => r.filial === v.filial && r.armazem === v.armazem && r.produto === v.produto);
-                    if (idx >= 0) {
-                        rawValidadeDataset[idx] = { ...rawValidadeDataset[idx], ...v };
-                    } else {
-                        rawValidadeDataset.unshift({ ...v, id: 'temp_' + Date.now() });
-                    }
-                });
+                saveOfflineAction('insert', countTable, insertsContagem);
             }
 
             if (savedOnline) {
@@ -2897,12 +2804,10 @@
             }
 
             const countTable = currentSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
-            const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
             const rawFilial = currentUser ? String(currentUser.filial_atual).trim() : '01';
             const conferenteIdent = currentUser ? `${currentUser.matricula} - ${currentUser.nome}` : 'SISTEMA';
 
             const inserts = [];
-            const validadeInserts = [];
 
             validRows.forEach(r => {
                 const cod = r.codigo.trim();
@@ -2922,18 +2827,6 @@
                     quantidade_sistema: qtdSistema,
                     quem_contou: conferenteIdent
                 });
-
-                if (r.validade) {
-                    validadeInserts.push({
-                        filial: rawFilial,
-                        armazem: arm,
-                        produto: cod,
-                        quantidade: total,
-                        data_validade: r.validade,
-                        quem_registrou: currentUser ? currentUser.nome : 'SISTEMA',
-                        observacao: `Lote em massa (Arm. ${arm})`
-                    });
-                }
             });
 
             try {
@@ -2941,17 +2834,6 @@
                 if (error) {
                     showAlert("Erro ao salvar contagens em lote: " + error.message, "error");
                     return;
-                }
-
-                if (validadeInserts.length > 0) {
-                    for (const v of validadeInserts) {
-                        const { data: existing } = await supabaseClient.from(valTable).select('id').eq('filial', v.filial).eq('armazem', v.armazem).eq('produto', v.produto);
-                        if (existing && existing.length > 0) {
-                            await supabaseClient.from(valTable).update({ data_validade: v.data_validade, quantidade: v.quantidade, quem_registrou: v.quem_registrou }).eq('id', existing[0].id);
-                        } else {
-                            await supabaseClient.from(valTable).insert([v]);
-                        }
-                    }
                 }
 
                 showAlert(`${validRows.length} contagem(ns) salva(s) com sucesso em lote!`, "success");
