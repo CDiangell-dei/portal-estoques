@@ -490,7 +490,7 @@
                 </h3>
                 <span class="text-[10px] font-bold text-slate-400">Status das contagens por setor físico</span>
             </div>
-            <div class="h-56 relative w-full">
+            <div class="h-64 sm:h-72 relative w-full">
                 <canvas id="chartArmazemAcuracia"></canvas>
             </div>
         </div>
@@ -1860,6 +1860,10 @@
             const ctx = document.getElementById('chartArmazemAcuracia');
             if (!ctx || typeof Chart === 'undefined') return;
 
+            if (typeof ChartDataLabels !== 'undefined') {
+                Chart.register(ChartDataLabels);
+            }
+
             if (chartInstances['armazemAcuracia']) {
                 chartInstances['armazemAcuracia'].destroy();
             }
@@ -1955,6 +1959,7 @@
 
             chartInstances['armazemAcuracia'] = new Chart(ctx, {
                 type: 'bar',
+                plugins: (typeof ChartDataLabels !== 'undefined') ? [ChartDataLabels] : [],
                 data: {
                     labels: labels,
                     datasets: [
@@ -1967,6 +1972,11 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 20
+                        }
+                    },
                     plugins: {
                         legend: { position: 'top', labels: { boxWidth: 10, font: { weight: 'bold', size: 10 } } },
                         datalabels: { 
@@ -1984,7 +1994,7 @@
                             },
                             offset: function(context) {
                                 const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
-                                return val < 80 ? 3 : 4;
+                                return val < 80 ? 4 : 4;
                             },
                             color: function(context) {
                                 const val = parseFloat(context.dataset.data[context.dataIndex]) || 0;
@@ -2016,7 +2026,7 @@
                             borderWidth: 1,
                             borderRadius: 4,
                             padding: { top: 2, bottom: 2, left: 4, right: 4 },
-                            font: { weight: 'bold', size: 9 }, 
+                            font: { weight: '800', size: 9 }, 
                             formatter: function(v) {
                                 const num = parseFloat(v);
                                 return num > 0 ? num + '%' : '';
@@ -2027,12 +2037,13 @@
                         x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } },
                         y: { 
                             min: 0,
-                            max: 100,
+                            max: 115,
                             beginAtZero: true, 
                             grid: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#f1f5f9' }, 
                             ticks: { 
                                 font: { weight: 'bold' },
-                                callback: function(value) { return value + '%'; }
+                                stepSize: 20,
+                                callback: function(value) { return (value <= 100) ? value + '%' : ''; }
                             } 
                         }
                     }
