@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="./icon.png">
     <link rel="shortcut icon" type="image/png" href="./icon.png">
     <link rel="apple-touch-icon" href="./icon.png">
-    <title>Transferência para Armazém 01 - Amazon Aço</title>
+    <title>TransferÃªncia para ArmazÃ©m 01 - Amazon AÃ§o</title>
     <script>
         if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -77,7 +77,7 @@
         .dark table tr:hover { background-color: #334155/60 !important; }
         .dark .shadow-sm, .dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3) !important; }
 
-        /* Impressão - Romaneio */
+        /* ImpressÃ£o - Romaneio */
         @media print {
             body { background-color: #ffffff !important; color: #000000 !important; font-size: 11px; padding: 0 !important; }
             .no-print { display: none !important; }
@@ -97,7 +97,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span id="globalLoaderText" class="text-slate-800 dark:text-white font-bold text-lg animate-pulse">Carregando Transferências...</span>
+            <span id="globalLoaderText" class="text-slate-800 dark:text-white font-bold text-lg animate-pulse">Carregando TransferÃªncias...</span>
         </div>
     </div>
 
@@ -119,52 +119,52 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <a href="index.html" class="flex items-center space-x-3 cursor-pointer">
-                    <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" fetchpriority="high" loading="eager" class="h-10 w-auto flex-shrink-0 object-contain drop-shadow-sm">
+                    <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon AÃ§o" fetchpriority="high" loading="eager" class="h-10 w-auto flex-shrink-0 object-contain drop-shadow-sm">
                     <div class="border-l border-slate-200 pl-3 hidden sm:block">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                             <span>Portal de Controle de Estoques</span>
-                            <span class="bg-blue-100 text-[#002f6c] dark:bg-blue-950 dark:text-blue-200 text-[9px] px-2 py-0.5 rounded-full font-black border border-blue-200 shadow-xs">Transferência</span>
+                            <span class="bg-blue-100 text-[#002f6c] dark:bg-blue-950 dark:text-blue-200 text-[9px] px-2 py-0.5 rounded-full font-black border border-blue-200 shadow-xs">TransferÃªncia</span>
                         </p>
-                        <h1 class="text-sm font-black text-slate-900 leading-tight">Transferência para Armazém 01</h1>
+                        <h1 class="text-sm font-black text-slate-900 leading-tight">TransferÃªncia para ArmazÃ©m 01</h1>
                     </div>
                 </a>
             </div>
 
             <!-- NAV DESKTOP -->
             <div class="hidden md:flex items-center space-x-2">
-                <a href="index.html" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                <a href="index.html" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 cursor-pointer">
                     <i data-lucide="home" class="w-4 h-4"></i>
                     <span>Início</span>
                 </a>
 
-                <a href="solicitacao_estoque.html" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                <a href="solicitacao_estoque.html" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-blue-50 hover:bg-blue-100 text-[#002f6c] dark:bg-blue-950 dark:text-blue-200 border border-blue-200 dark:border-blue-800 shadow-sm cursor-pointer">
                     <i data-lucide="shopping-cart" class="w-4 h-4 text-blue-600"></i>
-                    <span>Solicitação</span>
+                    <span>Solicitação de Estoque</span>
                 </a>
 
-                <!-- GRUPO ESTOQUE (COM SUBMENU) -->
+                <!-- GRUPO ESTOQUE (ATIVO) -->
                 <div class="relative">
-                    <button onclick="toggleDesktopSubmenu('estoque')" id="desktopBtnEstoqueGroup" class="bg-blue-50 dark:bg-blue-950/60 text-[#002f6c] dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-3.5 py-2 rounded-2xl text-xs font-black inline-flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer">
-                        <i data-lucide="truck" class="w-4 h-4 text-blue-600"></i>
-                        <span>Transferência 01</span>
-                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-blue-400"></i>
+                    <button onclick="toggleDesktopSubmenu('estoque')" id="desktopBtnEstoqueGroup" class="bg-white text-blue-800 border border-slate-200 shadow-sm px-3.5 py-2 rounded-2xl text-xs font-black inline-flex items-center space-x-1.5 transition-all cursor-pointer">
+                        <i data-lucide="boxes" class="w-4 h-4 text-blue-600"></i>
+                        <span>Estoque</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
                     </button>
 
-                    <div id="desktopEstoqueSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1">
-                        <a href="transferencia.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl bg-blue-50 dark:bg-slate-700 text-left transition-colors font-bold text-[#002f6c] dark:text-blue-300">
-                            <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
-                                <i data-lucide="truck" class="w-3.5 h-3.5"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs font-black">Transferência Armazém 01</p>
-                            </div>
-                        </a>
+                    <div id="desktopEstoqueSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1 no-print">
                         <a href="inventario.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                             <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
                                 <i data-lucide="boxes" class="w-3.5 h-3.5"></i>
                             </div>
                             <div>
                                 <p class="text-xs font-black text-slate-800 dark:text-slate-200">Inventário Rotativo</p>
+                            </div>
+                        </a>
+                        <a href="transferencia.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-left transition-colors font-bold">
+                            <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                                <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black">Transferência Armazém 01</p>
                             </div>
                         </a>
                         <a href="kardex.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
@@ -194,7 +194,7 @@
                         <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
                     </button>
 
-                    <div id="desktopAlmoxSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1">
+                    <div id="desktopAlmoxSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1 no-print">
                         <a href="luvas.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                             <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
                                 <i data-lucide="shield" class="w-3.5 h-3.5"></i>
@@ -214,7 +214,7 @@
                     </div>
                 </div>
 
-                <!-- ADMIN -->
+                <!-- BOTÃO ADMIN -->
                 <a href="admin.html" id="desktopBtnAdmin" class="hidden px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-amber-500/10 text-amber-700 hover:text-amber-900 border border-amber-500/20 cursor-pointer">
                     <i data-lucide="settings" class="w-4 h-4"></i>
                     <span>Admin</span>
@@ -223,12 +223,12 @@
 
             <!-- PERFIL E CONTROLES -->
             <div class="flex items-center space-x-3">
-                <div title="Status da Conexão com o Servidor" class="p-2 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center space-x-1">
+                <div title="Status da ConexÃ£o com o Servidor" class="p-2 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center space-x-1">
                     <span id="appStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 </div>
 
                 <div class="flex flex-col text-right">
-                    <span id="headerUserName" class="text-xs font-black text-slate-900 dark:text-white">Usuário</span>
+                    <span id="headerUserName" class="text-xs font-black text-slate-900 dark:text-white">UsuÃ¡rio</span>
                     <span id="headerUserFilial" class="text-[10px] font-bold text-[#9c0e25] uppercase tracking-wider">Filial 01</span>
                 </div>
 
@@ -236,14 +236,14 @@
                     <i data-lucide="moon" class="w-4 h-4"></i>
                 </button>
 
-                <button onclick="confirmLogout()" title="Sair da Sessão" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-[#9c0e25] p-2.5 rounded-xl border border-slate-200 transition-all touch-active">
+                <button onclick="confirmLogout()" title="Sair da SessÃ£o" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-[#9c0e25] p-2.5 rounded-xl border border-slate-200 transition-all touch-active">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- CONTEÚDO PRINCIPAL -->
+    <!-- CONTEÃšDO PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-grow space-y-6 w-full flex flex-col no-print">
 
         <!-- HERO BANNER COM SELETOR DE SETOR & ABAS -->
@@ -255,28 +255,28 @@
                 </div>
                 <h2 class="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
                     <i data-lucide="truck" class="w-6 h-6 text-blue-400"></i>
-                    <span>Transferência para Armazém 01</span>
+                    <span>TransferÃªncia para ArmazÃ©m 01</span>
                 </h2>
                 <p class="text-xs sm:text-sm text-blue-100/80 font-semibold max-w-xl">
-                    Escaneie QR Codes, consulte a situação de inventário e monte a lista de movimentação física e baixa no ERP.
+                    Escaneie QR Codes, consulte a situaÃ§Ã£o de inventÃ¡rio e monte a lista de movimentaÃ§Ã£o fÃ­sica e baixa no ERP.
                 </p>
             </div>
 
             <!-- CONTROLES DO BANNER: SELETOR DE SETOR & ABAS -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto z-10">
-                <!-- Seletor de Setor (Comércio / Indústria) -->
+                <!-- Seletor de Setor (ComÃ©rcio / IndÃºstria) -->
                 <div class="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/15 flex items-center gap-1.5 shadow-inner">
                     <button id="sectorComercioBtn" onclick="switchSector('COMERCIO')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 bg-white text-[#002f6c] shadow-sm cursor-pointer">
                         <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
-                        <span>Comércio</span>
+                        <span>ComÃ©rcio</span>
                     </button>
                     <button id="sectorIndustriaBtn" onclick="switchSector('INDUSTRIA')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 text-blue-100 hover:text-white cursor-pointer">
                         <i data-lucide="factory" class="w-3.5 h-3.5"></i>
-                        <span>Indústria</span>
+                        <span>IndÃºstria</span>
                     </button>
                 </div>
 
-                <!-- Seletor de Abas (Nova Transferência / Histórico) -->
+                <!-- Seletor de Abas (Nova TransferÃªncia / HistÃ³rico) -->
                 <div class="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/15 flex items-center gap-1.5 shadow-inner">
                     <button id="tabActiveTransferBtn" onclick="switchTransferTab('active')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 bg-[#9c0e25] text-white shadow-sm cursor-pointer">
                         <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
@@ -284,14 +284,14 @@
                     </button>
                     <button id="tabHistoryBtn" onclick="switchTransferTab('history')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 text-blue-100 hover:text-white cursor-pointer">
                         <i data-lucide="history" class="w-3.5 h-3.5"></i>
-                        <span>Histórico</span>
+                        <span>HistÃ³rico</span>
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- ============================================================ -->
-        <!-- ABA 1: LOTE ATIVO / COLETA & SEPARAÇÃO                       -->
+        <!-- ABA 1: LOTE ATIVO / COLETA & SEPARAÃ‡ÃƒO                       -->
         <!-- ============================================================ -->
         <div id="viewActiveTransfer" class="space-y-6">
 
@@ -305,11 +305,11 @@
                         <div class="flex items-center gap-2">
                             <span id="activeLoteCodigo" class="text-sm font-black text-slate-900 dark:text-white">TRF-COM-NOVO</span>
                             <span id="activeLoteStatusBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200">
-                                🟡 Em Aberto (Rascunho)
+                                ðŸŸ¡ Em Aberto (Rascunho)
                             </span>
                         </div>
                         <p id="activeLoteInfo" class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-                            Destino: <strong class="text-slate-800 dark:text-slate-200">Armazém 01</strong> | Criado por: <span id="activeLoteCriador">Você</span>
+                            Destino: <strong class="text-slate-800 dark:text-slate-200">ArmazÃ©m 01</strong> | Criado por: <span id="activeLoteCriador">VocÃª</span>
                         </p>
                     </div>
                 </div>
@@ -330,7 +330,7 @@
                 </div>
             </div>
 
-            <!-- PAINEL DE LEITURA & BIPAGEM RÁPIDA (QR CODE / BUSCA SB1) -->
+            <!-- PAINEL DE LEITURA & BIPAGEM RÃPIDA (QR CODE / BUSCA SB1) -->
             <div id="scannerSectionCard" class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-3">
                     <div class="flex items-center gap-2">
@@ -338,22 +338,22 @@
                             <i data-lucide="qr-code" class="w-4 h-4"></i>
                         </div>
                         <div>
-                            <h3 class="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">Adicionar Material à Transferência</h3>
-                            <p class="text-[11px] text-slate-400 font-bold">Escaneie o QR Code no Armazém 01 ou digite o código do material</p>
+                            <h3 class="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">Adicionar Material Ã  TransferÃªncia</h3>
+                            <p class="text-[11px] text-slate-400 font-bold">Escaneie o QR Code no ArmazÃ©m 01 ou digite o cÃ³digo do material</p>
                         </div>
                     </div>
 
-                    <!-- Botão Scanner de Câmera -->
+                    <!-- BotÃ£o Scanner de CÃ¢mera -->
                     <button onclick="openCameraScannerModal()" class="px-4 py-2 bg-[#002f6c] hover:bg-[#00204a] text-white rounded-xl text-xs font-black flex items-center gap-2 shadow-md transition touch-active cursor-pointer">
                         <i data-lucide="camera" class="w-4 h-4 text-emerald-400"></i>
-                        <span>Abrir Câmera / Scanner</span>
+                        <span>Abrir CÃ¢mera / Scanner</span>
                     </button>
                 </div>
 
                 <!-- INPUT DE BUSCA MANUAL COM AUTOCOMPLETE -->
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
                     <div class="md:col-span-8 relative">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Buscar Material (Código ou Descrição SB1)</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Buscar Material (CÃ³digo ou DescriÃ§Ã£o SB1)</label>
                         <div class="relative flex items-center">
                             <i data-lucide="search" class="w-4 h-4 absolute left-3 text-slate-400"></i>
                             <input type="text" id="inputProductSearch" placeholder="Ex: 57000354 ou PARAFUSO..."
@@ -364,26 +364,26 @@
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
-                        <!-- Lista de Sugestões Autocomplete -->
+                        <!-- Lista de SugestÃµes Autocomplete -->
                         <div id="productAutocompleteList" class="hidden absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 text-xs"></div>
                     </div>
 
-                    <!-- Seletor de Armazém de Origem Padrão -->
+                    <!-- Seletor de ArmazÃ©m de Origem PadrÃ£o -->
                     <div class="md:col-span-4">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Armazém de Origem</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">ArmazÃ©m de Origem</label>
                         <select id="selectArmazemOrigem" onchange="onArmazemOrigemChange()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer">
-                            <option value="02" selected>Armazém 02 (Padrão)</option>
-                            <option value="01">Armazém 01</option>
-                            <option value="03">Armazém 03</option>
-                            <option value="04">Armazém 04</option>
-                            <option value="05">Armazém 05</option>
-                            <option value="06">Armazém 06</option>
-                            <option value="50">Armazém 50 (Validade/Avarias)</option>
+                            <option value="02" selected>ArmazÃ©m 02 (PadrÃ£o)</option>
+                            <option value="01">ArmazÃ©m 01</option>
+                            <option value="03">ArmazÃ©m 03</option>
+                            <option value="04">ArmazÃ©m 04</option>
+                            <option value="05">ArmazÃ©m 05</option>
+                            <option value="06">ArmazÃ©m 06</option>
+                            <option value="50">ArmazÃ©m 50 (Validade/Avarias)</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- CARD DE DIAGNÓSTICO DO MATERIAL SELECIONADO / BIPADO -->
+                <!-- CARD DE DIAGNÃ“STICO DO MATERIAL SELECIONADO / BIPADO -->
                 <div id="productDiagnosisCard" class="hidden bg-slate-50 dark:bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700/80 pb-3">
                         <div>
@@ -394,7 +394,7 @@
                             <h4 id="diagProductDesc" class="text-xs sm:text-sm font-black text-slate-900 dark:text-white mt-1">---</h4>
                         </div>
 
-                    <!-- SALDOS EM TEMPO REAL NOS ARMAZÉNS -->
+                    <!-- SALDOS EM TEMPO REAL NOS ARMAZÃ‰NS -->
                         <div class="flex items-center gap-2">
                             <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-center min-w-[90px]">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Destino (01)</span>
@@ -407,45 +407,45 @@
                         </div>
                     </div>
 
-                    <!-- SELEÇÃO RÁPIDA DE ARMAZÉNS COM SALDO (CHIPS) -->
+                    <!-- SELEÃ‡ÃƒO RÃPIDA DE ARMAZÃ‰NS COM SALDO (CHIPS) -->
                     <div id="productWarehouseChipsSection" class="space-y-1.5 pt-1 border-b border-slate-200 dark:border-slate-700/80 pb-3">
                         <div class="flex items-center justify-between">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Armazéns com Saldo Disponível (Clique para selecionar)</label>
-                            <span id="warehouseCountNotice" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">0 armazéns encontrados</span>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">ArmazÃ©ns com Saldo DisponÃ­vel (Clique para selecionar)</label>
+                            <span id="warehouseCountNotice" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">0 armazÃ©ns encontrados</span>
                         </div>
                         <div id="productWarehouseChipsContainer" class="flex flex-wrap gap-2 items-center">
                             <!-- Inserido dinamicamente via JS -->
                         </div>
                     </div>
 
-                    <!-- WIDGET DE CONFIABILIDADE DE INVENTÁRIO (CONTAGEM FÍSICA) -->
+                    <!-- WIDGET DE CONFIABILIDADE DE INVENTÃRIO (CONTAGEM FÃSICA) -->
                     <div id="diagInventoryReliabilityBox" class="p-3 rounded-xl border flex items-start sm:items-center justify-between gap-3 text-xs font-semibold">
                         <div class="flex items-center gap-2.5">
                             <i id="diagReliabilityIcon" data-lucide="shield-check" class="w-5 h-5 flex-shrink-0 text-emerald-600"></i>
                             <div>
-                                <span id="diagReliabilityStatusTitle" class="font-black text-slate-900 dark:text-white block">Situação de Inventário</span>
-                                <p id="diagReliabilityDetails" class="text-[11px] text-slate-500 dark:text-slate-400">Verificando histórico de contagens...</p>
+                                <span id="diagReliabilityStatusTitle" class="font-black text-slate-900 dark:text-white block">SituaÃ§Ã£o de InventÃ¡rio</span>
+                                <p id="diagReliabilityDetails" class="text-[11px] text-slate-500 dark:text-slate-400">Verificando histÃ³rico de contagens...</p>
                             </div>
                         </div>
                         <span id="diagReliabilityBadge" class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            Confiável
+                            ConfiÃ¡vel
                         </span>
                     </div>
 
-                    <!-- FORMULÁRIO DE QUANTIDADE & ATALHOS DE ADIÇÃO -->
+                    <!-- FORMULÃRIO DE QUANTIDADE & ATALHOS DE ADIÃ‡ÃƒO -->
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1">
                         <div class="sm:col-span-5 space-y-1">
                             <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quantidade a Transferir para 01</label>
                             <div class="flex items-center space-x-1.5">
                                 <input type="number" id="diagInputQty" value="1" min="0.001" step="any"
                                        class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2 text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                                <button type="button" onclick="setTransferAllStock()" title="Transferir todo o saldo disponível de origem" class="px-3 py-2 bg-blue-50 dark:bg-slate-700 hover:bg-blue-100 text-[#002f6c] dark:text-blue-300 rounded-xl text-xs font-black whitespace-nowrap border border-blue-200 dark:border-slate-600 cursor-pointer">
+                                <button type="button" onclick="setTransferAllStock()" title="Transferir todo o saldo disponÃ­vel de origem" class="px-3 py-2 bg-blue-50 dark:bg-slate-700 hover:bg-blue-100 text-[#002f6c] dark:text-blue-300 rounded-xl text-xs font-black whitespace-nowrap border border-blue-200 dark:border-slate-600 cursor-pointer">
                                     Total
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Atalhos rápidos de quantidade -->
+                        <!-- Atalhos rÃ¡pidos de quantidade -->
                         <div class="sm:col-span-4 flex items-center gap-1.5 flex-wrap">
                             <button type="button" onclick="quickAddQty(1)" class="px-2.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-xs font-black rounded-lg transition text-slate-700 dark:text-slate-200">+1</button>
                             <button type="button" onclick="quickAddQty(5)" class="px-2.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-xs font-black rounded-lg transition text-slate-700 dark:text-slate-200">+5</button>
@@ -453,7 +453,7 @@
                             <button type="button" onclick="quickAddQty(50)" class="px-2.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-xs font-black rounded-lg transition text-slate-700 dark:text-slate-200">+50</button>
                         </div>
 
-                        <!-- Botão Adicionar ao Lote -->
+                        <!-- BotÃ£o Adicionar ao Lote -->
                         <div class="sm:col-span-3">
                             <button type="button" id="btnAddItemToList" onclick="addItemToActiveBatch()" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition touch-active cursor-pointer">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
@@ -471,10 +471,10 @@
                         <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
                             <i data-lucide="list-checks" class="w-4 h-4"></i>
                         </div>
-                        <h3 class="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">Itens Coletados para Transferência</h3>
+                        <h3 class="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">Itens Coletados para TransferÃªncia</h3>
                     </div>
 
-                    <!-- Resumo Rápido -->
+                    <!-- Resumo RÃ¡pido -->
                     <div class="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                         <span>SKUs: <strong id="activeBatchTotalSkus" class="text-[#002f6c] dark:text-blue-400">0</strong></span>
                         <span class="border-l border-slate-200 dark:border-slate-700 pl-3">Total Qtd: <strong id="activeBatchTotalQty" class="text-emerald-600 dark:text-emerald-400">0</strong></span>
@@ -486,44 +486,44 @@
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 text-[10px] font-black text-slate-400 uppercase tracking-wider">
                                 <th class="px-3 py-2.5 text-center w-12">#</th>
-                                <th class="px-3 py-2.5">Código</th>
-                                <th class="px-3 py-2.5">Descrição</th>
+                                <th class="px-3 py-2.5">CÃ³digo</th>
+                                <th class="px-3 py-2.5">DescriÃ§Ã£o</th>
                                 <th class="px-3 py-2.5 text-center">Origem</th>
                                 <th class="px-3 py-2.5 text-center">Destino</th>
                                 <th class="px-3 py-2.5 text-right">Qtd Transferida</th>
                                 <th class="px-3 py-2.5 text-center">UM</th>
                                 <th class="px-3 py-2.5 text-center">Confiabilidade</th>
-                                <th class="px-3 py-2.5 text-center no-print w-24">Ações</th>
+                                <th class="px-3 py-2.5 text-center no-print w-24">AÃ§Ãµes</th>
                             </tr>
                         </thead>
                         <tbody id="activeBatchTableBody">
                             <tr>
                                 <td colspan="9" class="px-4 py-8 text-center text-xs font-bold text-slate-400">
-                                    Nenhum material adicionado a esta transferência. Escaneie um QR Code ou busque um produto acima.
+                                    Nenhum material adicionado a esta transferÃªncia. Escaneie um QR Code ou busque um produto acima.
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Observação do Lote & Ações Finais do Ciclo -->
+                <!-- ObservaÃ§Ã£o do Lote & AÃ§Ãµes Finais do Ciclo -->
                 <div class="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Observações da Movimentação (Opcional)</label>
-                        <input type="text" id="activeBatchObservacao" placeholder="Ex: Abastecimento matinal do Armazém 01 para atender frente de loja..."
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">ObservaÃ§Ãµes da MovimentaÃ§Ã£o (Opcional)</label>
+                        <input type="text" id="activeBatchObservacao" placeholder="Ex: Abastecimento matinal do ArmazÃ©m 01 para atender frente de loja..."
                                class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#002f6c]"
                                onchange="saveBatchObservacao(this.value)">
                     </div>
 
-                    <!-- BOTÕES DE TRANSIÇÃO DE STATUS -->
+                    <!-- BOTÃ•ES DE TRANSIÃ‡ÃƒO DE STATUS -->
                     <div id="batchWorkflowButtonsRow" class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
-                        <!-- Botão Finalizar Físico -->
+                        <!-- BotÃ£o Finalizar FÃ­sico -->
                         <button type="button" id="btnFinalizarFisico" onclick="markBatchFinalizadoFisico()" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-[#002f6c] hover:bg-[#00204a] text-white font-black text-xs uppercase tracking-wider shadow-md transition flex items-center justify-center gap-2 cursor-pointer touch-active">
                             <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
-                            <span>1. Finalizar Separação Física (Entregue no 01)</span>
+                            <span>1. Finalizar SeparaÃ§Ã£o FÃ­sica (Entregue no 01)</span>
                         </button>
 
-                        <!-- Botão Transferir no ERP (Habilitado após finalização física ou admin) -->
+                        <!-- BotÃ£o Transferir no ERP (Habilitado apÃ³s finalizaÃ§Ã£o fÃ­sica ou admin) -->
                         <button type="button" id="btnTransferirERP" onclick="openModalTransferirERP()" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider shadow-md transition flex items-center justify-center gap-2 cursor-pointer touch-active">
                             <i data-lucide="send" class="w-4 h-4"></i>
                             <span>2. Confirmar Baixa no ERP / Sistema</span>
@@ -535,18 +535,18 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- ABA 2: HISTÓRICO DE TRANSFERÊNCIAS                          -->
+        <!-- ABA 2: HISTÃ“RICO DE TRANSFERÃŠNCIAS                          -->
         <!-- ============================================================ -->
         <div id="viewHistoryTransfer" class="hidden space-y-6">
 
-            <!-- FILTROS DO HISTÓRICO -->
+            <!-- FILTROS DO HISTÃ“RICO -->
             <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
                     <div class="flex items-center gap-2">
                         <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
                             <i data-lucide="filter" class="w-4 h-4"></i>
                         </div>
-                        <h3 class="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">Filtros do Histórico</h3>
+                        <h3 class="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">Filtros do HistÃ³rico</h3>
                     </div>
                     <button onclick="loadTransferHistory()" class="text-xs font-bold text-[#002f6c] dark:text-blue-400 hover:underline flex items-center gap-1">
                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
@@ -556,26 +556,26 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status da Transferência</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status da TransferÃªncia</label>
                         <select id="histFilterStatus" onchange="applyHistoryFilters()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 font-bold text-slate-800 dark:text-white">
                             <option value="ALL">Todos os Status</option>
-                            <option value="EM_ABERTO">🟡 Em Aberto (Rascunho)</option>
-                            <option value="FINALIZADO_FISICO">🔵 Finalizado Físico (Pendente ERP)</option>
-                            <option value="TRANSFERIDO_ERP">🟢 Transferido no ERP (Concluído)</option>
+                            <option value="EM_ABERTO">ðŸŸ¡ Em Aberto (Rascunho)</option>
+                            <option value="FINALIZADO_FISICO">ðŸ”µ Finalizado FÃ­sico (Pendente ERP)</option>
+                            <option value="TRANSFERIDO_ERP">ðŸŸ¢ Transferido no ERP (ConcluÃ­do)</option>
                         </select>
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Setor</label>
                         <select id="histFilterSetor" onchange="applyHistoryFilters()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 font-bold text-slate-800 dark:text-white">
-                            <option value="ALL">Comércio & Indústria</option>
-                            <option value="COMERCIO">Comércio</option>
-                            <option value="INDUSTRIA">Indústria</option>
+                            <option value="ALL">ComÃ©rcio & IndÃºstria</option>
+                            <option value="COMERCIO">ComÃ©rcio</option>
+                            <option value="INDUSTRIA">IndÃºstria</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buscar por Código / Lote</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buscar por CÃ³digo / Lote</label>
                         <input type="text" id="histFilterSearch" placeholder="Ex: TRF-COM ou 57000354..."
                                class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 font-bold text-slate-800 dark:text-white"
                                oninput="applyHistoryFilters()">
@@ -590,7 +590,7 @@
                 </div>
             </div>
 
-            <!-- LISTAGEM DO HISTÓRICO -->
+            <!-- LISTAGEM DO HISTÃ“RICO -->
             <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -602,14 +602,14 @@
                                 <th class="px-3 py-2.5 text-center">Itens (SKUs)</th>
                                 <th class="px-3 py-2.5">Criado Por</th>
                                 <th class="px-3 py-2.5">Data / Hora</th>
-                                <th class="px-3 py-2.5">Status Físico / ERP</th>
-                                <th class="px-3 py-2.5 text-center w-28">Ações</th>
+                                <th class="px-3 py-2.5">Status FÃ­sico / ERP</th>
+                                <th class="px-3 py-2.5 text-center w-28">AÃ§Ãµes</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody">
                             <tr>
                                 <td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">
-                                    Carregando histórico de transferências...
+                                    Carregando histÃ³rico de transferÃªncias...
                                 </td>
                             </tr>
                         </tbody>
@@ -622,7 +622,7 @@
     </main>
 
     <!-- ============================================================ -->
-    <!-- MODAL DE SCANNER DE CÂMERA (QR CODE / CÓDIGO DE BARRAS)       -->
+    <!-- MODAL DE SCANNER DE CÃ‚MERA (QR CODE / CÃ“DIGO DE BARRAS)       -->
     <!-- ============================================================ -->
     <div id="cameraScannerModal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm transition-opacity no-print">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-11/12 max-w-lg shadow-2xl p-5 border border-slate-200 dark:border-slate-700 space-y-4 relative">
@@ -631,7 +631,7 @@
                     <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                         <i data-lucide="camera" class="w-4 h-4"></i>
                     </div>
-                    <h3 class="text-sm font-black text-slate-900 dark:text-white">Escanear QR Code no Armazém 01</h3>
+                    <h3 class="text-sm font-black text-slate-900 dark:text-white">Escanear QR Code no ArmazÃ©m 01</h3>
                 </div>
                 <button type="button" onclick="closeCameraScannerModal()" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -643,20 +643,20 @@
                     <div id="qr-reader" class="w-full h-full"></div>
                 </div>
                 <p class="text-[11px] text-center font-bold text-slate-500 dark:text-slate-400">
-                    Aponte a câmera para o QR Code fixado na prateleira ou código de barras do material.
+                    Aponte a cÃ¢mera para o QR Code fixado na prateleira ou cÃ³digo de barras do material.
                 </p>
             </div>
 
             <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                 <button type="button" onclick="closeCameraScannerModal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-xl transition">
-                    Fechar Câmera
+                    Fechar CÃ¢mera
                 </button>
             </div>
         </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- MODAL DE CONFIRMAÇÃO DE BAIXA NO ERP (DOCUMENTO / PROTOCOLO)  -->
+    <!-- MODAL DE CONFIRMAÃ‡ÃƒO DE BAIXA NO ERP (DOCUMENTO / PROTOCOLO)  -->
     <!-- ============================================================ -->
     <div id="modalTransferirERP" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm transition-opacity no-print">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-11/12 max-w-md shadow-2xl p-6 border border-slate-200 dark:border-slate-700 space-y-4">
@@ -666,18 +666,18 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-black text-slate-900 dark:text-white">Confirmar Baixa no ERP</h3>
-                    <p class="text-[11px] text-slate-400 font-semibold">Registro da efetivação no Protheus / Sistema</p>
+                    <p class="text-[11px] text-slate-400 font-semibold">Registro da efetivaÃ§Ã£o no Protheus / Sistema</p>
                 </div>
             </div>
 
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nº do Documento / Protocolo ERP (Opcional)</label>
-                    <input type="text" id="inputDocErpNumero" placeholder="Ex: TRF-2026-9988 ou Nº do Movimento"
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">NÂº do Documento / Protocolo ERP (Opcional)</label>
+                    <input type="text" id="inputDocErpNumero" placeholder="Ex: TRF-2026-9988 ou NÂº do Movimento"
                            class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <p class="text-[11px] text-slate-500 dark:text-slate-400">
-                    Ao confirmar, o status deste lote passará para <strong class="text-emerald-600">TRANSFERIDO NO ERP</strong> com o seu registro de usuário e carimbo de data/hora.
+                    Ao confirmar, o status deste lote passarÃ¡ para <strong class="text-emerald-600">TRANSFERIDO NO ERP</strong> com o seu registro de usuÃ¡rio e carimbo de data/hora.
                 </p>
             </div>
 
@@ -693,21 +693,21 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- ROMANEIO DE TRANSFERÊNCIA PARA IMPRESSÃO A4 (PRINT ONLY)     -->
+    <!-- ROMANEIO DE TRANSFERÃŠNCIA PARA IMPRESSÃƒO A4 (PRINT ONLY)     -->
     <!-- ============================================================ -->
     <div id="printManifestArea" class="print-only p-6 space-y-6">
         <div class="flex items-center justify-between border-b-2 border-slate-900 pb-4">
             <div class="flex items-center space-x-3">
-                <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" class="h-10 w-auto object-contain">
+                <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon AÃ§o" class="h-10 w-auto object-contain">
                 <div>
-                    <h1 class="text-base font-black uppercase text-slate-900">Guia / Romaneio de Transferência para Armazém 01</h1>
-                    <p class="text-xs text-slate-600">Amazon Aço - Controle de Movimentação Interna de Estoque</p>
+                    <h1 class="text-base font-black uppercase text-slate-900">Guia / Romaneio de TransferÃªncia para ArmazÃ©m 01</h1>
+                    <p class="text-xs text-slate-600">Amazon AÃ§o - Controle de MovimentaÃ§Ã£o Interna de Estoque</p>
                 </div>
             </div>
             <div class="text-right text-xs">
                 <p>Lote: <strong id="printLoteCodigo" class="text-sm font-black font-mono">---</strong></p>
-                <p>Setor: <strong id="printSetor">COMÉRCIO</strong> | Filial: <strong id="printFilial">01</strong></p>
-                <p>Emissão: <span id="printDataEmissao">--/--/---- --:--</span></p>
+                <p>Setor: <strong id="printSetor">COMÃ‰RCIO</strong> | Filial: <strong id="printFilial">01</strong></p>
+                <p>EmissÃ£o: <span id="printDataEmissao">--/--/---- --:--</span></p>
             </div>
         </div>
 
@@ -717,7 +717,7 @@
                 <strong id="printCriadoPor">---</strong>
             </div>
             <div>
-                <span class="block text-[10px] text-slate-500 uppercase font-bold">Separação Física:</span>
+                <span class="block text-[10px] text-slate-500 uppercase font-bold">SeparaÃ§Ã£o FÃ­sica:</span>
                 <strong id="printFinalizadoPor">---</strong>
             </div>
             <div>
@@ -732,8 +732,8 @@
                 <thead>
                     <tr class="bg-slate-200 border-b border-slate-300 font-bold">
                         <th class="p-2 border-r border-slate-300 text-center w-10">Item</th>
-                        <th class="p-2 border-r border-slate-300">Código</th>
-                        <th class="p-2 border-r border-slate-300">Descrição do Material</th>
+                        <th class="p-2 border-r border-slate-300">CÃ³digo</th>
+                        <th class="p-2 border-r border-slate-300">DescriÃ§Ã£o do Material</th>
                         <th class="p-2 border-r border-slate-300 text-center">Origem</th>
                         <th class="p-2 border-r border-slate-300 text-center">Destino</th>
                         <th class="p-2 border-r border-slate-300 text-right">Qtd</th>
@@ -746,37 +746,37 @@
             </table>
         </div>
 
-        <!-- Observações do Romaneio -->
+        <!-- ObservaÃ§Ãµes do Romaneio -->
         <div id="printObservacaoBox" class="text-xs p-3 border border-slate-300 rounded">
-            <span class="font-bold uppercase text-[10px] block text-slate-500">Observações:</span>
-            <p id="printObservacaoText">Nenhuma observação registrada.</p>
+            <span class="font-bold uppercase text-[10px] block text-slate-500">ObservaÃ§Ãµes:</span>
+            <p id="printObservacaoText">Nenhuma observaÃ§Ã£o registrada.</p>
         </div>
 
         <!-- ASSINATURAS DO ROMANEIO -->
         <div class="pt-8 grid grid-cols-3 gap-6 text-center text-xs mt-8">
             <div class="border-t border-slate-900 pt-2">
                 <p class="font-bold">Separador / Origem</p>
-                <p class="text-[10px] text-slate-500">Responsável pela Coleta</p>
+                <p class="text-[10px] text-slate-500">ResponsÃ¡vel pela Coleta</p>
             </div>
             <div class="border-t border-slate-900 pt-2">
-                <p class="font-bold">Transportador / Movimentação</p>
+                <p class="font-bold">Transportador / MovimentaÃ§Ã£o</p>
                 <p class="text-[10px] text-slate-500">Deslocamento para 01</p>
             </div>
             <div class="border-t border-slate-900 pt-2">
-                <p class="font-bold">Recebedor / Armazém 01</p>
-                <p class="text-[10px] text-slate-500">Conferência Física no 01</p>
+                <p class="font-bold">Recebedor / ArmazÃ©m 01</p>
+                <p class="text-[10px] text-slate-500">ConferÃªncia FÃ­sica no 01</p>
             </div>
         </div>
     </div>
 
-    <!-- MODAL CONFIRMAÇÃO DE LOGOUT -->
+    <!-- MODAL CONFIRMAÃ‡ÃƒO DE LOGOUT -->
     <div id="logoutModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity no-print">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl w-11/12 max-w-sm shadow-2xl scale-95 transition-transform duration-200">
             <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mx-auto mb-4">
                 <i data-lucide="log-out" class="w-6 h-6"></i>
             </div>
             <h3 class="text-lg font-black text-center text-slate-900 dark:text-white mb-2">Sair do Sistema?</h3>
-            <p class="text-sm text-center text-slate-500 dark:text-slate-400 mb-6 font-semibold">Tem certeza que deseja encerrar a sessão atual?</p>
+            <p class="text-sm text-center text-slate-500 dark:text-slate-400 mb-6 font-semibold">Tem certeza que deseja encerrar a sessÃ£o atual?</p>
             <div class="flex gap-3">
                 <button type="button" onclick="closeLogoutModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors">Cancelar</button>
                 <button type="button" onclick="executeLogout()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md shadow-red-200">Sim, Sair</button>
@@ -784,42 +784,122 @@
         </div>
     </div>
 
+    <!-- SUBMENUS FLUTUANTES (MOBILE) -->
+    <div id="mobileEstoqueSubmenu" class="hidden md:hidden fixed bottom-16 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl shadow-2xl z-50 p-2 space-y-1.5 no-print">
+        <div class="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Módulo de Estoque</span>
+            <button type="button" onclick="closeMobileSubmenus()" class="text-slate-400 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <a href="inventario.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+                <i data-lucide="boxes" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Inventário Rotativo</p>
+                <p class="text-[10px] font-bold text-slate-400">Contagens, saldos e divergências</p>
+            </div>
+        </a>
+        <a href="transferencia.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl bg-blue-50 text-blue-800 text-left transition-colors font-bold">
+            <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+                <i data-lucide="truck" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black">Transferência Armazém 01</p>
+                <p class="text-[10px] font-bold text-blue-600">QR Code, separação física e ERP</p>
+            </div>
+        </a>
+        <a href="kardex.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                <i data-lucide="history" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Kardex de Contagem</p>
+                <p class="text-[10px] font-bold text-slate-400">Histórico cronológico de lançamentos</p>
+            </div>
+        </a>
+        <a href="validade.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Controle de Validade</p>
+                <p class="text-[10px] font-bold text-slate-400">Ano/Mês, alertas e Armazém 50</p>
+            </div>
+        </a>
+    </div>
+
+    <div id="mobileAlmoxSubmenu" class="hidden md:hidden fixed bottom-16 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl shadow-2xl z-50 p-2 space-y-1.5 no-print">
+        <div class="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Módulo Almoxarifado</span>
+            <button type="button" onclick="closeMobileSubmenus()" class="text-slate-400 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <a href="luvas.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Consumo de EPIs</p>
+                <p class="text-[10px] font-bold text-slate-400">Entrega de luvas e controle por matrícula</p>
+            </div>
+        </a>
+        <a href="minutas.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Minutas & Recebimento</p>
+                <p class="text-[10px] font-bold text-slate-400">Entrada de NFs e canhotos de entrega</p>
+            </div>
+        </a>
+    </div>
+
     <!-- BOTTOM NAV (MOBILE) -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 z-50 px-2 py-1.5 shadow-lg flex items-center justify-around no-print pb-safe">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 px-2 py-1.5 shadow-lg flex items-center justify-around no-print pb-safe">
         <a href="index.html" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-600">
             <i data-lucide="home" class="w-5 h-5"></i>
             <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Início</span>
         </a>
-        <a href="transferencia.html" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-[#002f6c] dark:text-blue-400">
-            <i data-lucide="truck" class="w-5 h-5"></i>
-            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Transf. 01</span>
-        </a>
-        <a href="inventario.html" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-teal-600">
+
+        <!-- GRUPO ESTOQUE -->
+        <button onclick="toggleMobileSubmenu('estoque')" id="bottomBtnEstoqueGroup" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-blue-600">
             <i data-lucide="boxes" class="w-5 h-5"></i>
-            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Inventário</span>
-        </a>
+            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5 flex items-center justify-center gap-0.5">Estoque <i data-lucide="chevron-up" class="w-3 h-3"></i></span>
+        </button>
+
         <a href="solicitacao_estoque.html" class="flex-1 min-w-0 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-blue-600">
             <i data-lucide="shopping-cart" class="w-5 h-5"></i>
             <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Compras</span>
+        </a>
+
+        <!-- GRUPO ALMOXARIFADO -->
+        <button onclick="toggleMobileSubmenu('almox')" id="bottomBtnAlmoxGroup" class="hidden flex-1 min-w-0 flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-600">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5 flex items-center justify-center gap-0.5">Almox. <i data-lucide="chevron-up" class="w-3 h-3"></i></span>
+        </button>
+        
+        <!-- ADMIN -->
+        <a href="admin.html" id="bottomBtnAdmin" class="hidden flex-1 min-w-0 flex-col items-center justify-center py-1 text-slate-400 hover:text-amber-600">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            <span class="text-[9px] font-black uppercase tracking-wider truncate w-full text-center mt-0.5">Admin</span>
         </a>
     </nav>
 
     <!-- SHARED JS SCRIPT -->
     <script src="shared.js"></script>
 
-    <!-- TRANSFERÊNCIA ARMAZÉM 01 LOGIC SCRIPT -->
+    <!-- TRANSFERÃŠNCIA ARMAZÃ‰M 01 LOGIC SCRIPT -->
     <script>
-        // --- ESTADO GLOBAL DO MÓDULO DE TRANSFERÊNCIA ---
+        // --- ESTADO GLOBAL DO MÃ“DULO DE TRANSFERÃŠNCIA ---
         let currentSector = 'COMERCIO'; // 'COMERCIO' ou 'INDUSTRIA'
         let currentFilialId = '01';
         let activeTab = 'active'; // 'active' ou 'history'
 
-        // Cache de dados do catálogo e saldos
+        // Cache de dados do catÃ¡logo e saldos
         let catalogMaster = [];
         let balancesMaster = [];
         let physicalCountsMaster = [];
 
-        // Lote Ativo em Memória
+        // Lote Ativo em MemÃ³ria
         let activeBatch = {
             id: null,
             codigo_lote: 'TRF-NOVO',
@@ -841,7 +921,7 @@
         let html5QrScanner = null;
         let allHistoryBatches = [];
 
-        // --- INICIALIZAÇÃO DA PÁGINA ---
+        // --- INICIALIZAÃ‡ÃƒO DA PÃGINA ---
         window.onload = async function() {
             initTheme();
             const user = await checkAuth();
@@ -859,7 +939,7 @@
             await restoreOrInitActiveBatch();
         };
 
-        // --- ALTERNÂNCIA DE SETOR (COMÉRCIO / INDÚSTRIA) ---
+        // --- ALTERNÃ‚NCIA DE SETOR (COMÃ‰RCIO / INDÃšSTRIA) ---
         async function switchSector(sector, reloadBatch = true) {
             currentSector = sector;
 
@@ -889,7 +969,7 @@
         // --- CARREGAMENTO DE DADOS DO SUPABASE ---
         async function loadMasterDataForSector() {
             if (!supabaseClient) initSupabase();
-            showLoader(true, `Carregando catálogo e saldos (${currentSector})...`);
+            showLoader(true, `Carregando catÃ¡logo e saldos (${currentSector})...`);
 
             try {
                 const saldoTable = currentSector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
@@ -904,7 +984,7 @@
                 if (saldoErr) console.warn("Erro ao carregar saldos:", saldoErr);
                 balancesMaster = saldoData || [];
 
-                // 2. Carregar Últimas Contagens da Filial
+                // 2. Carregar Ãšltimas Contagens da Filial
                 const { data: countData, error: countErr } = await supabaseClient.from(contagemTable)
                     .select('*')
                     .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`)
@@ -913,7 +993,7 @@
                 if (countErr) console.warn("Erro ao carregar contagens:", countErr);
                 physicalCountsMaster = countData || [];
 
-                // 3. Atualizar lista dinâmica de armazéns existentes na filial
+                // 3. Atualizar lista dinÃ¢mica de armazÃ©ns existentes na filial
                 updateBranchWarehousesList();
 
             } catch (err) {
@@ -924,7 +1004,7 @@
             }
         }
 
-        // --- CONTROLE DE ABAS (LOTE ATIVO / HISTÓRICO) ---
+        // --- CONTROLE DE ABAS (LOTE ATIVO / HISTÃ“RICO) ---
         function switchTransferTab(tab) {
             activeTab = tab;
             const viewActive = document.getElementById('viewActiveTransfer');
@@ -991,19 +1071,19 @@
 
         async function startNewTransferBatch(promptConfirm = true) {
             if (promptConfirm && activeBatch && activeBatch.itens && activeBatch.itens.length > 0 && activeBatch.status === 'EM_ABERTO') {
-                if (!confirm("Já existe uma lista em aberto. Deseja criar um novo lote? O lote atual ficará salvo no histórico.")) {
+                if (!confirm("JÃ¡ existe uma lista em aberto. Deseja criar um novo lote? O lote atual ficarÃ¡ salvo no histÃ³rico.")) {
                     return;
                 }
             }
 
-            const user = getCurrentUser() || { nome: 'USUÁRIO', matricula: '000' };
+            const user = getCurrentUser() || { nome: 'USUÃRIO', matricula: '000' };
             let newCode = `TRF-${currentSector === 'INDUSTRIA' ? 'IND' : 'COM'}-${new Date().getFullYear()}-0001`;
 
             try {
                 const { data: codeData } = await supabaseClient.rpc('gerar_codigo_transferencia', { p_setor: currentSector });
                 if (codeData) newCode = codeData;
             } catch(e) {
-                console.warn("Gerador de código sequencial:", e);
+                console.warn("Gerador de cÃ³digo sequencial:", e);
             }
 
             const newBatchPayload = {
@@ -1038,7 +1118,7 @@
         function renderActiveBatchUI() {
             // Header do Lote
             document.getElementById('activeLoteCodigo').innerText = activeBatch.codigo_lote || 'TRF-NOVO';
-            document.getElementById('activeLoteCriador').innerText = activeBatch.criado_por || 'Você';
+            document.getElementById('activeLoteCriador').innerText = activeBatch.criado_por || 'VocÃª';
             document.getElementById('activeBatchObservacao').value = activeBatch.observacao || '';
 
             const statusBadge = document.getElementById('activeLoteStatusBadge');
@@ -1048,19 +1128,19 @@
 
             if (activeBatch.status === 'TRANSFERIDO_ERP') {
                 statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200";
-                statusBadge.innerText = `🟢 Transferido no ERP (${activeBatch.doc_erp_numero || 'OK'})`;
+                statusBadge.innerText = `ðŸŸ¢ Transferido no ERP (${activeBatch.doc_erp_numero || 'OK'})`;
                 btnFinalizar.classList.add('hidden');
                 btnTransferir.classList.add('hidden');
                 scannerCard.classList.add('opacity-50', 'pointer-events-none');
             } else if (activeBatch.status === 'FINALIZADO_FISICO') {
                 statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200";
-                statusBadge.innerText = "🔵 Finalizado Físico (Aguardando ERP)";
+                statusBadge.innerText = "ðŸ”µ Finalizado FÃ­sico (Aguardando ERP)";
                 btnFinalizar.classList.add('hidden');
                 btnTransferir.classList.remove('hidden');
                 scannerCard.classList.add('opacity-50', 'pointer-events-none');
             } else {
                 statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200";
-                statusBadge.innerText = "🟡 Em Aberto (Rascunho / Coleta)";
+                statusBadge.innerText = "ðŸŸ¡ Em Aberto (Rascunho / Coleta)";
                 btnFinalizar.classList.remove('hidden');
                 btnTransferir.classList.add('hidden');
                 scannerCard.classList.remove('opacity-50', 'pointer-events-none');
@@ -1072,7 +1152,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="9" class="px-4 py-8 text-center text-xs font-bold text-slate-400">
-                            Nenhum material adicionado a esta transferência. Escaneie um QR Code ou busque um produto acima.
+                            Nenhum material adicionado a esta transferÃªncia. Escaneie um QR Code ou busque um produto acima.
                         </td>
                     </tr>
                 `;
@@ -1092,12 +1172,12 @@
 
                 let relBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">N/D</span>`;
                 if (item.confiabilidade_inventario) {
-                    if (item.confiabilidade_inventario.includes('Confiável')) {
-                        relBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">🟢 Confiável</span>`;
+                    if (item.confiabilidade_inventario.includes('ConfiÃ¡vel')) {
+                        relBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">ðŸŸ¢ ConfiÃ¡vel</span>`;
                     } else if (item.confiabilidade_inventario.includes('Alerta')) {
-                        relBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">🟡 +30 dias</span>`;
+                        relBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">ðŸŸ¡ +30 dias</span>`;
                     } else {
-                        relBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-800">🔴 Não contada</span>`;
+                        relBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-800">ðŸ”´ NÃ£o contada</span>`;
                     }
                 }
 
@@ -1128,7 +1208,7 @@
             lucide.createIcons();
         }
 
-        // --- BUSCA E DIAGNÓSTICO DO PRODUTO (QR CODE / AUTOCOMPLETE) ---
+        // --- BUSCA E DIAGNÃ“STICO DO PRODUTO (QR CODE / AUTOCOMPLETE) ---
         let searchDebounceTimer = null;
 
         function handleProductSearchInput(val) {
@@ -1148,7 +1228,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>Buscando no catálogo ${currentSector === 'INDUSTRIA' ? 'Indústria' : 'Comércio'}...</span>
+                <span>Buscando no catÃ¡logo ${currentSector === 'INDUSTRIA' ? 'IndÃºstria' : 'ComÃ©rcio'}...</span>
             </div>`;
             list.classList.remove('hidden');
 
@@ -1174,7 +1254,7 @@
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    list.innerHTML = `<div class="p-3 text-slate-400 font-semibold text-center">Nenhum produto encontrado para "${clean}" no catálogo de ${currentSector === 'INDUSTRIA' ? 'Indústria' : 'Comércio'}.</div>`;
+                    list.innerHTML = `<div class="p-3 text-slate-400 font-semibold text-center">Nenhum produto encontrado para "${clean}" no catÃ¡logo de ${currentSector === 'INDUSTRIA' ? 'IndÃºstria' : 'ComÃ©rcio'}.</div>`;
                     list.classList.remove('hidden');
                     return;
                 }
@@ -1196,7 +1276,7 @@
 
             } catch (err) {
                 console.error("Erro na busca de produtos:", err);
-                list.innerHTML = `<div class="p-3 text-rose-500 font-semibold text-center text-xs">Erro ao consultar o catálogo. Tente novamente.</div>`;
+                list.innerHTML = `<div class="p-3 text-rose-500 font-semibold text-center text-xs">Erro ao consultar o catÃ¡logo. Tente novamente.</div>`;
                 list.classList.remove('hidden');
             }
         }
@@ -1215,7 +1295,7 @@
             }
         }
 
-        // --- GERENCIAMENTO DINÂMICO DE ARMAZÉNS & SALDOS ---
+        // --- GERENCIAMENTO DINÃ‚MICO DE ARMAZÃ‰NS & SALDOS ---
         let availableWarehousesInBranch = [];
 
         function updateBranchWarehousesList() {
@@ -1235,20 +1315,20 @@
             const selectEl = document.getElementById('selectArmazemOrigem');
             if (!selectEl) return '02';
 
-            // Se não houver produto específico selecionado, preenche com os armazéns disponíveis da filial (exceto 01)
+            // Se nÃ£o houver produto especÃ­fico selecionado, preenche com os armazÃ©ns disponÃ­veis da filial (exceto 01)
             if (!productCode) {
                 let html = '';
                 const defaultArm = selectedArm || '02';
                 availableWarehousesInBranch.forEach(arm => {
-                    if (arm === '01') return; // 01 é destino fixo
+                    if (arm === '01') return; // 01 Ã© destino fixo
                     const isSelected = arm === defaultArm ? 'selected' : '';
-                    html += `<option value="${arm}" ${isSelected}>Armazém ${arm} ${arm === '02' ? '(Padrão)' : ''}</option>`;
+                    html += `<option value="${arm}" ${isSelected}>ArmazÃ©m ${arm} ${arm === '02' ? '(PadrÃ£o)' : ''}</option>`;
                 });
                 selectEl.innerHTML = html;
                 return defaultArm;
             }
 
-            // Quando temos um produto específico selecionado:
+            // Quando temos um produto especÃ­fico selecionado:
             const warehouseBalances = {};
             availableWarehousesInBranch.forEach(arm => warehouseBalances[arm] = 0);
 
@@ -1262,12 +1342,12 @@
                 }
             });
 
-            // Separa armazéns com saldo positivo (excluindo armazém 01 que é destino)
+            // Separa armazÃ©ns com saldo positivo (excluindo armazÃ©m 01 que Ã© destino)
             const withStock = [];
             const withoutStock = [];
 
             Object.keys(warehouseBalances).forEach(arm => {
-                if (arm === '01') return; // Armazém 01 é destino fixo
+                if (arm === '01') return; // ArmazÃ©m 01 Ã© destino fixo
                 const qty = warehouseBalances[arm];
                 if (qty > 0) {
                     withStock.push({ arm, qty });
@@ -1290,19 +1370,19 @@
 
             let html = '';
             if (withStock.length > 0) {
-                html += `<optgroup label="✅ Armazéns com Saldo Disponível">`;
+                html += `<optgroup label="âœ… ArmazÃ©ns com Saldo DisponÃ­vel">`;
                 withStock.forEach(w => {
                     const isSelected = w.arm === chosenArm ? 'selected' : '';
-                    html += `<option value="${w.arm}" ${isSelected}>Armazém ${w.arm} — Saldo: ${w.qty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}</option>`;
+                    html += `<option value="${w.arm}" ${isSelected}>ArmazÃ©m ${w.arm} â€” Saldo: ${w.qty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}</option>`;
                 });
                 html += `</optgroup>`;
             }
 
             if (withoutStock.length > 0) {
-                html += `<optgroup label="⚠️ Outros Armazéns (Saldo: 0)">`;
+                html += `<optgroup label="âš ï¸ Outros ArmazÃ©ns (Saldo: 0)">`;
                 withoutStock.forEach(w => {
                     const isSelected = w.arm === chosenArm ? 'selected' : '';
-                    html += `<option value="${w.arm}" ${isSelected}>Armazém ${w.arm} (Zerado)</option>`;
+                    html += `<option value="${w.arm}" ${isSelected}>ArmazÃ©m ${w.arm} (Zerado)</option>`;
                 });
                 html += `</optgroup>`;
             }
@@ -1310,7 +1390,7 @@
             selectEl.innerHTML = html;
             selectEl.value = chosenArm;
 
-            // Renderiza os Chips interativos no card de diagnóstico
+            // Renderiza os Chips interativos no card de diagnÃ³stico
             renderWarehouseChips(withStock, withoutStock, chosenArm);
             return chosenArm;
         }
@@ -1323,12 +1403,12 @@
             if (withStock.length === 0) {
                 if (countNotice) {
                     countNotice.className = "text-[10px] font-bold text-rose-600 dark:text-rose-400";
-                    countNotice.innerText = "Sem saldo positivo nos armazéns";
+                    countNotice.innerText = "Sem saldo positivo nos armazÃ©ns";
                 }
                 container.innerHTML = `
                     <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-bold text-rose-700 dark:text-rose-300 w-full flex items-center gap-2">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 flex-shrink-0"></i>
-                        <span>Atenção: Este produto não possui saldo positivo registrado nos armazéns desta filial.</span>
+                        <span>AtenÃ§Ã£o: Este produto nÃ£o possui saldo positivo registrado nos armazÃ©ns desta filial.</span>
                     </div>
                 `;
                 lucide.createIcons();
@@ -1337,7 +1417,7 @@
 
             if (countNotice) {
                 countNotice.className = "text-[10px] font-bold text-emerald-600 dark:text-emerald-400";
-                countNotice.innerText = `${withStock.length} armazém(ns) com saldo disponível`;
+                countNotice.innerText = `${withStock.length} armazÃ©m(ns) com saldo disponÃ­vel`;
             }
 
             let html = '';
@@ -1347,14 +1427,14 @@
                     html += `
                         <button type="button" onclick="switchSelectedOriginWarehouse('${w.arm}')" class="px-3 py-1.5 rounded-xl text-xs font-black bg-[#002f6c] dark:bg-blue-600 text-white shadow-md border border-[#002f6c] flex items-center gap-1.5 cursor-pointer scale-105 transition">
                             <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
-                            <span>Armazém ${w.arm}:</span>
+                            <span>ArmazÃ©m ${w.arm}:</span>
                             <span class="bg-white/20 px-1.5 py-0.5 rounded text-[11px] font-mono font-black">${w.qty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}</span>
                         </button>
                     `;
                 } else {
                     html += `
                         <button type="button" onclick="switchSelectedOriginWarehouse('${w.arm}')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-1.5 cursor-pointer transition">
-                            <span>Armazém ${w.arm}:</span>
+                            <span>ArmazÃ©m ${w.arm}:</span>
                             <span class="font-black text-blue-700 dark:text-blue-400 font-mono">${w.qty.toLocaleString('pt-BR')}</span>
                         </button>
                     `;
@@ -1397,7 +1477,7 @@
                 if (prodData && prodData.length > 0) {
                     prod = prodData[0];
                 } else {
-                    // Tenta busca parcial por código ou descrição
+                    // Tenta busca parcial por cÃ³digo ou descriÃ§Ã£o
                     const { data: prodIlike } = await supabaseClient.from(sb1Table)
                         .select('codigo, descricao, unidade')
                         .or(`codigo.ilike.%${cleanCode}%,descricao.ilike.%${cleanCode}%`)
@@ -1407,14 +1487,14 @@
                     } else {
                         prod = {
                             codigo: cleanCode,
-                            descricao: 'PRODUTO NÃO IDENTIFICADO NO CATÁLOGO',
+                            descricao: 'PRODUTO NÃƒO IDENTIFICADO NO CATÃLOGO',
                             unidade: 'PC'
                         };
                     }
                 }
             } catch(e) {
                 console.warn("Erro ao obter produto:", e);
-                prod = { codigo: cleanCode, descricao: 'PRODUTO NÃO IDENTIFICADO', unidade: 'PC' };
+                prod = { codigo: cleanCode, descricao: 'PRODUTO NÃƒO IDENTIFICADO', unidade: 'PC' };
             }
 
             selectedProductForDiag = prod;
@@ -1435,11 +1515,11 @@
                 prodSaldos = balancesMaster.filter(s => String(s.produto).trim() === prod.codigo);
             }
 
-            // 3. Atualiza a lista de armazéns dinamicamente
+            // 3. Atualiza a lista de armazÃ©ns dinamicamente
             const currentSelectedInDropdown = forceArmOrigem || document.getElementById('selectArmazemOrigem').value;
             const armOrigem = populateOriginWarehousesDropdown(prod.codigo, currentSelectedInDropdown, prodSaldos);
 
-            // 4. Calcula saldos no Armazém 01 (Destino) e no Armazém de Origem Selecionado
+            // 4. Calcula saldos no ArmazÃ©m 01 (Destino) e no ArmazÃ©m de Origem Selecionado
             let saldo01 = 0;
             let saldoOrig = 0;
 
@@ -1451,7 +1531,7 @@
                 if (arm === armOrigem) saldoOrig += qtd;
             });
 
-            // Preenche UI Diagnóstico
+            // Preenche UI DiagnÃ³stico
             document.getElementById('diagProductCode').innerText = prod.codigo;
             document.getElementById('diagProductDesc').innerText = prod.descricao;
             document.getElementById('diagProductUM').innerText = prod.unidade || 'PC';
@@ -1459,10 +1539,10 @@
             document.getElementById('diagSaldoOrigem').innerText = saldoOrig.toLocaleString('pt-BR');
             document.getElementById('diagOrigemLabel').innerText = `Origem (${armOrigem})`;
 
-            // 5. Busca situação de inventário física em tempo real
+            // 5. Busca situaÃ§Ã£o de inventÃ¡rio fÃ­sica em tempo real
             await evaluateInventoryReliability(prod.codigo, saldoOrig);
 
-            // Abre o card de diagnóstico
+            // Abre o card de diagnÃ³stico
             document.getElementById('productDiagnosisCard').classList.remove('hidden');
             document.getElementById('diagInputQty').value = "1";
             document.getElementById('diagInputQty').focus();
@@ -1499,10 +1579,10 @@
 
             if (counts.length === 0) {
                 relBox.className = "p-3 rounded-xl border border-rose-200 bg-rose-50/60 dark:bg-rose-950/30 flex items-start sm:items-center justify-between gap-3 text-xs font-semibold";
-                relTitle.innerText = "Sem Registro de Inventário Recente";
-                relDetails.innerText = "Este material não possui contagem física recente registrada. O saldo do sistema deve ser verificado antes da coleta.";
+                relTitle.innerText = "Sem Registro de InventÃ¡rio Recente";
+                relDetails.innerText = "Este material nÃ£o possui contagem fÃ­sica recente registrada. O saldo do sistema deve ser verificado antes da coleta.";
                 relBadge.className = "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-rose-100 text-rose-800 border border-rose-200";
-                relBadge.innerText = "🔴 Não Inventariado";
+                relBadge.innerText = "ðŸ”´ NÃ£o Inventariado";
                 relIcon.setAttribute('data-lucide', 'alert-circle');
                 relIcon.className = "w-5 h-5 flex-shrink-0 text-rose-600";
                 lucide.createIcons();
@@ -1518,18 +1598,18 @@
 
             if (daysAgo <= 30) {
                 relBox.className = "p-3 rounded-xl border border-emerald-200 bg-emerald-50/60 dark:bg-emerald-950/30 flex items-start sm:items-center justify-between gap-3 text-xs font-semibold";
-                relTitle.innerText = "Saldo Confiável (Inventariado Recentemente)";
-                relDetails.innerText = `Contado em ${countFormatted} (${daysAgo === 0 ? 'hoje' : 'há ' + daysAgo + ' dias'}) por ${conferente}. Quantidade física contada: ${countQty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}.`;
+                relTitle.innerText = "Saldo ConfiÃ¡vel (Inventariado Recentemente)";
+                relDetails.innerText = `Contado em ${countFormatted} (${daysAgo === 0 ? 'hoje' : 'hÃ¡ ' + daysAgo + ' dias'}) por ${conferente}. Quantidade fÃ­sica contada: ${countQty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}.`;
                 relBadge.className = "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-emerald-100 text-emerald-800 border border-emerald-200";
-                relBadge.innerText = "🟢 Confiável";
+                relBadge.innerText = "ðŸŸ¢ ConfiÃ¡vel";
                 relIcon.setAttribute('data-lucide', 'shield-check');
                 relIcon.className = "w-5 h-5 flex-shrink-0 text-emerald-600";
             } else {
                 relBox.className = "p-3 rounded-xl border border-amber-200 bg-amber-50/60 dark:bg-amber-950/30 flex items-start sm:items-center justify-between gap-3 text-xs font-semibold";
-                relTitle.innerText = `Atenção: Inventariado há ${daysAgo} dias`;
-                relDetails.innerText = `Última contagem em ${countFormatted} por ${conferente} (${countQty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}). Recomendado confirmar saldo físico no armazém.`;
+                relTitle.innerText = `AtenÃ§Ã£o: Inventariado hÃ¡ ${daysAgo} dias`;
+                relDetails.innerText = `Ãšltima contagem em ${countFormatted} por ${conferente} (${countQty.toLocaleString('pt-BR')} ${selectedProductForDiag?.unidade || 'PC'}). Recomendado confirmar saldo fÃ­sico no armazÃ©m.`;
                 relBadge.className = "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-amber-100 text-amber-800 border border-amber-200";
-                relBadge.innerText = "🟡 +30 Dias";
+                relBadge.innerText = "ðŸŸ¡ +30 Dias";
                 relIcon.setAttribute('data-lucide', 'clock');
                 relIcon.className = "w-5 h-5 flex-shrink-0 text-amber-600";
             }
@@ -1565,7 +1645,7 @@
             populateOriginWarehousesDropdown();
         }
 
-        // --- ADIÇÃO DE ITEM AO LOTE ATIVO ---
+        // --- ADIÃ‡ÃƒO DE ITEM AO LOTE ATIVO ---
         async function addItemToActiveBatch() {
             if (!selectedProductForDiag) {
                 showAlert("Selecione um produto primeiro.", "warning");
@@ -1574,7 +1654,7 @@
 
             const qty = parseFloat(document.getElementById('diagInputQty').value);
             if (!qty || qty <= 0) {
-                showAlert("Informe uma quantidade válida para transferência.", "warning");
+                showAlert("Informe uma quantidade vÃ¡lida para transferÃªncia.", "warning");
                 return;
             }
 
@@ -1617,7 +1697,7 @@
         }
 
         async function deleteItemFromBatch(itemId) {
-            if (!confirm("Remover este item da transferência?")) return;
+            if (!confirm("Remover este item da transferÃªncia?")) return;
 
             if (activeBatch.id && supabaseClient && isNaN(itemId)) {
                 await supabaseClient.from('transferencias_armazem_itens')
@@ -1639,17 +1719,17 @@
             }
         }
 
-        // --- TRANSIÇÃO DE STATUS (FINALIZAR FÍSICO / ERP) ---
+        // --- TRANSIÃ‡ÃƒO DE STATUS (FINALIZAR FÃSICO / ERP) ---
         async function markBatchFinalizadoFisico() {
             if (!activeBatch.itens || activeBatch.itens.length === 0) {
-                showAlert("Adicione materiais à lista antes de finalizar.", "warning");
+                showAlert("Adicione materiais Ã  lista antes de finalizar.", "warning");
                 return;
             }
 
-            const user = getCurrentUser() || { nome: 'USUÁRIO', matricula: '000' };
+            const user = getCurrentUser() || { nome: 'USUÃRIO', matricula: '000' };
             const timestamp = new Date().toISOString();
 
-            if (!confirm("Confirmar que a separação física foi concluída e o material foi entregue no Armazém 01?")) {
+            if (!confirm("Confirmar que a separaÃ§Ã£o fÃ­sica foi concluÃ­da e o material foi entregue no ArmazÃ©m 01?")) {
                 return;
             }
 
@@ -1668,7 +1748,7 @@
             }
 
             renderActiveBatchUI();
-            showAlert("Separação física finalizada com sucesso! Aguardando baixa no ERP.", "success");
+            showAlert("SeparaÃ§Ã£o fÃ­sica finalizada com sucesso! Aguardando baixa no ERP.", "success");
         }
 
         function openModalTransferirERP() {
@@ -1681,7 +1761,7 @@
         }
 
         async function executeTransferirERP() {
-            const user = getCurrentUser() || { nome: 'USUÁRIO', matricula: '000' };
+            const user = getCurrentUser() || { nome: 'USUÃRIO', matricula: '000' };
             const docNum = document.getElementById('inputDocErpNumero').value.trim();
             const timestamp = new Date().toISOString();
 
@@ -1706,7 +1786,7 @@
             showAlert(`Lote ${activeBatch.codigo_lote} marcado como TRANSFERIDO NO ERP!`, "success");
         }
 
-        // --- SCANNER DE CÂMERA (QR CODE / CÓDIGO DE BARRAS) ---
+        // --- SCANNER DE CÃ‚MERA (QR CODE / CÃ“DIGO DE BARRAS) ---
         function openCameraScannerModal() {
             document.getElementById('cameraScannerModal').classList.remove('hidden');
 
@@ -1728,11 +1808,11 @@
                         showAlert(`QR Code lido: ${decodedText}`, "success");
                     },
                     (errorMessage) => {
-                        // Ignora frames sem código
+                        // Ignora frames sem cÃ³digo
                     }
                 ).catch(err => {
-                    console.error("Erro ao iniciar câmera:", err);
-                    showAlert("Não foi possível acessar a câmera do dispositivo.", "error");
+                    console.error("Erro ao iniciar cÃ¢mera:", err);
+                    showAlert("NÃ£o foi possÃ­vel acessar a cÃ¢mera do dispositivo.", "error");
                 });
             } catch(e) {
                 console.error("Erro no scanner:", e);
@@ -1748,15 +1828,15 @@
             document.getElementById('cameraScannerModal').classList.add('hidden');
         }
 
-        // --- IMPRESSÃO DE ROMANEIO (A4) ---
+        // --- IMPRESSÃƒO DE ROMANEIO (A4) ---
         function printTransferManifest() {
             if (!activeBatch.itens || activeBatch.itens.length === 0) {
-                showAlert("A lista está vazia.", "warning");
+                showAlert("A lista estÃ¡ vazia.", "warning");
                 return;
             }
 
             document.getElementById('printLoteCodigo').innerText = activeBatch.codigo_lote || 'TRF-COM-0001';
-            document.getElementById('printSetor').innerText = activeBatch.setor || 'COMÉRCIO';
+            document.getElementById('printSetor').innerText = activeBatch.setor || 'COMÃ‰RCIO';
             document.getElementById('printFilial').innerText = getFilialDisplayName(currentFilialId);
             document.getElementById('printDataEmissao').innerText = new Date().toLocaleString('pt-BR');
 
@@ -1764,7 +1844,7 @@
             document.getElementById('printFinalizadoPor').innerText = activeBatch.finalizado_fisico_por ? `${activeBatch.finalizado_fisico_por} em ${new Date(activeBatch.finalizado_fisico_em).toLocaleDateString('pt-BR')}` : 'Pendente';
             document.getElementById('printTransferidoPor').innerText = activeBatch.transferido_erp_por ? `${activeBatch.transferido_erp_por} (Doc: ${activeBatch.doc_erp_numero || 'S/N'})` : 'Pendente ERP';
 
-            document.getElementById('printObservacaoText').innerText = activeBatch.observacao || 'Nenhuma observação registrada.';
+            document.getElementById('printObservacaoText').innerText = activeBatch.observacao || 'Nenhuma observaÃ§Ã£o registrada.';
 
             const tbody = document.getElementById('printItemsTableBody');
             let html = '';
@@ -1786,7 +1866,7 @@
             window.print();
         }
 
-        // --- EXPORTAÇÃO CSV / EXCEL ---
+        // --- EXPORTAÃ‡ÃƒO CSV / EXCEL ---
         function exportActiveTransferCSV() {
             if (!activeBatch.itens || activeBatch.itens.length === 0) {
                 showAlert("Nenhum item para exportar.", "warning");
@@ -1798,10 +1878,10 @@
                 "Lote": activeBatch.codigo_lote,
                 "Setor": activeBatch.setor,
                 "Filial": currentFilialId,
-                "Código Produto": it.produto,
-                "Descrição": it.descricao,
-                "Armazém Origem": it.armazem_origem,
-                "Armazém Destino": it.armazem_destino,
+                "CÃ³digo Produto": it.produto,
+                "DescriÃ§Ã£o": it.descricao,
+                "ArmazÃ©m Origem": it.armazem_origem,
+                "ArmazÃ©m Destino": it.armazem_destino,
                 "Quantidade Transferida": it.quantidade,
                 "Unidade": it.unidade,
                 "Status Lote": activeBatch.status,
@@ -1811,14 +1891,14 @@
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Transferencia");
-            XLSX.writeFile(wb, `${activeBatch.codigo_lote || 'Transferencia'}_Armazém01.xlsx`);
+            XLSX.writeFile(wb, `${activeBatch.codigo_lote || 'Transferencia'}_ArmazÃ©m01.xlsx`);
         }
 
-        // --- ABA DE HISTÓRICO ---
+        // --- ABA DE HISTÃ“RICO ---
         async function loadTransferHistory() {
             if (!supabaseClient) initSupabase();
             const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Carregando histórico...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Carregando histÃ³rico...</td></tr>`;
 
             try {
                 const { data, error } = await supabaseClient.from('transferencias_armazem')
@@ -1831,8 +1911,8 @@
                 allHistoryBatches = data || [];
                 applyHistoryFilters();
             } catch(e) {
-                console.error("Erro no histórico:", e);
-                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-rose-500">Erro ao carregar histórico de transferências.</td></tr>`;
+                console.error("Erro no histÃ³rico:", e);
+                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-rose-500">Erro ao carregar histÃ³rico de transferÃªncias.</td></tr>`;
             }
         }
 
@@ -1858,7 +1938,7 @@
 
             const tbody = document.getElementById('historyTableBody');
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhuma transferência encontrada com os filtros selecionados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhuma transferÃªncia encontrada com os filtros selecionados.</td></tr>`;
                 return;
             }
 
@@ -1868,16 +1948,16 @@
                 const dtFormatted = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 const skus = (b.transferencias_armazem_itens || []).length;
 
-                let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-100 text-amber-800">🟡 Em Aberto</span>`;
-                if (b.status === 'FINALIZADO_FISICO') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-800">🔵 Físico OK</span>`;
-                if (b.status === 'TRANSFERIDO_ERP') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">🟢 ERP OK</span>`;
+                let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-100 text-amber-800">ðŸŸ¡ Em Aberto</span>`;
+                if (b.status === 'FINALIZADO_FISICO') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-800">ðŸ”µ FÃ­sico OK</span>`;
+                if (b.status === 'TRANSFERIDO_ERP') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">ðŸŸ¢ ERP OK</span>`;
 
                 let erpInfo = b.doc_erp_numero ? `Doc: ${b.doc_erp_numero}` : (b.status === 'TRANSFERIDO_ERP' ? 'Baixado' : 'Pendente');
 
                 html += `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700/80 text-xs">
                         <td class="px-3 py-2.5 font-mono font-black text-[#002f6c] dark:text-blue-400">${b.codigo_lote}</td>
-                        <td class="px-3 py-2.5 text-center font-bold">${b.setor === 'INDUSTRIA' ? 'Indústria' : 'Comércio'}</td>
+                        <td class="px-3 py-2.5 text-center font-bold">${b.setor === 'INDUSTRIA' ? 'IndÃºstria' : 'ComÃ©rcio'}</td>
                         <td class="px-3 py-2.5 text-center">${statusBadge}</td>
                         <td class="px-3 py-2.5 text-center font-black text-slate-700 dark:text-slate-300">${skus}</td>
                         <td class="px-3 py-2.5 font-bold text-slate-700 dark:text-slate-300">${b.criado_por || 'N/D'}</td>
@@ -1925,7 +2005,7 @@
 
             switchTransferTab('active');
             renderActiveBatchUI();
-            showAlert(`Lote ${activeBatch.codigo_lote} carregado para visualização!`, "info");
+            showAlert(`Lote ${activeBatch.codigo_lote} carregado para visualizaÃ§Ã£o!`, "info");
         }
     </script>
 </body>

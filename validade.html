@@ -152,6 +152,14 @@
                                 <p class="text-xs font-black text-slate-800 dark:text-slate-200">Inventário Rotativo</p>
                             </div>
                         </a>
+                        <a href="transferencia.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
+                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+                                <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-800 dark:text-slate-200">Transferência Armazém 01</p>
+                            </div>
+                        </a>
                         <a href="kardex.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                             <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
                                 <i data-lucide="history" class="w-3.5 h-3.5"></i>
@@ -437,22 +445,69 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Quantidade do Lote</label>
-                        <input type="number" step="any" min="0" id="valInputQuantidade" required placeholder="Ex: 50" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Quantidade do Lote</label>
+                            <button type="button" onclick="toggleValidadeCalculator()" id="btnToggleValCalc" class="text-[10px] font-black text-amber-600 dark:text-amber-400 hover:text-amber-700 flex items-center gap-1 touch-active">
+                                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                                <span id="lblToggleValCalc">Calculadora</span>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="valInputQuantidade" required oninput="updateValidadeQtdPreview()" placeholder="Ex: 50 ou 10+15*2" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <div id="valQtdCalcPreview" class="absolute right-3 top-2.5 text-[11px] font-black text-emerald-600 dark:text-emerald-400 pointer-events-none"></div>
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Palete / Caixa / Unidade</label>
-                        <input type="text" id="valInputEmbalagem" list="valEmbalagemDatalist" placeholder="Ex: 1 Palete, Caixa, Unidade" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Embalagem / Unidade</label>
+                            <button type="button" onclick="promptAddNewEmbalagem()" class="text-[10px] font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1 touch-active" title="Adicionar nova forma de embalagem ou unidade">
+                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                                <span>+ Nova</span>
+                            </button>
+                        </div>
+                        <input type="text" id="valInputEmbalagem" list="valEmbalagemDatalist" oninput="this.value = this.value.toUpperCase()" placeholder="CAIXA, 1 PALETE, UNIDADE, KG..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-amber-500">
                         <datalist id="valEmbalagemDatalist">
-                            <option value="Caixa"></option>
-                            <option value="1 Palete"></option>
-                            <option value="2 Paletes"></option>
-                            <option value="3 Paletes"></option>
-                            <option value="Unidade"></option>
-                            <option value="Tambor"></option>
-                            <option value="Balde"></option>
-                            <option value="Frasco"></option>
+                            <!-- Preenchido dinamicamente via JS com unidades SB1 e registros -->
                         </datalist>
+                    </div>
+                </div>
+
+                <!-- TECLADO CALCULADORA INTELIGENTE DO MODAL DE VALIDADE -->
+                <div id="valCalculatorKeypad" class="hidden bg-slate-900 dark:bg-slate-950 text-white rounded-2xl p-3 shadow-xl space-y-2 border border-slate-800 transition-all duration-300">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                        <span class="text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1">
+                            <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Calculadora Inteligente
+                        </span>
+                        <button type="button" onclick="toggleValidadeCalculator(false)" class="text-slate-400 hover:text-white p-0.5 rounded-lg text-xs" title="Fechar Calculadora">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-1.5 font-bold text-xs select-none">
+                        <button type="button" onclick="valCalcKeypadPress('(')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-slate-200 p-2 rounded-xl transition-all shadow-sm font-black">(</button>
+                        <button type="button" onclick="valCalcKeypadPress(')')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-slate-200 p-2 rounded-xl transition-all shadow-sm font-black">)</button>
+                        <button type="button" onclick="valCalcKeypadPress('C')" class="bg-rose-900/80 hover:bg-rose-800 text-rose-200 p-2 rounded-xl transition-all shadow-sm font-black">C</button>
+                        <button type="button" onclick="valCalcKeypadPress('BACKSPACE')" class="bg-amber-900/80 hover:bg-amber-800 text-amber-200 p-2 rounded-xl transition-all shadow-sm font-black">⌫</button>
+
+                        <button type="button" onclick="valCalcKeypadPress('7')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">7</button>
+                        <button type="button" onclick="valCalcKeypadPress('8')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">8</button>
+                        <button type="button" onclick="valCalcKeypadPress('9')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">9</button>
+                        <button type="button" onclick="valCalcKeypadPress('/')" class="bg-amber-600/90 hover:bg-amber-500 text-white p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">÷</button>
+
+                        <button type="button" onclick="valCalcKeypadPress('4')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">4</button>
+                        <button type="button" onclick="valCalcKeypadPress('5')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">5</button>
+                        <button type="button" onclick="valCalcKeypadPress('6')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">6</button>
+                        <button type="button" onclick="valCalcKeypadPress('*')" class="bg-amber-600/90 hover:bg-amber-500 text-white p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">×</button>
+
+                        <button type="button" onclick="valCalcKeypadPress('1')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">1</button>
+                        <button type="button" onclick="valCalcKeypadPress('2')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">2</button>
+                        <button type="button" onclick="valCalcKeypadPress('3')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">3</button>
+                        <button type="button" onclick="valCalcKeypadPress('-')" class="bg-amber-600/90 hover:bg-amber-500 text-white p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">−</button>
+
+                        <button type="button" onclick="valCalcKeypadPress('0')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">0</button>
+                        <button type="button" onclick="valCalcKeypadPress('.')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">.</button>
+                        <button type="button" onclick="valCalcKeypadPress('+')" class="bg-amber-600/90 hover:bg-amber-500 text-white p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">+</button>
+                        <button type="button" onclick="valCalcKeypadPress('=')" class="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 rounded-xl transition-all shadow-md font-black text-sm">=</button>
                     </div>
                 </div>
 
@@ -627,6 +682,15 @@
             <div>
                 <p class="text-xs font-black text-slate-800">Inventário Rotativo</p>
                 <p class="text-[10px] font-bold text-slate-400">Contagens, saldos e divergências</p>
+            </div>
+        </a>
+        <a href="transferencia.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+                <i data-lucide="truck" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p class="text-xs font-black text-slate-800">Transferência Armazém 01</p>
+                <p class="text-[10px] font-bold text-slate-400">QR Code, separação física e ERP</p>
             </div>
         </a>
         <a href="kardex.html" class="w-full flex items-center space-x-3 p-2.5 rounded-2xl hover:bg-slate-100 text-left transition-colors">
@@ -837,6 +901,8 @@
             }
 
             populateValidadeFiltersDropdowns();
+            populateProductsDatalist();
+            populateEmbalagensDatalist();
             applyValidadeFilters();
         }
 
@@ -1204,6 +1270,152 @@
 
         // --- GESTÃO DE LOTES E VALIDADE (MODAL NOVO / EDIÇÃO) ---
 
+        function toggleValidadeCalculator(show = null) {
+            const keypad = document.getElementById('valCalculatorKeypad');
+            const lbl = document.getElementById('lblToggleValCalc');
+            if (!keypad) return;
+
+            const isHidden = keypad.classList.contains('hidden');
+            const shouldShow = (show !== null) ? show : isHidden;
+
+            if (shouldShow) {
+                keypad.classList.remove('hidden');
+                if (lbl) lbl.innerText = 'Ocultar';
+            } else {
+                keypad.classList.add('hidden');
+                if (lbl) lbl.innerText = 'Calculadora';
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function parseSmartMathExpression(exprStr, prevCount = 0) {
+            if (exprStr === null || exprStr === undefined) return null;
+            let s = String(exprStr).trim();
+            if (!s) return null;
+
+            s = s.replace(/,/g, '.');
+
+            if (s.startsWith('+')) {
+                s = `${prevCount}` + s;
+            }
+
+            const openCount = (s.match(/\(/g) || []).length;
+            const closeCount = (s.match(/\)/g) || []).length;
+            if (openCount > closeCount) {
+                s += ')'.repeat(openCount - closeCount);
+            }
+
+            s = s.replace(/(\d+(\.\d+)?)\s*\(/g, '$1*(');
+            s = s.replace(/\)\s*(\d+(\.\d+)?)/g, ')*$1');
+
+            if (!/^[0-9+\-*/.()\s]+$/.test(s)) return null;
+
+            try {
+                const val = Function(`'use strict'; return (${s});`)();
+                if (typeof val === 'number' && !isNaN(val) && isFinite(val)) {
+                    return val;
+                }
+            } catch(e) {
+                return null;
+            }
+            return null;
+        }
+
+        function updateValidadeQtdPreview() {
+            const inp = document.getElementById('valInputQuantidade');
+            const prev = document.getElementById('valQtdCalcPreview');
+            if (!inp || !prev) return;
+
+            const rawVal = inp.value.trim();
+            if (!rawVal) {
+                prev.innerText = '';
+                return;
+            }
+
+            const val = parseSmartMathExpression(rawVal);
+            if (val !== null && !isNaN(val) && val >= 0) {
+                if (/[+\-*/()]/.test(rawVal)) {
+                    prev.innerText = `= ${val.toLocaleString('pt-BR')}`;
+                } else {
+                    prev.innerText = '';
+                }
+            } else {
+                prev.innerText = '...';
+            }
+        }
+
+        function valCalcKeypadPress(char) {
+            const inp = document.getElementById('valInputQuantidade');
+            if (!inp) return;
+
+            if (char === 'C') {
+                inp.value = '';
+                updateValidadeQtdPreview();
+            } else if (char === 'BACKSPACE') {
+                inp.value = inp.value.slice(0, -1);
+                updateValidadeQtdPreview();
+            } else if (char === '=') {
+                const rawVal = inp.value.trim();
+                if (rawVal) {
+                    const val = parseSmartMathExpression(rawVal);
+                    if (val !== null && !isNaN(val) && val >= 0) {
+                        inp.value = String(val);
+                        updateValidadeQtdPreview();
+                        toggleValidadeCalculator(false);
+                    } else {
+                        showAlert("Expressão de cálculo inválida. Corrija o valor.", "warning");
+                    }
+                }
+            } else {
+                inp.value += char;
+                updateValidadeQtdPreview();
+            }
+        }
+
+        let customEmbalagensList = [];
+
+        function populateEmbalagensDatalist() {
+            const datalist = document.getElementById('valEmbalagemDatalist');
+            if (!datalist) return;
+
+            // 1. Formatos operacionais padrão em MAIÚSCULO
+            const standardFormats = ['CAIXA', '1 PALETE', '2 PALETES', '3 PALETES', '4 PALETES', 'PALETE', 'UNIDADE', 'TAMBOR', 'BALDE', 'FRASCO', 'FARDO', 'SACO', 'BOBINA'];
+
+            // 2. Unidades de medida reais do SB1
+            const sb1Units = rawSb1Dataset ? [...new Set(rawSb1Dataset.map(p => String(p.Unidade || '').trim().toUpperCase()).filter(Boolean))] : [];
+
+            // 3. Embalagens já salvas nos registros de validade
+            const savedEmbalagens = rawValidadeDataset ? [...new Set(rawValidadeDataset.map(v => String(v.embalagem || '').trim().toUpperCase()).filter(Boolean))] : [];
+
+            // Consolidação completa e sem duplicidades
+            const allEmbalagens = [...new Set([...standardFormats, ...savedEmbalagens, ...sb1Units, ...customEmbalagensList])]
+                .filter(Boolean)
+                .sort((a,b) => a.localeCompare(b, undefined, { numeric: true }));
+
+            let html = '';
+            allEmbalagens.forEach(emb => {
+                html += `<option value="${emb}"></option>`;
+            });
+            datalist.innerHTML = html;
+        }
+
+        function promptAddNewEmbalagem() {
+            const input = prompt("Digite a nova forma de embalagem ou unidade de medida:\n(Ex: CAIXA, 1 PALETE, FARDO, SACO, TAMBOR, KG, UN, PC)");
+            if (!input) return;
+            const clean = input.trim().toUpperCase();
+            if (!clean) return;
+
+            if (!customEmbalagensList.includes(clean)) {
+                customEmbalagensList.push(clean);
+            }
+            populateEmbalagensDatalist();
+
+            const inp = document.getElementById('valInputEmbalagem');
+            if (inp) {
+                inp.value = clean;
+            }
+        }
+
         function openNewValidadeModal(codigo = '', armazem = '01') {
             const modal = document.getElementById('newValidadeModal');
             const inpCodigo = document.getElementById('valInputCodigo');
@@ -1223,7 +1435,11 @@
             document.getElementById('valInputValidade').value = '';
             document.getElementById('valInputObservacao').value = '';
 
+            toggleValidadeCalculator(false);
+            updateValidadeQtdPreview();
+
             populateProductsDatalist();
+            populateEmbalagensDatalist();
             onValidadeCodeInput();
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
         }
@@ -1244,6 +1460,7 @@
         function closeNewValidadeModal() {
             const modal = document.getElementById('newValidadeModal');
             if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
+            toggleValidadeCalculator(false);
         }
 
         function onValidadeCodeOrLoteChange() {
@@ -1278,7 +1495,7 @@
             document.getElementById('valInputArmazem').value = item.armazem;
             document.getElementById('valInputLote').value = item.lote || '';
             document.getElementById('valInputQuantidade').value = item.quantidade || '';
-            document.getElementById('valInputEmbalagem').value = item.embalagem || '';
+            document.getElementById('valInputEmbalagem').value = (item.embalagem || '').toUpperCase();
             document.getElementById('valInputFabricacao').value = item.data_fabricacao || '';
             document.getElementById('valInputValidade').value = item.data_validade || '';
             document.getElementById('valInputObservacao').value = item.observacao || '';
@@ -1292,7 +1509,11 @@
                 else banner.classList.add('hidden');
             }
 
+            toggleValidadeCalculator(false);
+            updateValidadeQtdPreview();
+
             populateProductsDatalist();
+            populateEmbalagensDatalist();
             onValidadeCodeInput();
         }
 
@@ -1318,6 +1539,10 @@
             const match = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === val) : null;
             if (match) {
                 preview.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 inline"></i> ${match['Descr.Espec.'] || 'Produto Localizado'}</span>`;
+                const embInp = document.getElementById('valInputEmbalagem');
+                if (embInp && !embInp.value) {
+                    embInp.value = match.Unidade ? String(match.Unidade).trim().toUpperCase() : 'UNIDADE';
+                }
             } else {
                 preview.innerHTML = `<span class="text-amber-600 dark:text-amber-400 flex items-center gap-1 font-bold"><i data-lucide="info" class="w-3.5 h-3.5 inline"></i> Código ${val} (Produto Novo / Personalizado)</span>`;
             }
@@ -1331,8 +1556,12 @@
             const produto = produtoInput ? produtoInput.value.trim().toUpperCase() : '';
             const armazem = document.getElementById('valInputArmazem').value.padStart(2, '0');
             const lote = document.getElementById('valInputLote').value.trim().toUpperCase();
-            const quantidade = parseFloat(document.getElementById('valInputQuantidade').value || 0);
-            const embalagem = document.getElementById('valInputEmbalagem').value.trim();
+            
+            const rawQtd = document.getElementById('valInputQuantidade').value.trim();
+            const evaluatedQtd = parseSmartMathExpression(rawQtd);
+            const quantidade = (evaluatedQtd !== null && !isNaN(evaluatedQtd) && evaluatedQtd >= 0) ? evaluatedQtd : parseFloat(rawQtd || 0);
+
+            const embalagem = document.getElementById('valInputEmbalagem').value.trim().toUpperCase();
             const fabricacao = document.getElementById('valInputFabricacao').value;
             const validade = document.getElementById('valInputValidade').value;
             const obs = document.getElementById('valInputObservacao').value.trim();
@@ -1521,7 +1750,7 @@
                         const lote = String(row[colLote] || '').trim();
                         const qtd = parseFloat(row[colQtd]) || 0;
                         const valDate = parseExcelDate(row[colVal]);
-                        const embalagem = String(row[colEmb] || '').trim();
+                        const embalagem = String(row[colEmb] || '').trim().toUpperCase();
 
                         if (!cod) continue;
 
