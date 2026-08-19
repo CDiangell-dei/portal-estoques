@@ -782,7 +782,8 @@
         let stagedImportRows = [];
 
         function getTargetFilialForSector() {
-            if (!currentUser) return 'ALL';
+            if (!currentUser) return '01';
+            if (isGlobalFilial(currentUser)) return '00';
             if (currentSector === 'COMERCIO') {
                 return String(currentUser.filial_comercio || currentUser.filial_atual || '01').trim().padStart(2, '0');
             } else {
@@ -836,7 +837,7 @@
 
                 // 2. Carrega Validades
                 let query = supabaseClient.from(valTable).select('*');
-                if (currentUser.eh_admin !== true && targetFilial && targetFilial !== 'ALL') {
+                if (!isGlobalFilial(currentUser) && targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
                     query = query.eq('filial', targetFilial);
                 }
                 const { data, error } = await query.order('data_validade', { ascending: true });
@@ -860,11 +861,10 @@
                 // 3. Carrega TODOS os armazéns reais em saldo da tabela correspondente via RPC
                 let saldoArmazens = [];
                 try {
-                    const { data: rpcData, error: rpcErr } = await supabaseClient.rpc('get_distinct_warehouses', {
-                        p_sector: currentSector
-                    });
-                    if (!rpcErr && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
-                        saldoArmazens = rpcData.map(r => String(r.armazem || '').trim().padStart(2, '0')).filter(Boolean);
+                    const rpcName = currentSector === 'INDUSTRIA' ? 'get_distinct_warehouses_industria' : 'get_distinct_warehouses_comercio';
+                    const { data: rpcWarehouses, error: rpcErr } = await supabaseClient.rpc(rpcName);
+                    if (!rpcErr && rpcWarehouses && Array.isArray(rpcWarehouses)) {
+                        saldoArmazens = rpcWarehouses.map(w => String(w).trim().padStart(2, '0')).filter(Boolean);
                     }
                 } catch (e) {
                     console.warn("RPC get_distinct_warehouses fallback:", e);
@@ -907,17 +907,33 @@
         }
 
         function populateValidadeFiltersDropdowns() {
-            const filials = [...new Set(rawValidadeDataset.map(v => v.filial))].sort();
-
             const selFilial = document.getElementById('valFilterFilial');
             if (selFilial) {
-                let html = '<option value="ALL">Todas as Filiais</option>';
-                const activeFilial = getTargetFilialForSector();
-                filials.forEach(f => {
-                    const name = getFilialDisplayName(f);
-                    html += `<option value="${f}" ${f === activeFilial ? 'selected' : ''}>${name}</option>`;
-                });
-                selFilial.innerHTML = html;
+                const isGlobal = isGlobalFilial(currentUser);
+                const userAssigned = getTargetFilialForSector();
+
+                if (isGlobal) {
+                    selFilial.disabled = false;
+                    selFilial.className = "w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 cursor-pointer";
+
+                    const filials = [...new Set(rawValidadeDataset.map(v => v.filial))].sort();
+                    const allAvailable = currentSector === 'INDUSTRIA' ? ['01', '02', '03', '04', '05', '06'] : getCachedFiliaisList().filter(f => f.num_filial !== '00').map(f => String(f.num_filial).padStart(2, '0'));
+                    const merged = [...new Set([...allAvailable, ...filials])].sort();
+
+                    const curVal = selFilial.value || 'ALL';
+                    let html = '<option value="ALL">Todas as Filiais</option>';
+                    merged.forEach(f => {
+                        const name = getFilialDisplayName(f, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
+                        html += `<option value="${f}" ${f === curVal ? 'selected' : ''}>${name}</option>`;
+                    });
+                    selFilial.innerHTML = html;
+                } else {
+                    selFilial.disabled = true;
+                    selFilial.className = "w-full bg-slate-100 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-600 cursor-not-allowed opacity-80";
+                    const name = getFilialDisplayName(userAssigned, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
+                    selFilial.innerHTML = `<option value="${userAssigned}" selected>${name}</option>`;
+                    selFilial.value = userAssigned;
+                }
             }
 
             populateWarehouseSelects();

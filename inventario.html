@@ -1020,10 +1020,11 @@
 
         function getTargetFilialForSector() {
             if (!currentUser) return '01';
-            if (currentSector === 'COMERCIO') {
-                return String(currentUser.filial_comercio || currentUser.filial_atual || '01').trim().padStart(2, '0');
-            } else {
+            if (isGlobalFilial(currentUser)) return '00';
+            if (currentSector === 'INDUSTRIA') {
                 return String(currentUser.filial_industria || currentUser.filial_atual || '06').trim().padStart(2, '0');
+            } else {
+                return String(currentUser.filial_comercio || currentUser.filial_atual || '01').trim().padStart(2, '0');
             }
         }
 
@@ -1091,16 +1092,17 @@
                 const contagemTable = currentSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
                 const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
 
-                // Determine target filial to filter database queries
+                // Determina a filial alvo: se filial 00, respeita seleção ou ALL; senão, fixa rigorosamente na filial logada
                 const selFilial = document.getElementById('invFilterFilial');
-                const targetFilial = selFilial && selFilial.value ? selFilial.value : getTargetFilialForSector();
+                const isGlobal = isGlobalFilial(currentUser);
+                const targetFilial = isGlobal ? (selFilial && selFilial.value ? selFilial.value : 'ALL') : getTargetFilialForSector();
 
                 // 1. Carrega Saldos
                 let saldoAll = [];
                 let from2 = 0, step2 = 1000, fetchMore2 = true;
                 while (fetchMore2) {
                     let query = supabaseClient.from(saldoTable).select('produto, filial, armazem, quantidade');
-                    if (targetFilial && targetFilial !== 'ALL') {
+                    if (targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
                         query = query.eq('filial', targetFilial);
                     }
                     const { data, error } = await query.range(from2, from2 + step2 - 1);
@@ -1117,7 +1119,7 @@
                     let from3 = 0, step3 = 1000, fetchMore3 = true;
                     while (fetchMore3) {
                         let query = supabaseClient.from(contagemTable).select('*');
-                        if (targetFilial && targetFilial !== 'ALL') {
+                        if (targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
                             query = query.eq('filial', targetFilial);
                         }
                         const { data, error } = await query.range(from3, from3 + step3 - 1);
@@ -1143,7 +1145,7 @@
                         let from4 = 0, fetchMore4 = true;
                         while (fetchMore4) {
                             let query = supabaseClient.from('conferencia_comercio').select('*');
-                            if (targetFilial && targetFilial !== 'ALL') {
+                            if (targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
                                 query = query.eq('filial', targetFilial);
                             }
                             const fallbackRes = await query.range(from4, from4 + step3 - 1);
@@ -1172,7 +1174,7 @@
                     let fromV = 0, stepV = 1000, fetchMoreV = true;
                     while (fetchMoreV) {
                         let query = supabaseClient.from(valTable).select('*');
-                        if (targetFilial && targetFilial !== 'ALL') {
+                        if (targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
                             query = query.eq('filial', targetFilial);
                         }
                         const { data, error } = await query.range(fromV, fromV + stepV - 1);
@@ -1354,27 +1356,44 @@
         function extractInventoryMetadata() {
             const selFilial = document.getElementById('invFilterFilial');
             if (selFilial) {
-                const isAdmin = currentUser && currentUser.eh_admin === true;
-                let availableFiliais = [getTargetFilialForSector()];
+                const isGlobal = isGlobalFilial(currentUser);
+                const userAssigned = getTargetFilialForSector();
 
-                let savedFilial = null;
-                try { savedFilial = localStorage.getItem('amazon_selected_filial'); } catch(e) {}
+                if (isGlobal) {
+                    selFilial.disabled = false;
+                    selFilial.className = "bg-white border border-slate-200 text-xs font-bold text-[#002f6c] rounded-xl px-3 py-2 w-full sm:w-48 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#002f6c]";
 
-                let currentVal = savedFilial || selFilial.value || getTargetFilialForSector();
-                
-                let opts = '';
-                if (isAdmin) {
-                    opts += `<option value="ALL" ${currentVal === 'ALL' ? 'selected' : ''}>Todas as Filiais</option>`;
+                    let savedFilial = null;
+                    try { savedFilial = localStorage.getItem('amazon_selected_filial'); } catch(e) {}
+                    let currentVal = savedFilial || selFilial.value || 'ALL';
+
+                    let opts = `<option value="ALL" ${currentVal === 'ALL' ? 'selected' : ''}>Todas as Filiais</option>`;
+                    if (currentSector === 'INDUSTRIA') {
+                        const indList = ['01', '02', '03', '04', '05'];
+                        indList.forEach(f => {
+                            const label = getFilialDisplayName(f, 'industria');
+                            opts += `<option value="${f}" ${currentVal === f ? 'selected' : ''}>${label}</option>`;
+                        });
+                    } else {
+                        const comList = ['01', '02', '04', '05', '06', '12'];
+                        comList.forEach(f => {
+                            const label = getFilialDisplayName(f, 'comercio');
+                            opts += `<option value="${f}" ${currentVal === f ? 'selected' : ''}>${label}</option>`;
+                        });
+                    }
+                    selFilial.innerHTML = opts;
+                    selFilial.value = currentVal;
+                } else {
+                    selFilial.disabled = true;
+                    selFilial.className = "bg-slate-100 border border-slate-200 text-xs font-bold text-[#002f6c] rounded-xl px-3 py-2 w-full sm:w-48 cursor-not-allowed opacity-80";
+                    const label = getFilialDisplayName(userAssigned, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
+                    selFilial.innerHTML = `<option value="${userAssigned}" selected>${label}</option>`;
+                    selFilial.value = userAssigned;
+                    try { localStorage.setItem('amazon_selected_filial', userAssigned); } catch(e) {}
                 }
-                availableFiliais.forEach(f => {
-                    const label = currentSector === 'INDUSTRIA' ? f : getFilialDisplayName(f, 'comercio');
-                    opts += `<option value="${f}" ${currentVal === f ? 'selected' : ''}>${label}</option>`;
-                });
-                selFilial.innerHTML = opts;
-                selFilial.value = currentVal;
             }
 
-            const selectedFilial = selFilial ? selFilial.value : 'ALL';
+            const selectedFilial = (isGlobalFilial(currentUser) && selFilial) ? selFilial.value : getTargetFilialForSector();
             
             const targetSaldos = (selectedFilial === 'ALL') 
                 ? rawSaldoDataset 

@@ -249,7 +249,7 @@
         <!-- HERO BANNER COM SELETOR DE SETOR & ABAS -->
         <div class="bg-gradient-to-r from-[#002f6c] via-[#002454] to-[#001738] rounded-3xl p-6 sm:p-7 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
             <div class="space-y-2 z-10">
-                <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/15">
+                <div id="transferFilialContainer" class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/15">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span id="transferFilialBadge" class="text-blue-100 font-extrabold uppercase">Filial 01 - Alvorada</span>
                 </div>
@@ -990,16 +990,57 @@
             }
 
             // Define filial ativa
-            currentFilialId = String(user.filial_atual || user.filial_comercio || '01').trim().replace(/^0+/, '');
-            const badgeFilial = document.getElementById('transferFilialBadge');
-            if (badgeFilial) {
-                badgeFilial.innerText = getFilialDisplayName(currentFilialId, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
+            if (isGlobalFilial(user)) {
+                currentFilialId = '01';
+            } else {
+                currentFilialId = getUserAssignedFilial(user, 'COMERCIO');
             }
+
+            setupTransferFilialUI();
 
             // Carrega dados e lote pendente
             await switchSector('COMERCIO', false);
             await restoreOrInitActiveBatch();
         };
+
+        function setupTransferFilialUI() {
+            const isGlobal = isGlobalFilial(currentUser);
+            const container = document.getElementById('transferFilialContainer');
+            if (!container) return;
+
+            if (isGlobal) {
+                const list = currentSector === 'INDUSTRIA'
+                    ? [ { num: '01', name: '01 - Telhas' }, { num: '02', name: '02 - Tubos' }, { num: '03', name: '03 - Perfis' }, { num: '04', name: '04 - Matéria Prima' }, { num: '05', name: '05 - Sucata' }, { num: '06', name: '06 - Jorge Teixeira' } ]
+                    : getCachedFiliaisList().filter(f => f.num_filial !== '00').map(f => ({ num: String(f.num_filial).padStart(2, '0'), name: `${String(f.num_filial).padStart(2, '0')} - ${f.nome_filial}` }));
+                
+                let opts = '';
+                list.forEach(f => {
+                    const isSel = String(currentFilialId).padStart(2, '0') === f.num;
+                    opts += `<option value="${f.num}" ${isSel ? 'selected' : ''} class="bg-slate-900 text-white">${f.name}</option>`;
+                });
+
+                container.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <select id="transferFilialSelect" onchange="changeTransferFilialGlobal(this.value)" class="bg-transparent text-blue-100 font-extrabold uppercase text-xs focus:outline-none cursor-pointer">
+                        ${opts}
+                    </select>
+                `;
+            } else {
+                const userFil = getUserAssignedFilial(currentUser, currentSector);
+                currentFilialId = userFil;
+                const name = getFilialDisplayName(userFil, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
+                container.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="transferFilialBadge" class="text-blue-100 font-extrabold uppercase">${name}</span>
+                `;
+            }
+        }
+
+        async function changeTransferFilialGlobal(newFilial) {
+            currentFilialId = newFilial;
+            await loadMasterDataForSector();
+            await restoreOrInitActiveBatch();
+        }
 
         // --- ALTERNÂNCIA DE SETOR (COMÉRCIO / INDÚSTRIA) ---
         async function switchSector(sector, reloadBatch = true) {
@@ -1016,10 +1057,7 @@
                 comBtn.className = "px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 text-blue-100 hover:text-white cursor-pointer";
             }
 
-            const badgeFilial = document.getElementById('transferFilialBadge');
-            if (badgeFilial) {
-                badgeFilial.innerText = getFilialDisplayName(currentFilialId, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
-            }
+            setupTransferFilialUI();
 
             await loadMasterDataForSector();
 
@@ -2327,12 +2365,17 @@
             tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Carregando histórico...</td></tr>`;
 
             try {
-                const { data, error } = await supabaseClient.from('transferencias_armazem')
+                const isGlobal = isGlobalFilial(currentUser);
+                let query = supabaseClient.from('transferencias_armazem')
                     .select('*, transferencias_armazem_itens(*)')
-                    .eq('filial_id', String(currentFilialId).padStart(2, '0'))
                     .order('criado_em', { ascending: false })
                     .limit(100);
 
+                if (!isGlobal) {
+                    query = query.eq('filial_id', String(currentFilialId).padStart(2, '0'));
+                }
+
+                const { data, error } = await query;
                 if (error) throw error;
                 allHistoryBatches = data || [];
                 applyHistoryFilters();

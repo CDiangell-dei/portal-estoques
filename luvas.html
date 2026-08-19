@@ -276,6 +276,13 @@
                     </select>
                 </div>
 
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Filial</label>
+                    <select id="filterLuvasFilial" onchange="applyGlobalFilters()" class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                        <option value="Todos">Todas as Filiais</option>
+                    </select>
+                </div>
+
                 <button onclick="clearFilters()" class="self-end bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1">
                     <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                     <span>Limpar</span>
@@ -811,9 +818,22 @@
         function applyGlobalFilters() {
             const yr = document.getElementById('filterYear') ? document.getElementById('filterYear').value : 'Todos';
             const mo = document.getElementById('filterMonth') ? document.getElementById('filterMonth').value : 'Todos';
-            currentFilterState = { year: yr, month: mo };
+            const fil = document.getElementById('filterLuvasFilial') ? document.getElementById('filterLuvasFilial').value : 'Todos';
+            const isGlobal = isGlobalFilial(currentUser);
+            const userFil = getUserAssignedFilial(currentUser, 'COMERCIO');
+
+            currentFilterState = { year: yr, month: mo, filial: fil };
 
             filteredDataset = rawDataset.filter(item => {
+                if (!isGlobal) {
+                    const itemFil = String(item.filial || '').trim().padStart(2, '0');
+                    if (itemFil !== userFil && itemFil !== userFil.replace(/^0+/, '')) return false;
+                } else {
+                    if (fil !== 'Todos') {
+                        const itemFil = String(item.filial || '').trim().padStart(2, '0');
+                        if (itemFil !== fil && itemFil !== fil.replace(/^0+/, '')) return false;
+                    }
+                }
                 if (!item.data_retirada) return false;
                 const d = new Date(item.data_retirada);
                 if (yr !== 'Todos' && d.getFullYear().toString() !== yr) return false;
@@ -826,6 +846,7 @@
         function clearFilters() {
             if (document.getElementById('filterYear')) document.getElementById('filterYear').value = 'Todos';
             if (document.getElementById('filterMonth')) document.getElementById('filterMonth').value = 'Todos';
+            if (document.getElementById('filterLuvasFilial') && isGlobalFilial(currentUser)) document.getElementById('filterLuvasFilial').value = 'Todos';
             applyGlobalFilters();
         }
 
@@ -1229,6 +1250,33 @@
                 compA.innerHTML = opts; compB.innerHTML = opts;
                 if (years.length >= 2) { compA.value = years[1]; compB.value = years[0]; }
                 else if (years.length === 1) { compA.value = years[0]; compB.value = years[0]; }
+            }
+
+            // Dropdown de Filial
+            const filterFil = document.getElementById('filterLuvasFilial');
+            if (filterFil) {
+                const isGlobal = isGlobalFilial(currentUser);
+                const userFil = getUserAssignedFilial(currentUser, 'COMERCIO');
+
+                if (isGlobal) {
+                    filterFil.disabled = false;
+                    filterFil.className = "bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer";
+                    const curVal = filterFil.value || 'Todos';
+                    const list = getCachedFiliaisList();
+                    let opts = `<option value="Todos">Todas as Filiais</option>`;
+                    list.forEach(f => {
+                        if (f.num_filial === '00') return;
+                        const fNum = String(f.num_filial).padStart(2, '0');
+                        opts += `<option value="${fNum}" ${curVal === fNum ? 'selected' : ''}>${fNum} - ${f.nome_filial}</option>`;
+                    });
+                    filterFil.innerHTML = opts;
+                } else {
+                    filterFil.disabled = true;
+                    filterFil.className = "bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600 rounded-xl px-3 py-2 cursor-not-allowed opacity-80";
+                    const filName = getFilialDisplayName(userFil, 'comercio');
+                    filterFil.innerHTML = `<option value="${userFil}" selected>${filName}</option>`;
+                    filterFil.value = userFil;
+                }
             }
         }
 

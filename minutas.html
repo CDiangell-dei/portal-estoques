@@ -375,6 +375,13 @@
                     </select>
                 </div>
 
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Filial</label>
+                    <select id="filterMinutaFilial" onchange="applyMinutaGlobalFilters()" class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                        <option value="Todos">Todas as Filiais</option>
+                    </select>
+                </div>
+
                 <button onclick="clearMinutaFilters()" class="self-end bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1">
                     <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                     <span>Limpar</span>
@@ -931,23 +938,64 @@
         }
 
         function populateFiliaisDropdowns() {
-            const selects = [document.getElementById('minutaOrcamentoFilial'), document.getElementById('editMinutaOrcFilial')];
-            selects.forEach(sel => {
-                if (sel) {
-                    let opts = `<option value="" disabled selected>Filial...</option>`;
-                    const list = [
-                        { num_filial: '01', nome_filial: 'Alvorada' },
-                        { num_filial: '02', nome_filial: 'Matriz CD' },
-                        { num_filial: '04', nome_filial: 'Raiz' },
-                        { num_filial: '05', nome_filial: 'Cidade Nova' },
-                        { num_filial: '06', nome_filial: 'Jorge Teixeira' }
-                    ];
-                    list.forEach(f => { 
-                        opts += `<option value="${f.num_filial}">${f.num_filial} - ${f.nome_filial}</option>`; 
-                    });
-                    sel.innerHTML = opts;
+            const isGlobal = isGlobalFilial(currentUser);
+            const userFil = getUserAssignedFilial(currentUser, 'COMERCIO');
+
+            const list = getCachedFiliaisList();
+
+            const formSelects = [
+                { el: document.getElementById('minutaOrcamentoFilial'), isEdit: false },
+                { el: document.getElementById('editMinutaOrcFilial'), isEdit: true }
+            ];
+
+            formSelects.forEach(({ el, isEdit }) => {
+                if (el) {
+                    if (isGlobal) {
+                        el.disabled = false;
+                        el.className = isEdit 
+                            ? "w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer"
+                            : "w-2/5 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer";
+                        let opts = `<option value="" disabled selected>Filial...</option>`;
+                        list.forEach(f => {
+                            if (f.num_filial === '00') return;
+                            const fNum = String(f.num_filial).padStart(2, '0');
+                            opts += `<option value="${fNum}">${fNum} - ${f.nome_filial}</option>`;
+                        });
+                        el.innerHTML = opts;
+                    } else {
+                        el.disabled = true;
+                        el.className = isEdit 
+                            ? "w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-600 cursor-not-allowed opacity-80"
+                            : "w-2/5 bg-slate-100 border border-slate-200 rounded-xl py-2.5 px-2 text-xs font-bold text-slate-600 cursor-not-allowed opacity-80";
+                        const filName = getFilialDisplayName(userFil, 'comercio');
+                        el.innerHTML = `<option value="${userFil}" selected>${filName}</option>`;
+                        el.value = userFil;
+                    }
                 }
             });
+
+            // Dropdown de Filtro Global
+            const filterFil = document.getElementById('filterMinutaFilial');
+            if (filterFil) {
+                if (isGlobal) {
+                    filterFil.disabled = false;
+                    filterFil.className = "bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer";
+                    const curVal = filterFil.value || 'Todos';
+                    let opts = `<option value="Todos">Todas as Filiais</option>`;
+                    list.forEach(f => {
+                        if (f.num_filial === '00') return;
+                        const fNum = String(f.num_filial).padStart(2, '0');
+                        opts += `<option value="${fNum}" ${curVal === fNum ? 'selected' : ''}>${fNum} - ${f.nome_filial}</option>`;
+                    });
+                    filterFil.innerHTML = opts;
+                } else {
+                    filterFil.disabled = true;
+                    filterFil.className = "bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600 rounded-xl px-3 py-2 cursor-not-allowed opacity-80";
+                    const filName = getFilialDisplayName(userFil, 'comercio');
+                    filterFil.innerHTML = `<option value="${userFil}" selected>${filName}</option>`;
+                    filterFil.value = userFil;
+                }
+            }
         }
 
         function populateConferentesDropdown() {
@@ -997,9 +1045,22 @@
         function applyMinutaGlobalFilters() {
             const yr = document.getElementById('filterMinutaYear') ? document.getElementById('filterMinutaYear').value : 'Todos';
             const mo = document.getElementById('filterMinutaMonth') ? document.getElementById('filterMinutaMonth').value : 'Todos';
-            currentMinutaFilterState = { year: yr, month: mo };
+            const fil = document.getElementById('filterMinutaFilial') ? document.getElementById('filterMinutaFilial').value : 'Todos';
+            const isGlobal = isGlobalFilial(currentUser);
+            const userFil = getUserAssignedFilial(currentUser, 'COMERCIO');
+
+            currentMinutaFilterState = { year: yr, month: mo, filial: fil };
 
             filteredMinutasDataset = sortMinutasList(rawMinutasDataset.filter(item => {
+                if (!isGlobal) {
+                    const itemFil = String(item.filial || '').trim().padStart(2, '0');
+                    if (itemFil !== userFil && itemFil !== userFil.replace(/^0+/, '')) return false;
+                } else {
+                    if (fil !== 'Todos') {
+                        const itemFil = String(item.filial || '').trim().padStart(2, '0');
+                        if (itemFil !== fil && itemFil !== fil.replace(/^0+/, '')) return false;
+                    }
+                }
                 if (!item.data_entrega) return false;
                 const d = new Date(item.data_entrega);
                 if (yr !== 'Todos' && d.getFullYear().toString() !== yr) return false;
@@ -1012,6 +1073,7 @@
         function clearMinutaFilters() {
             if (document.getElementById('filterMinutaYear')) document.getElementById('filterMinutaYear').value = 'Todos';
             if (document.getElementById('filterMinutaMonth')) document.getElementById('filterMinutaMonth').value = 'Todos';
+            if (document.getElementById('filterMinutaFilial') && isGlobalFilial(currentUser)) document.getElementById('filterMinutaFilial').value = 'Todos';
             applyMinutaGlobalFilters();
         }
 

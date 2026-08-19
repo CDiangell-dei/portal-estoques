@@ -439,6 +439,12 @@
             const loader = document.getElementById('globalLoader');
             if (loader) loader.classList.remove('hidden');
             
+            try {
+                await fetchFiliais(true);
+            } catch (e) {
+                console.warn("Erro ao carregar filiais:", e);
+            }
+
             if (!window.currentAdminPassword) {
                 const saved = sessionStorage.getItem('amazon_user_pwd');
                 if (saved) {
@@ -512,12 +518,16 @@
 
             filtered.sort((a, b) => (parseInt(a.matricula, 10) || 0) - (parseInt(b.matricula, 10) || 0));
 
-            const filiaisList = [
-                { num_filial: '01', nome_filial: 'Alvorada' },
-                { num_filial: '02', nome_filial: 'Matriz CD' },
-                { num_filial: '04', nome_filial: 'Raiz' },
-                { num_filial: '05', nome_filial: 'Cidade Nova' },
-                { num_filial: '06', nome_filial: 'Jorge Teixeira' }
+            const filiaisList = getCachedFiliaisList();
+
+            const indList = [
+                { num: '00', name: '00 - Geral' },
+                { num: '01', name: '01 - Telhas' },
+                { num: '02', name: '02 - Tubos' },
+                { num: '03', name: '03 - Perfis' },
+                { num: '04', name: '04 - Matéria Prima' },
+                { num: '05', name: '05 - Sucata' },
+                { num: '06', name: '06 - Jorge Teixeira' }
             ];
 
             filtered.forEach(u => {
@@ -527,13 +537,30 @@
                 let filialComOptionsHtml = '';
                 let filialIndOptionsHtml = '';
 
-                filiaisList.forEach(f => {
-                    const isCom = String(f.num_filial) === String(u.filial_comercio || u.filial_atual || '01') ? 'selected' : '';
-                    filialComOptionsHtml += `<option value="${f.num_filial}" ${isCom}>${f.num_filial} - ${f.nome_filial}</option>`;
+                const userComFilial = String(u.filial_comercio || u.filial_atual || '01').padStart(2, '0');
+                let userComFound = false;
 
-                    const isInd = String(f.num_filial) === String(u.filial_industria || '06') ? 'selected' : '';
-                    filialIndOptionsHtml += `<option value="${f.num_filial}" ${isInd}>${f.num_filial}</option>`;
+                filiaisList.forEach(f => {
+                    const fNum = String(f.num_filial).padStart(2, '0');
+                    const isCom = fNum === userComFilial;
+                    if (isCom) userComFound = true;
+                    filialComOptionsHtml += `<option value="${fNum}" ${isCom ? 'selected' : ''}>${fNum} - ${f.nome_filial}</option>`;
                 });
+
+                if (!userComFound && userComFilial) {
+                    filialComOptionsHtml += `<option value="${userComFilial}" selected>${getFilialDisplayName(userComFilial, 'comercio')}</option>`;
+                }
+
+                const userIndFilial = String(u.filial_industria || '06').padStart(2, '0');
+                let userIndFound = false;
+                indList.forEach(f => {
+                    const isInd = f.num === userIndFilial;
+                    if (isInd) userIndFound = true;
+                    filialIndOptionsHtml += `<option value="${f.num}" ${isInd ? 'selected' : ''}>${f.num}</option>`;
+                });
+                if (!userIndFound && userIndFilial) {
+                    filialIndOptionsHtml += `<option value="${userIndFilial}" selected>${userIndFilial}</option>`;
+                }
 
                 const temSenha = u.tem_senha === true || (u.senha && String(u.senha).trim() !== '');
 

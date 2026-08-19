@@ -165,6 +165,7 @@
                             <option value="04">04 - Raiz</option>
                             <option value="05">05 - Cidade Nova</option>
                             <option value="06">06 - Jorge Teixeira</option>
+                            <option value="12">12 - Boa Vista</option>
                         </select>
                     </div>
                 </div>
@@ -863,14 +864,22 @@
         async function loadHomeData() {
             if (!supabaseClient) return;
 
-            const userFilialStr = currentUser ? String(currentUser.filial_atual).trim().replace(/^0+/, '') : '1';
+            const isGlobal = isGlobalFilial(currentUser);
+            const userFilialPad = getUserAssignedFilial(currentUser, 'COMERCIO');
+            const userFilialRaw = String(userFilialPad).replace(/^0+/, '');
 
             try {
-                // 1. Contagens recentes na filial do usuário
-                const { data: confData } = await supabaseClient.from('contagem_comercio')
+                // 1. Contagens recentes
+                const { data: confDataRaw } = await supabaseClient.from('contagem_comercio')
                     .select('*')
                     .order('created_at', { ascending: false })
-                    .limit(20);
+                    .limit(40);
+
+                const confData = (confDataRaw || []).filter(c => {
+                    if (isGlobal) return true;
+                    const f = String(c.filial || '').trim();
+                    return f === userFilialPad || f === userFilialRaw;
+                });
 
                 const feedBody = document.getElementById('homeRecentActivityFeed');
                 if (feedBody) {
@@ -917,9 +926,24 @@
             }
         }
 
+        function populateRegisterFiliais() {
+            const sel = document.getElementById('regFilial');
+            if (!sel) return;
+            const list = getCachedFiliaisList();
+            let opts = '';
+            list.forEach(f => {
+                if (f.num_filial === '00') return;
+                const fNum = String(f.num_filial).padStart(2, '0');
+                opts += `<option value="${fNum}">${fNum} - ${f.nome_filial}</option>`;
+            });
+            if (opts) sel.innerHTML = opts;
+        }
+
         window.onload = async function() {
             initTheme();
             initSupabase();
+            populateRegisterFiliais();
+            fetchFiliais().then(() => populateRegisterFiliais()).catch(console.warn);
 
             const user = getCurrentUser();
             if (user && user.matricula) {

@@ -10,21 +10,149 @@ let supabaseClient = null;
 let currentUser = null;
 let isSyncing = false;
 
-const DIC_FILIAIS_MAP = {
+const DEFAULT_FILIAIS_LIST = [
+    { num_filial: '00', nome_filial: 'Geral' },
+    { num_filial: '01', nome_filial: 'Alvorada' },
+    { num_filial: '02', nome_filial: 'Matriz CD' },
+    { num_filial: '04', nome_filial: 'Raiz' },
+    { num_filial: '05', nome_filial: 'Cidade Nova' },
+    { num_filial: '06', nome_filial: 'Jorge Teixeira' },
+    { num_filial: '12', nome_filial: 'Boa Vista' }
+];
+
+let DIC_FILIAIS_MAP = {
+    0: "00 - Geral",
+    "00": "00 - Geral",
     1: "01 - Alvorada",
+    "01": "01 - Alvorada",
     2: "02 - Matriz CD",
+    "02": "02 - Matriz CD",
     4: "04 - Raiz",
+    "04": "04 - Raiz",
     5: "05 - Cidade Nova",
-    6: "06 - Jorge Teixeira"
+    "05": "05 - Cidade Nova",
+    6: "06 - Jorge Teixeira",
+    "06": "06 - Jorge Teixeira",
+    12: "12 - Boa Vista",
+    "12": "12 - Boa Vista"
 };
 
 const DIC_FILIAIS_INDUSTRIA = {
+    0: "00 - Todas as Filiais",
+    "00": "00 - Todas as Filiais",
     1: "01 - Telhas",
     2: "02 - Tubos",
     3: "03 - Perfis",
     4: "04 - Matéria Prima",
-    5: "05 - Sucata"
+    5: "05 - Sucata",
+    6: "06 - Jorge Teixeira"
 };
+
+let cachedFiliaisList = null;
+
+function syncDicFiliaisMap(list) {
+    if (!Array.isArray(list)) return;
+    list.forEach(f => {
+        const rawNum = String(f.num_filial || '').trim();
+        if (!rawNum) return;
+        const numStr = rawNum.length === 1 ? rawNum.padStart(2, '0') : rawNum;
+        const numInt = parseInt(rawNum, 10);
+        const name = `${numStr} - ${f.nome_filial}`;
+        DIC_FILIAIS_MAP[numStr] = name;
+        DIC_FILIAIS_MAP[rawNum] = name;
+        if (!isNaN(numInt)) {
+            DIC_FILIAIS_MAP[numInt] = name;
+        }
+    });
+}
+
+function getCachedFiliaisList() {
+    if (cachedFiliaisList && cachedFiliaisList.length > 0) {
+        return cachedFiliaisList;
+    }
+    try {
+        const raw = localStorage.getItem('amazon_filiais_cache');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                cachedFiliaisList = parsed;
+                syncDicFiliaisMap(cachedFiliaisList);
+                return cachedFiliaisList;
+            }
+        }
+    } catch (e) {
+        console.warn("Erro ao ler cache de filiais:", e);
+    }
+    cachedFiliaisList = [...DEFAULT_FILIAIS_LIST];
+    syncDicFiliaisMap(cachedFiliaisList);
+    return cachedFiliaisList;
+}
+
+async function fetchFiliais(forceRefresh = false) {
+    if (!supabaseClient) initSupabase();
+    if (!supabaseClient) return getCachedFiliaisList();
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('filiais')
+            .select('*')
+            .order('num_filial');
+        
+        if (error) {
+            console.warn("Erro ao buscar filiais do Supabase:", error);
+            return getCachedFiliaisList();
+        }
+
+        if (data && Array.isArray(data) && data.length > 0) {
+            const normalized = data.map(f => ({
+                id: f.id,
+                num_filial: String(f.num_filial || '').padStart(2, '0'),
+                nome_filial: f.nome_filial || ''
+            }));
+
+            normalized.sort((a, b) => {
+                const aNum = parseInt(a.num_filial, 10) || 0;
+                const bNum = parseInt(b.num_filial, 10) || 0;
+                return aNum - bNum;
+            });
+
+            cachedFiliaisList = normalized;
+            try {
+                localStorage.setItem('amazon_filiais_cache', JSON.stringify(normalized));
+            } catch (e) {}
+            syncDicFiliaisMap(normalized);
+            return cachedFiliaisList;
+        }
+    } catch (err) {
+        console.warn("Falha ao buscar filiais:", err);
+    }
+    return getCachedFiliaisList();
+}
+
+/**
+ * Retorna true se o usuário logado possui filial '00' (acesso global a todas as filiais).
+ */
+function isGlobalFilial(user = null) {
+    const usr = user || getCurrentUser();
+    if (!usr) return false;
+    const f = String(usr.filial_atual || usr.filial_comercio || usr.filial || '').trim();
+    return f === '00' || f === '0' || f === 'TODAS' || f === 'ALL';
+}
+
+/**
+ * Retorna a filial atribuída ao usuário para o setor especificado.
+ */
+function getUserAssignedFilial(user = null, sector = 'COMERCIO') {
+    const usr = user || getCurrentUser();
+    if (!usr) return '01';
+    let f = '';
+    if (sector === 'INDUSTRIA') {
+        f = String(usr.filial_industria || usr.filial_atual || '01').trim();
+    } else {
+        f = String(usr.filial_comercio || usr.filial_atual || '01').trim();
+    }
+    return f.padStart(2, '0');
+}
 
 // --- INICIALIZAÇÃO DO SUPABASE ---
 function initSupabase() {
@@ -86,6 +214,7 @@ function clearUserSession() {
  */
 async function checkAuth(requiredRole = null) {
     initSupabase();
+    await fetchFiliais();
     const user = getCurrentUser();
 
     if (!user || !user.matricula) {
@@ -237,13 +366,16 @@ function handleLogout() {
 }
 
 function getFilialDisplayName(numFilial, context = 'comercio') {
-    if (!numFilial) return "01 - Alvorada";
-    const num = parseInt(numFilial, 10);
+    if (numFilial === undefined || numFilial === null || numFilial === '') return "01 - Alvorada";
+    const str = String(numFilial).toUpperCase().trim();
+    if (str === 'ALL' || str === 'TODAS') return "Todas as Filiais";
     const padStr = String(numFilial).padStart(2, '0');
+    const num = parseInt(str, 10);
+    if (str === '00' || str === '0') return DIC_FILIAIS_MAP['00'] || "00 - Geral";
     if (context === 'industria') {
-        return DIC_FILIAIS_INDUSTRIA[num] || `Filial ${padStr}`;
+        return DIC_FILIAIS_INDUSTRIA[padStr] || DIC_FILIAIS_INDUSTRIA[num] || `Filial ${padStr}`;
     }
-    return DIC_FILIAIS_MAP[num] || `Filial ${padStr}`;
+    return DIC_FILIAIS_MAP[padStr] || DIC_FILIAIS_MAP[num] || DIC_FILIAIS_MAP[str] || `Filial ${padStr}`;
 }
 
 // --- ALERTAS TOAST ---
