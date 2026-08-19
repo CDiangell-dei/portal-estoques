@@ -288,7 +288,7 @@
         </div>
 
         <!-- CARDS KPIS DE VALIDADE -->
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 no-print">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 no-print">
             <div class="bg-white p-5 rounded-3xl border border-rose-200 shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-[10px] font-black text-rose-600 uppercase tracking-wider">Lotes Vencidos (🔴)</p>
@@ -332,11 +332,23 @@
                     <i data-lucide="boxes" class="w-6 h-6"></i>
                 </div>
             </div>
+
+            <!-- NOVO KPI: DIVERGÊNCIAS SALDO X LOTES -->
+            <div id="cardKpiDivergencias" onclick="filterByDivergenceOnly()" class="bg-white p-5 rounded-3xl border border-purple-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-purple-400 hover:shadow-md transition-all group" title="Clique para filtrar apenas materiais com divergência">
+                <div>
+                    <p class="text-[10px] font-black text-purple-700 uppercase tracking-wider group-hover:text-purple-900 transition-colors">Divergências de Saldo (⚠️)</p>
+                    <h3 id="kpiValidadeDivergencias" class="text-2xl font-black text-purple-700 mt-1">0</h3>
+                    <p id="kpiValidadeDivergenciasSub" class="text-[11px] text-slate-500 font-semibold mt-0.5">Lotes ≠ Saldo Sistema</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <i data-lucide="scale" class="w-6 h-6"></i>
+                </div>
+            </div>
         </div>
 
         <!-- FILTROS DO CONTROLE DE VALIDADE -->
         <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3 no-print">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Filial</label>
                     <select id="valFilterFilial" onchange="applyValidadeFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-500">
@@ -359,6 +371,16 @@
                     </select>
                 </div>
                 <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Conferência (Lotes x Saldo)</label>
+                    <select id="valFilterSaldoConferencia" onchange="applyValidadeFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-500">
+                        <option value="ALL">Todas as Situações</option>
+                        <option value="DIVERGENCIA">⚠️ Apenas Divergências (Lotes ≠ Saldo)</option>
+                        <option value="FALTA_LOTE">🟡 Falta Contabilizar Lote (Lotes &lt; Saldo)</option>
+                        <option value="EXCEDENTE">🔴 Lotes Excedentes (Lotes &gt; Saldo)</option>
+                        <option value="ALINHADO">🟢 Saldo Alinhado (Lotes = Saldo)</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buscar Material / Lote</label>
                     <input type="text" id="valFilterSearch" oninput="applyValidadeFilters()" placeholder="Código, descrição, lote ou embalagem..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-500">
                 </div>
@@ -372,17 +394,18 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
-                            <th class="px-4 py-3">Filial</th>
-                            <th class="px-4 py-3">Armazém</th>
-                            <th class="px-4 py-3">Produto</th>
+                            <th class="px-3 py-3">Filial</th>
+                            <th class="px-3 py-3">Armazém</th>
+                            <th class="px-3 py-3">Produto</th>
                             <th class="px-4 py-3">Descrição do Produto</th>
-                            <th class="px-4 py-3">Lote</th>
-                            <th class="px-4 py-3 text-right">Qtd. Lote</th>
-                            <th class="px-4 py-3">Embalagem / Tipo</th>
-                            <th class="px-4 py-3 text-center">Fabricação</th>
-                            <th class="px-4 py-3 text-center">Validade (Mês/Ano)</th>
-                            <th class="px-4 py-3 text-center">Status</th>
-                            <th class="px-4 py-3 text-center">Ações</th>
+                            <th class="px-3 py-3">Lote</th>
+                            <th class="px-3 py-3 text-right">Qtd. Lote</th>
+                            <th class="px-4 py-3 text-center min-w-[200px]">Conferência (Lotes x Saldo)</th>
+                            <th class="px-3 py-3">Embalagem</th>
+                            <th class="px-3 py-3 text-center">Fabricação</th>
+                            <th class="px-3 py-3 text-center">Validade (Mês/Ano)</th>
+                            <th class="px-3 py-3 text-center">Status</th>
+                            <th class="px-3 py-3 text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="validadeTableBody">
@@ -441,6 +464,32 @@
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Lote <span class="text-amber-600 font-normal">(Ex: VT145E0322)</span></label>
                         <input type="text" id="valInputLote" oninput="onValidadeCodeOrLoteChange()" placeholder="Identificação do lote" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
                     </div>
+                </div>
+
+                <!-- CARD DE CONFERÊNCIA SALDO X LOTES NO MODAL -->
+                <div id="valSaldoComparisonCard" class="hidden p-3.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-2">
+                    <div class="flex items-center justify-between text-xs font-bold border-b border-slate-200/60 dark:border-slate-700 pb-1.5">
+                        <span class="text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="scale" class="w-4 h-4 text-[#002f6c] dark:text-blue-400"></i>
+                            <span>Saldo no Sistema vs Lotes Cadastrados</span>
+                        </span>
+                        <span id="valModalSaldoStatusBadge" class="text-[10px] font-black"></span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Saldo Sistema</p>
+                            <p id="valModalSaldoSistema" class="font-black text-slate-800 dark:text-slate-100 text-xs mt-0.5">0</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Soma Lotes</p>
+                            <p id="valModalSomaLotes" class="font-black text-[#002f6c] dark:text-blue-400 text-xs mt-0.5">0</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-amber-400 transition-colors" onclick="fillRemainingBalanceToInput()" title="Clique para preencher o campo de quantidade com a diferença necessária">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Diferença</p>
+                            <p id="valModalSaldoRestante" class="font-black text-xs mt-0.5">0</p>
+                        </div>
+                    </div>
+                    <p id="valModalSaldoExplanation" class="text-[10px] text-slate-500 font-semibold leading-tight pt-0.5"></p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -781,6 +830,8 @@
         let rawKnownWarehouses = [];
         let stagedImportRows = [];
 
+        let rawSaldoDataset = [];
+
         function getTargetFilialForSector() {
             if (!currentUser) return '01';
             if (isGlobalFilial(currentUser)) return '00';
@@ -851,41 +902,38 @@
                         ...v,
                         filial: String(v.filial || '01').trim().padStart(2, '0'),
                         armazem: String(v.armazem || '01').trim().padStart(2, '0'),
-                        produto: String(v.produto || '').trim(),
+                        produto: String(v.produto || '').trim().toUpperCase(),
                         lote: String(v.lote || '').trim(),
                         embalagem: String(v.embalagem || '').trim(),
                         quantidade: parseFloat(v.quantidade || 0)
                     }));
                 }
 
-                // 3. Carrega TODOS os armazéns reais em saldo da tabela correspondente via RPC
-                let saldoArmazens = [];
-                try {
-                    const rpcName = currentSector === 'INDUSTRIA' ? 'get_distinct_warehouses_industria' : 'get_distinct_warehouses_comercio';
-                    const { data: rpcWarehouses, error: rpcErr } = await supabaseClient.rpc(rpcName);
-                    if (!rpcErr && rpcWarehouses && Array.isArray(rpcWarehouses)) {
-                        saldoArmazens = rpcWarehouses.map(w => String(w).trim().padStart(2, '0')).filter(Boolean);
+                // 3. Carrega Saldos do ERP para Comparação Lotes x Saldo Sistema
+                let saldoAll = [];
+                let fromSaldo = 0, stepSaldo = 1000, fetchMoreSaldo = true;
+                while (fetchMoreSaldo) {
+                    let sQuery = supabaseClient.from(saldoTable).select('produto, filial, armazem, quantidade');
+                    if (!isGlobalFilial(currentUser) && targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
+                        sQuery = sQuery.eq('filial', targetFilial);
                     }
-                } catch (e) {
-                    console.warn("RPC get_distinct_warehouses fallback:", e);
-                }
-
-                // Fallback paginado caso o RPC falhe
-                if (saldoArmazens.length === 0) {
-                    let fromSaldo = 0, stepSaldo = 1000, fetchMoreSaldo = true;
-                    while (fetchMoreSaldo) {
-                        const { data: directData, error: dErr } = await supabaseClient.from(saldoTable).select('armazem').range(fromSaldo, fromSaldo + stepSaldo - 1);
-                        if (dErr || !directData || directData.length === 0) {
-                            fetchMoreSaldo = false;
-                        } else {
-                            directData.forEach(d => {
-                                if (d.armazem) saldoArmazens.push(String(d.armazem).trim().padStart(2, '0'));
-                            });
-                            if (directData.length < stepSaldo) fetchMoreSaldo = false; else fromSaldo += stepSaldo;
-                        }
+                    const { data: directData, error: dErr } = await sQuery.range(fromSaldo, fromSaldo + stepSaldo - 1);
+                    if (dErr || !directData || directData.length === 0) {
+                        fetchMoreSaldo = false;
+                    } else {
+                        saldoAll = saldoAll.concat(directData);
+                        if (directData.length < stepSaldo) fetchMoreSaldo = false; else fromSaldo += stepSaldo;
                     }
                 }
 
+                rawSaldoDataset = (saldoAll || []).map(s => ({
+                    produto: String(s.produto || '').trim().toUpperCase(),
+                    filial: String(s.filial || '01').trim().padStart(2, '0'),
+                    armazem: String(s.armazem || '01').trim().padStart(2, '0'),
+                    quantidade: parseFloat(s.quantidade || 0)
+                }));
+
+                const saldoArmazens = [...new Set(rawSaldoDataset.map(s => s.armazem))].filter(Boolean);
                 const valArmazens = (rawValidadeDataset || [])
                     .map(v => String(v.armazem || '').trim().padStart(2, '0'))
                     .filter(Boolean);
@@ -896,6 +944,7 @@
             } catch (err) {
                 console.error("Erro ao carregar dados:", err);
                 rawValidadeDataset = [];
+                rawSaldoDataset = [];
             } finally {
                 if (loader) loader.classList.add('hidden');
             }
@@ -904,6 +953,90 @@
             populateProductsDatalist();
             populateEmbalagensDatalist();
             applyValidadeFilters();
+        }
+
+        /**
+         * Retorna o saldo do ERP no armazém da filial para um determinado produto
+         */
+        function getSystemBalance(filial, armazem, produto) {
+            const filPad = String(filial || '01').trim().padStart(2, '0');
+            const filRaw = String(filial || '1').trim().replace(/^0+/, '');
+            const armPad = String(armazem || '01').trim().padStart(2, '0');
+            const armRaw = String(armazem || '1').trim().replace(/^0+/, '');
+            const prod = String(produto || '').trim().toUpperCase();
+
+            if (!rawSaldoDataset || rawSaldoDataset.length === 0) return 0;
+
+            const row = rawSaldoDataset.find(s => 
+                (s.filial === filPad || s.filial === filRaw) &&
+                (s.armazem === armPad || s.armazem === armRaw) &&
+                s.produto === prod
+            );
+
+            return row ? parseFloat(row.quantidade || 0) : 0;
+        }
+
+        /**
+         * Retorna a somatória de todos os lotes cadastrados para um produto na filial e armazém
+         */
+        function getTotalBatchesQuantity(filial, armazem, produto) {
+            const filPad = String(filial || '01').trim().padStart(2, '0');
+            const filRaw = String(filial || '1').trim().replace(/^0+/, '');
+            const armPad = String(armazem || '01').trim().padStart(2, '0');
+            const armRaw = String(armazem || '1').trim().replace(/^0+/, '');
+            const prod = String(produto || '').trim().toUpperCase();
+
+            if (!rawValidadeDataset || rawValidadeDataset.length === 0) return 0;
+
+            let total = 0;
+            rawValidadeDataset.forEach(v => {
+                const vFil = String(v.filial || '').trim();
+                const vArm = String(v.armazem || '').trim();
+                const vProd = String(v.produto || '').trim().toUpperCase();
+
+                if ((vFil === filPad || vFil === filRaw) &&
+                    (vArm === armPad || vArm === armRaw) &&
+                    vProd === prod) {
+                    total += parseFloat(v.quantidade || 0);
+                }
+            });
+
+            return total;
+        }
+
+        /**
+         * Retorna a comparação completa entre Soma dos Lotes e Saldo no Sistema
+         */
+        function getBalanceComparison(filial, armazem, produto) {
+            const totalLotes = getTotalBatchesQuantity(filial, armazem, produto);
+            const saldoSistema = getSystemBalance(filial, armazem, produto);
+            const diff = totalLotes - saldoSistema;
+
+            let status = 'ALINHADO';
+            if (Math.abs(diff) > 0.0001) {
+                if (saldoSistema === 0 && totalLotes > 0) {
+                    status = 'EXCEDENTE';
+                } else if (diff < 0) {
+                    status = 'FALTA_LOTE';
+                } else {
+                    status = 'EXCEDENTE';
+                }
+            }
+
+            return {
+                totalLotes,
+                saldoSistema,
+                diff,
+                status
+            };
+        }
+
+        function filterByDivergenceOnly() {
+            const sel = document.getElementById('valFilterSaldoConferencia');
+            if (sel) {
+                sel.value = (sel.value === 'DIVERGENCIA') ? 'ALL' : 'DIVERGENCIA';
+                applyValidadeFilters();
+            }
         }
 
         function populateValidadeFiltersDropdowns() {
@@ -1082,6 +1215,7 @@
             const filial = document.getElementById('valFilterFilial') ? document.getElementById('valFilterFilial').value : 'ALL';
             const armazem = document.getElementById('valFilterArmazem') ? document.getElementById('valFilterArmazem').value : 'ALL';
             const statusFilter = document.getElementById('valFilterStatus') ? document.getElementById('valFilterStatus').value : 'ALL';
+            const confFilter = document.getElementById('valFilterSaldoConferencia') ? document.getElementById('valFilterSaldoConferencia').value : 'ALL';
             const search = document.getElementById('valFilterSearch') ? document.getElementById('valFilterSearch').value.trim().toLowerCase() : '';
 
             const sb1Map = {};
@@ -1096,6 +1230,12 @@
                 
                 const status = getValidadeStatus(v.data_validade);
                 if (statusFilter !== 'ALL' && status !== statusFilter) return false;
+
+                const comp = getBalanceComparison(v.filial, v.armazem, v.produto);
+                if (confFilter === 'DIVERGENCIA' && comp.status === 'ALINHADO') return false;
+                if (confFilter === 'FALTA_LOTE' && comp.status !== 'FALTA_LOTE') return false;
+                if (confFilter === 'EXCEDENTE' && comp.status !== 'EXCEDENTE') return false;
+                if (confFilter === 'ALINHADO' && comp.status !== 'ALINHADO') return false;
 
                 if (search) {
                     const desc = (sb1Map[v.produto] || '').toLowerCase();
@@ -1130,15 +1270,48 @@
                 totalQtd += parseFloat(v.quantidade || 0);
             });
 
+            // Contagem de divergências únicas por material + armazém + filial
+            const uniqueMaterialsMap = new Map();
+            rawValidadeDataset.forEach(v => {
+                const key = `${v.filial}__${v.armazem}__${v.produto.toUpperCase()}`;
+                if (!uniqueMaterialsMap.has(key)) {
+                    const comp = getBalanceComparison(v.filial, v.armazem, v.produto);
+                    uniqueMaterialsMap.set(key, comp);
+                }
+            });
+
+            let divergenciasCount = 0;
+            let faltaCount = 0;
+            let excessoCount = 0;
+            uniqueMaterialsMap.forEach(comp => {
+                if (comp.status !== 'ALINHADO') {
+                    divergenciasCount++;
+                    if (comp.status === 'FALTA_LOTE') faltaCount++;
+                    else excessoCount++;
+                }
+            });
+
             const kpiV = document.getElementById('kpiValidadeVencidos');
             const kpiA = document.getElementById('kpiValidadeAVencer');
             const kpiOK = document.getElementById('kpiValidadeOK');
             const kpiTotal = document.getElementById('kpiValidadeTotalQtd');
+            const kpiDiv = document.getElementById('kpiValidadeDivergencias');
+            const kpiDivSub = document.getElementById('kpiValidadeDivergenciasSub');
 
             if (kpiV) kpiV.innerText = vencidosCount.toLocaleString('pt-BR');
             if (kpiA) kpiA.innerText = aVencerCount.toLocaleString('pt-BR');
             if (kpiOK) kpiOK.innerText = okCount.toLocaleString('pt-BR');
             if (kpiTotal) kpiTotal.innerText = totalQtd.toLocaleString('pt-BR');
+            if (kpiDiv) {
+                kpiDiv.innerText = divergenciasCount.toLocaleString('pt-BR');
+                if (divergenciasCount === 0) {
+                    kpiDiv.className = "text-2xl font-black text-emerald-600 mt-1";
+                    if (kpiDivSub) kpiDivSub.innerText = "Saldos 100% Alinhados";
+                } else {
+                    kpiDiv.className = "text-2xl font-black text-purple-700 mt-1";
+                    if (kpiDivSub) kpiDivSub.innerText = `${faltaCount} falta(m) | ${excessoCount} sobra(m)`;
+                }
+            }
         }
 
         function renderValidadeTable() {
@@ -1156,7 +1329,7 @@
 
             if (filteredValidadeDataset.length === 0) {
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="11" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum registro de lote ou validade encontrado com os filtros selecionados.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="12" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum registro de lote ou validade encontrado com os filtros selecionados.</td></tr>`;
                 }
                 if (mobileList) {
                     mobileList.innerHTML = `<div class="p-8 text-center text-xs font-bold text-slate-400 bg-white rounded-2xl border border-slate-200">Nenhum registro de lote ou validade encontrado com os filtros selecionados.</div>`;
@@ -1191,24 +1364,52 @@
                     ? `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">${item.embalagem}</span>` 
                     : `<span class="text-slate-300 text-[10px]">-</span>`;
 
+                // Comparação da Soma dos Lotes x Saldo Sistema do Armazém
+                const comp = getBalanceComparison(item.filial, item.armazem, item.produto);
+                let conferenciaBadgeHtml = '';
+                if (comp.status === 'ALINHADO') {
+                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200" title="Soma dos lotes bate perfeitamente com o saldo do sistema (${comp.saldoSistema.toLocaleString('pt-BR')})"><i data-lucide="check" class="w-3 h-3"></i> Alinhado</span>`;
+                } else if (comp.status === 'FALTA_LOTE') {
+                    const diffAbs = Math.abs(comp.diff).toLocaleString('pt-BR');
+                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 animate-pulse" title="Falta cadastrar lote de ${diffAbs} para igualar ao saldo no sistema (${comp.saldoSistema.toLocaleString('pt-BR')})"><i data-lucide="alert-circle" class="w-3 h-3 text-amber-700"></i> Falta ${diffAbs}</span>`;
+                } else {
+                    const diffAbs = comp.diff.toLocaleString('pt-BR');
+                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-900 border border-rose-300 animate-pulse" title="Soma dos lotes (${comp.totalLotes.toLocaleString('pt-BR')}) excede o saldo no sistema (${comp.saldoSistema.toLocaleString('pt-BR')}) em +${diffAbs}"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-700"></i> Excede +${diffAbs}</span>`;
+                }
+
                 if (tbody) {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 border-b border-slate-100 text-slate-700 transition-colors";
                     tr.innerHTML = `
-                        <td class="px-4 py-3 text-xs font-bold text-slate-500">${item.filial}</td>
-                        <td class="px-4 py-3 text-xs font-bold text-slate-700">${armLabel}</td>
-                        <td class="px-4 py-3 text-xs font-bold text-slate-900">${item.produto}</td>
+                        <td class="px-3 py-3 text-xs font-bold text-slate-500">${item.filial}</td>
+                        <td class="px-3 py-3 text-xs font-bold text-slate-700">${armLabel}</td>
+                        <td class="px-3 py-3 text-xs font-bold text-slate-900">${item.produto}</td>
                         <td class="px-4 py-3 text-xs font-black text-slate-800">
                             <div>${desc}</div>
                             ${item.observacao ? `<div class="text-[10px] text-slate-400 font-bold italic mt-0.5">${item.observacao}</div>` : ''}
                         </td>
-                        <td class="px-4 py-3 text-xs font-bold">${loteBadge}</td>
-                        <td class="px-4 py-3 text-right text-xs font-black text-[#002f6c]">${item.quantidade ? item.quantidade.toLocaleString('pt-BR') : '0'}</td>
-                        <td class="px-4 py-3 text-xs font-bold">${embalagemBadge}</td>
-                        <td class="px-4 py-3 text-center text-xs font-bold text-slate-600">${fabDisplay}</td>
-                        <td class="px-4 py-3 text-center text-xs font-black text-slate-900">${valDisplay}</td>
-                        <td class="px-4 py-3 text-center">${badgeHtml}</td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-3 py-3 text-xs font-bold">${loteBadge}</td>
+                        <td class="px-3 py-3 text-right text-xs font-black text-[#002f6c]">${item.quantidade ? item.quantidade.toLocaleString('pt-BR') : '0'}</td>
+                        <td class="px-4 py-3 text-xs">
+                            <div class="flex flex-col gap-0.5 bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700">
+                                <div class="flex items-center justify-between text-[10px] font-bold">
+                                    <span class="text-slate-500 dark:text-slate-400">Soma Lotes:</span>
+                                    <span class="font-black text-[#002f6c] dark:text-blue-400">${comp.totalLotes.toLocaleString('pt-BR')}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-[10px] font-bold">
+                                    <span class="text-slate-500 dark:text-slate-400">Saldo Sistema:</span>
+                                    <span class="font-black text-slate-800 dark:text-slate-200">${comp.saldoSistema.toLocaleString('pt-BR')}</span>
+                                </div>
+                                <div class="mt-1 flex justify-center">
+                                    ${conferenciaBadgeHtml}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 text-xs font-bold">${embalagemBadge}</td>
+                        <td class="px-3 py-3 text-center text-xs font-bold text-slate-600">${fabDisplay}</td>
+                        <td class="px-3 py-3 text-center text-xs font-black text-slate-900">${valDisplay}</td>
+                        <td class="px-3 py-3 text-center">${badgeHtml}</td>
+                        <td class="px-3 py-3 text-center">
                             <div class="flex items-center justify-center gap-1.5">
                                 <button type="button" onclick="openEditValidadeModal(${item.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Editar Lote">
                                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
@@ -1260,6 +1461,27 @@
                             <div>
                                 <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Validade</span>
                                 <span class="font-black text-slate-900 text-xs">${valDisplay}</span>
+                            </div>
+                        </div>
+
+                        <!-- Card de Comparação Saldo no Mobile -->
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+                            <div class="grid grid-cols-3 gap-1 text-center text-[10px] font-bold">
+                                <div class="bg-white p-1 rounded-lg border border-slate-100">
+                                    <span class="text-slate-400 block text-[9px]">Qtd. Lote</span>
+                                    <b class="text-[#002f6c]">${item.quantidade ? item.quantidade.toLocaleString('pt-BR') : '0'}</b>
+                                </div>
+                                <div class="bg-white p-1 rounded-lg border border-slate-100">
+                                    <span class="text-slate-400 block text-[9px]">Soma Lotes</span>
+                                    <b class="text-slate-800">${comp.totalLotes.toLocaleString('pt-BR')}</b>
+                                </div>
+                                <div class="bg-white p-1 rounded-lg border border-slate-100">
+                                    <span class="text-slate-400 block text-[9px]">Saldo Sistema</span>
+                                    <b class="text-slate-800">${comp.saldoSistema.toLocaleString('pt-BR')}</b>
+                                </div>
+                            </div>
+                            <div class="flex justify-center pt-0.5">
+                                ${conferenciaBadgeHtml}
                             </div>
                         </div>
 
@@ -1487,6 +1709,8 @@
             const banner = document.getElementById('valExistingLotBanner');
             const currentEditId = document.getElementById('valEditId').value;
 
+            updateModalSaldoComparison();
+
             if (!code || !lote) {
                 if (banner && !currentEditId) banner.classList.add('hidden');
                 return;
@@ -1531,6 +1755,7 @@
             populateProductsDatalist();
             populateEmbalagensDatalist();
             onValidadeCodeInput();
+            updateModalSaldoComparison();
         }
 
         function openEditValidadeModal(id) {
@@ -1549,6 +1774,7 @@
             const val = inp.value.trim().toUpperCase();
             if (!val) {
                 preview.innerHTML = `<span class="text-slate-400">Digite um código ou selecione da lista para buscar...</span>`;
+                updateModalSaldoComparison();
                 return;
             }
 
@@ -1563,6 +1789,93 @@
                 preview.innerHTML = `<span class="text-amber-600 dark:text-amber-400 flex items-center gap-1 font-bold"><i data-lucide="info" class="w-3.5 h-3.5 inline"></i> Código ${val} (Produto Novo / Personalizado)</span>`;
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
+            updateModalSaldoComparison();
+        }
+
+        function updateModalSaldoComparison() {
+            const card = document.getElementById('valSaldoComparisonCard');
+            const elSaldo = document.getElementById('valModalSaldoSistema');
+            const elSoma = document.getElementById('valModalSomaLotes');
+            const elRest = document.getElementById('valModalSaldoRestante');
+            const elBadge = document.getElementById('valModalSaldoStatusBadge');
+            const elExp = document.getElementById('valModalSaldoExplanation');
+            if (!card) return;
+
+            const codeInput = document.getElementById('valInputCodigo');
+            const armazemInput = document.getElementById('valInputArmazem');
+            if (!codeInput || !armazemInput) return;
+
+            const code = codeInput.value.trim().toUpperCase();
+            const armazem = armazemInput.value.trim().padStart(2, '0');
+            const targetFilial = getTargetFilialForSector();
+
+            if (!code || !armazem) {
+                card.classList.add('hidden');
+                return;
+            }
+
+            const comp = getBalanceComparison(targetFilial, armazem, code);
+            card.classList.remove('hidden');
+
+            if (elSaldo) elSaldo.innerText = comp.saldoSistema.toLocaleString('pt-BR');
+            if (elSoma) elSoma.innerText = comp.totalLotes.toLocaleString('pt-BR');
+            
+            if (elRest) {
+                const diff = comp.diff;
+                if (comp.status === 'ALINHADO') {
+                    elRest.innerText = "0 (Alinhado)";
+                    elRest.className = "font-black text-emerald-600 dark:text-emerald-400 text-xs mt-0.5";
+                } else if (comp.status === 'FALTA_LOTE') {
+                    elRest.innerText = `Falta ${Math.abs(diff).toLocaleString('pt-BR')}`;
+                    elRest.className = "font-black text-amber-600 dark:text-amber-400 text-xs mt-0.5 animate-pulse";
+                } else {
+                    elRest.innerText = `Excede +${diff.toLocaleString('pt-BR')}`;
+                    elRest.className = "font-black text-rose-600 dark:text-rose-400 text-xs mt-0.5 animate-pulse";
+                }
+            }
+
+            if (elBadge) {
+                if (comp.status === 'ALINHADO') {
+                    elBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800";
+                    elBadge.innerText = "🟢 Saldo Alinhado";
+                } else if (comp.status === 'FALTA_LOTE') {
+                    elBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900";
+                    elBadge.innerText = "🟡 Falta Registrar Lote";
+                } else {
+                    elBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-900";
+                    elBadge.innerText = "🔴 Lotes Excedentes";
+                }
+            }
+
+            if (elExp) {
+                if (comp.status === 'ALINHADO') {
+                    elExp.innerText = "A soma dos lotes cadastrados confere perfeitamente com o saldo atual no sistema.";
+                } else if (comp.status === 'FALTA_LOTE') {
+                    elExp.innerHTML = `O sistema possui <b>${comp.saldoSistema.toLocaleString('pt-BR')}</b> no Armazém ${armazem}, mas apenas <b>${comp.totalLotes.toLocaleString('pt-BR')}</b> estão divididos em lotes. Restam <b>${Math.abs(comp.diff).toLocaleString('pt-BR')}</b> sem lote. <span class="text-amber-700 font-bold underline cursor-pointer hover:text-amber-900" onclick="fillRemainingBalanceToInput()">Clique aqui para preencher</span>.`;
+                } else {
+                    elExp.innerText = `Atenção: A soma dos lotes (${comp.totalLotes.toLocaleString('pt-BR')}) é maior que o saldo no sistema (${comp.saldoSistema.toLocaleString('pt-BR')}). Verifique se houve transferência sem lista ou se o físico precisa de recontagem.`;
+                }
+            }
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function fillRemainingBalanceToInput() {
+            const codeInput = document.getElementById('valInputCodigo');
+            const armazemInput = document.getElementById('valInputArmazem');
+            const qtdInput = document.getElementById('valInputQuantidade');
+            if (!codeInput || !armazemInput || !qtdInput) return;
+
+            const code = codeInput.value.trim().toUpperCase();
+            const armazem = armazemInput.value.trim().padStart(2, '0');
+            const targetFilial = getTargetFilialForSector();
+            const comp = getBalanceComparison(targetFilial, armazem, code);
+
+            if (comp.diff < 0) {
+                qtdInput.value = String(Math.abs(comp.diff));
+                updateValidadeQtdPreview();
+                showAlert(`Quantidade preenchida com a diferença de ${Math.abs(comp.diff).toLocaleString('pt-BR')}.`, "info");
+            }
         }
 
         async function saveValidadeEntry(e) {
@@ -1981,13 +2294,18 @@
                 }
             });
 
-            // Ordem das colunas: Filial, Produto, Descrição, Unidade de Medida, Armazem, Lote, Qtde, Palete/Caixa/Unidade, Mês de Vencimento, Status
+            // Ordem das colunas: Filial, Produto, Descrição, Unidade de Medida, Armazem, Lote, Qtd Lote, Soma Total Lotes, Saldo no Sistema, Diferença, Situação Saldo, Palete/Caixa/Unidade, Mês de Vencimento, Status Validade
             const exportData = filteredValidadeDataset.map(item => {
                 const sbInfo = sb1Map[item.produto] || { descricao: 'Material Não Cadastrado no SB1', unidade: 'UN' };
                 const status = getValidadeStatus(item.data_validade);
                 let statusText = 'No Prazo (OK)';
                 if (status === 'VENCIDO') statusText = 'Vencido';
                 else if (status === 'AVENCER') statusText = 'A Vencer (60d)';
+
+                const comp = getBalanceComparison(item.filial, item.armazem, item.produto);
+                let situacaoSaldo = 'Alinhado (100%)';
+                if (comp.status === 'FALTA_LOTE') situacaoSaldo = `Falta Lote (-${Math.abs(comp.diff)})`;
+                else if (comp.status === 'EXCEDENTE') situacaoSaldo = `Lotes Excedentes (+${comp.diff})`;
 
                 return {
                     "Filial": item.filial || '01',
@@ -1996,10 +2314,14 @@
                     "Unidade de Medida": sbInfo.unidade,
                     "Armazem": item.armazem || '',
                     "Lote": item.lote || '',
-                    "Qtde": Number(item.quantidade || 0),
+                    "Qtd Lote": Number(item.quantidade || 0),
+                    "Soma Total Lotes (Armazém)": Number(comp.totalLotes || 0),
+                    "Saldo no Sistema (Armazém)": Number(comp.saldoSistema || 0),
+                    "Diferença (Lotes - Sistema)": Number(comp.diff || 0),
+                    "Situação Saldo": situacaoSaldo,
                     "Palete/Caixa/Unidade": item.embalagem || '',
                     "Mês de Vencimento": formatAnoMesDisplay(item.data_validade),
-                    "Status": statusText
+                    "Status Validade": statusText
                 };
             });
 
@@ -2009,13 +2331,17 @@
                 { wch: 10 }, // Filial
                 { wch: 18 }, // Produto
                 { wch: 45 }, // Descrição
-                { wch: 20 }, // Unidade de Medida
+                { wch: 18 }, // Unidade de Medida
                 { wch: 12 }, // Armazem
                 { wch: 16 }, // Lote
-                { wch: 12 }, // Qtde
+                { wch: 12 }, // Qtd Lote
+                { wch: 24 }, // Soma Total Lotes (Armazém)
+                { wch: 24 }, // Saldo no Sistema (Armazém)
+                { wch: 24 }, // Diferença (Lotes - Sistema)
+                { wch: 22 }, // Situação Saldo
                 { wch: 22 }, // Palete/Caixa/Unidade
                 { wch: 22 }, // Mês de Vencimento
-                { wch: 18 }  // Status
+                { wch: 18 }  // Status Validade
             ];
 
             const wb = XLSX.utils.book_new();
