@@ -1132,7 +1132,8 @@
                                 filial: String(d.filial || '01').trim().padStart(2, '0'),
                                 armazem: String(d.armazem_contagem || d.armazem || '01').trim().padStart(2, '0'),
                                 qtd_contada: Number(d.quantidade_contada !== undefined ? d.quantidade_contada : (d.qtd_contada || 0)),
-                                conferente_nome: d.quem_contou || d.conferente_nome || 'SISTEMA'
+                                conferente_nome: d.quem_contou || d.conferente_nome || 'SISTEMA',
+                                observacao: d.observacao || ''
                             }));
                             confAll = confAll.concat(mapped);
                             if (data.length < step3) fetchMore3 = false; else from3 += step3;
@@ -1156,7 +1157,8 @@
                                     filial: String(d.filial || '01').trim().padStart(2, '0'),
                                     armazem: String(d.armazem || '01').trim().padStart(2, '0'),
                                     qtd_contada: Number(d.qtd_contada || 0),
-                                    conferente_nome: d.conferente_nome || 'SISTEMA'
+                                    conferente_nome: d.conferente_nome || 'SISTEMA',
+                                    observacao: d.observacao || ''
                                 })));
                                 if (fallbackRes.data.length < step3) fetchMore4 = false; else from4 += step3;
                             } else {
@@ -1273,7 +1275,8 @@
                         ...c,
                         produto: String(c.produto).trim(),
                         filial: rawFil.padStart(2, '0'),
-                        armazem: rawArm.padStart(2, '0')
+                        armazem: rawArm.padStart(2, '0'),
+                        observacao: c.observacao || ''
                     };
                 });
 
@@ -1701,6 +1704,7 @@
             const productCountsMap = {};
             const hasCountMap = {};
             const productLastDateMap = {};
+            const productLastObsMap = {};
 
             rawConfDataset.forEach(c => {
                 if (selectedFilial !== 'ALL' && c.filial !== selectedFilial) return;
@@ -1713,11 +1717,16 @@
                 productCountsMap[cod] = (productCountsMap[cod] || 0) + Number(c.quantidade_contada !== undefined ? c.quantidade_contada : (c.qtd_contada || 0));
                 hasCountMap[cod] = true;
 
+                if (c.observacao && !productLastObsMap[cod]) {
+                    productLastObsMap[cod] = c.observacao;
+                }
+
                 if (c.created_at) {
                     const dt = new Date(c.created_at);
                     if (!isNaN(dt.getTime())) {
                         if (!productLastDateMap[cod] || dt > productLastDateMap[cod]) {
                             productLastDateMap[cod] = dt;
+                            if (c.observacao) productLastObsMap[cod] = c.observacao;
                         }
                     }
                 }
@@ -1779,6 +1788,7 @@
                     fatorConv: prod.fator_conv || prod['Fator Conv.'] || 1,
                     tags: prod.tags || '',
                     fornecedores: prod.fornecedores || '',
+                    observacao: productLastObsMap[cod] || '',
                     lastCountDate: lastDate,
                     daysSinceCount: daysSinceCount,
                     isOutdated: isOutdated
@@ -2167,6 +2177,7 @@
                         <td class="px-4 py-3 text-xs font-black text-slate-800">
                             <div>${item.descricao}</div>
                             ${tagsBadges}
+                            ${item.observacao ? `<div class="text-[10px] text-amber-700 dark:text-amber-400 font-semibold italic mt-0.5 flex items-center gap-1" title="Observação registrada na contagem"><i data-lucide="message-square" class="w-3 h-3 flex-shrink-0"></i> <span>${item.observacao}</span></div>` : ''}
                         </td>
                         <td class="px-3 py-3 text-center text-[10px] font-bold text-slate-500">${item.unidade}</td>
                         <td class="px-4 py-3 text-right text-xs font-bold text-slate-700">${item.quantidade.toLocaleString('pt-BR')}</td>
@@ -2213,6 +2224,7 @@
                         <div>
                             <h4 class="text-xs font-black text-slate-900 leading-snug">${item.descricao}</h4>
                             ${tagsBadges}
+                            ${item.observacao ? `<p class="text-[10px] text-amber-700 dark:text-amber-400 font-semibold italic mt-1 flex items-center gap-1"><i data-lucide="message-square" class="w-3 h-3 flex-shrink-0"></i> <span>${item.observacao}</span></p>` : ''}
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
@@ -2299,7 +2311,9 @@
                 renderWarehouseCountCard(s.armazem, s.quantidade, factor, codigo, userFilial);
             });
 
-            document.getElementById('countInputObs').value = '';
+            // Carrega a observação mais recente do produto se existir
+            const lastProdCount = rawConfDataset.filter(c => String(c.produto).trim() === codigo).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
+            document.getElementById('countInputObs').value = (lastProdCount && lastProdCount.observacao) ? lastProdCount.observacao : '';
             toggleAppCalculator(false);
 
             const modal = document.getElementById('countModal');
@@ -2351,13 +2365,21 @@
                 const qtyStr = (lastCount.quantidade_contada !== undefined && lastCount.quantidade_contada !== null) ? lastCount.quantidade_contada.toLocaleString('pt-BR') : ((lastCount.qtd_contada !== undefined) ? lastCount.qtd_contada.toLocaleString('pt-BR') : '0');
                 
                 lastInfoHtml = `
-                    <div class="mt-2 text-[10px] bg-slate-100/80 p-2 rounded-lg border border-slate-200/60 flex flex-wrap items-center justify-between gap-1 text-slate-600">
-                        <span class="flex items-center gap-1 font-bold text-slate-500">
-                            <i data-lucide="history" class="w-3 h-3 text-teal-600"></i> Última contagem:
-                        </span>
-                        <span class="font-black text-slate-800 text-right">
-                            ${qtyStr} un. <span class="text-slate-400 font-normal">|</span> ${whoStr} <span class="text-slate-400 font-normal">|</span> ${dateStr}
-                        </span>
+                    <div class="mt-2 text-[10px] bg-slate-100/80 p-2 rounded-lg border border-slate-200/60 space-y-1 text-slate-600">
+                        <div class="flex flex-wrap items-center justify-between gap-1">
+                            <span class="flex items-center gap-1 font-bold text-slate-500">
+                                <i data-lucide="history" class="w-3 h-3 text-teal-600"></i> Última contagem:
+                            </span>
+                            <span class="font-black text-slate-800 text-right">
+                                ${qtyStr} un. <span class="text-slate-400 font-normal">|</span> ${whoStr} <span class="text-slate-400 font-normal">|</span> ${dateStr}
+                            </span>
+                        </div>
+                        ${lastCount.observacao ? `
+                            <div class="text-[10px] text-amber-800 dark:text-amber-300 font-semibold italic bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded border border-amber-200 dark:border-amber-900/60 flex items-start gap-1">
+                                <i data-lucide="message-square" class="w-3 h-3 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                                <span>Obs anterior: ${lastCount.observacao}</span>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             } else {
@@ -2662,7 +2684,8 @@
                             produto: codigo,
                             quantidade_contada: qtdContada,
                             quantidade_sistema: qtdSistema,
-                            quem_contou: conferenteIdent
+                            quem_contou: conferenteIdent,
+                            observacao: obs || null
                         });
                     }
                 }

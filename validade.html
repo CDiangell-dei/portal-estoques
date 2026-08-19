@@ -462,7 +462,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Lote <span class="text-amber-600 font-normal">(Ex: VT145E0322)</span></label>
-                        <input type="text" id="valInputLote" oninput="onValidadeCodeOrLoteChange()" placeholder="Identificação do lote" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <input type="text" id="valInputLote" oninput="this.value = this.value.toUpperCase(); onValidadeCodeOrLoteChange()" placeholder="Identificação do lote" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase">
                     </div>
                 </div>
 
@@ -1702,6 +1702,14 @@
         }
 
         function onValidadeCodeOrLoteChange() {
+            const loteInp = document.getElementById('valInputLote');
+            if (loteInp && loteInp.value) {
+                loteInp.value = loteInp.value.toUpperCase();
+            }
+            const codeInp = document.getElementById('valInputCodigo');
+            if (codeInp && codeInp.value) {
+                codeInp.value = codeInp.value.toUpperCase();
+            }
             onValidadeCodeInput();
             const code = document.getElementById('valInputCodigo').value.trim().toUpperCase();
             const lote = document.getElementById('valInputLote').value.trim().toUpperCase();
@@ -2076,7 +2084,7 @@
                         if (!rawCod && rawCod !== 0) continue;
 
                         const cod = formatExcelProductCode(rawCod);
-                        const lote = String(row[colLote] || '').trim();
+                        const lote = String(row[colLote] || '').trim().toUpperCase();
                         const qtd = parseFloat(row[colQtd]) || 0;
                         const valDate = parseExcelDate(row[colVal]);
                         const embalagem = String(row[colEmb] || '').trim().toUpperCase();
