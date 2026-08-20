@@ -1041,7 +1041,7 @@
                         </div>
                         <div class="col-span-5 flex items-center justify-center">
                             <div class="bg-white p-1 border border-black rounded flex items-center justify-center">
-                                <canvas id="argoxCanvasQR" class="w-24 h-24 max-w-full"></canvas>
+                                <img id="argoxImgQR" src="" alt="QR Code" class="w-24 h-24 max-w-full object-contain" />
                             </div>
                         </div>
                     </div>
@@ -3965,15 +3965,9 @@
                 if (elLoteBadge) elLoteBadge.classList.add('hidden');
             }
 
-            if (canvas && typeof QRCode !== 'undefined') {
-                const qrText = currentLabelItemData.codigo;
-                QRCode.toCanvas(canvas, qrText, {
-                    width: 110,
-                    margin: 0,
-                    errorCorrectionLevel: 'M'
-                }, function (error) {
-                    if (error) console.error("Erro ao gerar QR Code:", error);
-                });
+            const imgQR = document.getElementById('argoxImgQR');
+            if (imgQR && currentLabelItemData.codigo) {
+                imgQR.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentLabelItemData.codigo)}`;
             }
         }
 
@@ -4005,8 +3999,7 @@
             const printContainer = document.getElementById('argoxPrintContainer');
             if (!printContainer) return;
 
-            const canvas = document.getElementById('argoxCanvasQR');
-            const qrDataUrl = canvas ? canvas.toDataURL('image/png') : '';
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentLabelItemData.codigo)}`;
 
             let labelsHtml = '';
             for (let i = 0; i < copies; i++) {
@@ -4029,7 +4022,7 @@
                                     <p class="argox-label-meta">ARM: ${currentLabelItemData.armazem} ${currentLabelItemData.quantidade ? `| ${currentLabelItemData.quantidade}` : ''}</p>
                                 </div>
                                 <div class="argox-label-qr-col">
-                                    <img src="${qrDataUrl}" class="argox-label-qr-img" alt="QR Code">
+                                    <img src="${qrUrl}" class="argox-label-qr-img" alt="QR Code">
                                 </div>
                             </div>
                         </div>

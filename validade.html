@@ -176,9 +176,69 @@
                 height: 100% !important;
                 object-fit: contain !important;
             }
-            @page {
-                size: 100mm 50mm portrait;
-                margin: 0;
+
+            /* ESTILOS ESPECÍFICOS PARA A FICHA DE PALETE EM FOLHA A4 */
+            body.printing-a4 * {
+                visibility: hidden !important;
+            }
+            body.printing-a4 #a4PrintContainer,
+            body.printing-a4 #a4PrintContainer * {
+                visibility: visible !important;
+            }
+            body.printing-a4 #a4PrintContainer {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+            .a4-pallet-page {
+                page-break-after: always !important;
+                break-after: page !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                padding: 12mm !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+            }
+            .a4-pallet-card {
+                width: 100% !important;
+                border: 3px solid #000000 !important;
+                border-radius: 8px !important;
+                padding: 16px !important;
+                box-sizing: border-box !important;
+                background: #ffffff !important;
+            }
+            .a4-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin-top: 14px !important;
+            }
+            .a4-table th {
+                background: #f1f5f9 !important;
+                border: 2px solid #000000 !important;
+                padding: 8px !important;
+                font-size: 11pt !important;
+                font-weight: 900 !important;
+                text-align: left !important;
+                text-transform: uppercase !important;
+                color: #000000 !important;
+            }
+            .a4-table td {
+                border: 1.5px solid #000000 !important;
+                padding: 8px 10px !important;
+                font-size: 11pt !important;
+                font-weight: 700 !important;
+                color: #000000 !important;
+            }
+            .a4-table tfoot td {
+                background: #f8fafc !important;
+                font-weight: 900 !important;
+                font-size: 12pt !important;
             }
         }
 
@@ -520,13 +580,11 @@
                             <th class="px-3 py-3">Armazém</th>
                             <th class="px-3 py-3">Produto</th>
                             <th class="px-4 py-3">Descrição do Produto</th>
-                            <th class="px-3 py-3">Lote</th>
-                            <th class="px-3 py-3 text-right">Qtd. Lote</th>
+                            <th class="px-3 py-3 text-right">Saldo ERP</th>
+                            <th class="px-3 py-3 text-right">Soma Lotes</th>
                             <th class="px-4 py-3 text-center min-w-[200px]">Conferência (Lotes x Saldo)</th>
-                            <th class="px-3 py-3">Embalagem</th>
-                            <th class="px-3 py-3 text-center">Fabricação</th>
-                            <th class="px-3 py-3 text-center">Validade (Mês/Ano)</th>
-                            <th class="px-3 py-3 text-center">Status</th>
+                            <th class="px-3 py-3 text-center">Lotes Cadastrados</th>
+                            <th class="px-3 py-3 text-center">Status Validade</th>
                             <th class="px-3 py-3 text-center">Ações</th>
                         </tr>
                     </thead>
@@ -830,6 +888,152 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL GERENCIADOR DE LOTES DO MATERIAL      -->
+    <!-- ========================================== -->
+    <div id="productLotsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh]">
+            
+            <!-- CABEÇALHO DO PRODUTO -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span id="plModalCodigo" class="text-xl font-black font-mono text-[#002f6c] dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-xl border border-blue-200 dark:border-blue-800">39000016</span>
+                        <span id="plModalFilialArmazem" class="text-xs font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-xl">Filial 01 • Armazém 50</span>
+                        <span id="plModalStatusGeralBadge" class="text-xs font-black"></span>
+                    </div>
+                    <h3 id="plModalDescricao" class="text-base font-black text-slate-900 dark:text-white leading-tight">Descrição do Produto</h3>
+                </div>
+
+                <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
+                    <button type="button" onclick="openA4PalletPrintModalFromProductLots()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-1.5 touch-active" title="Imprimir Ficha A4 para identificar o Palete / Local">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        <span>Ficha A4 (Palete)</span>
+                    </button>
+                    <button type="button" onclick="openNewValidadeModalForCurrentProduct()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-1.5 touch-active">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>+ Novo Lote</span>
+                    </button>
+                    <button type="button" onclick="closeProductLotsModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAINEL COMPARATIVO: SALDO ERP X SOMA LOTES -->
+            <div id="plModalConferenciaBox" class="p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700">
+                <div class="grid grid-cols-3 gap-4 text-center sm:text-left flex-grow">
+                    <div>
+                        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saldo ERP</span>
+                        <span id="plModalSaldoERP" class="text-lg font-black text-[#002f6c] dark:text-blue-400">0</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Soma dos Lotes</span>
+                        <span id="plModalSomaLotes" class="text-lg font-black text-emerald-600">0</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Diferença</span>
+                        <span id="plModalDiferenca" class="text-lg font-black">0</span>
+                    </div>
+                </div>
+                <div id="plModalFillRemainingBtnContainer" class="hidden">
+                    <button type="button" onclick="fillRemainingBalanceFromModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3.5 py-2 rounded-xl text-xs font-black shadow-sm flex items-center gap-1.5 touch-active">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                        <span id="plModalFillRemainingLabel">Preencher Saldo Restante</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABELA DE LOTES DO MATERIAL -->
+            <div class="overflow-y-auto flex-grow rounded-2xl border border-slate-200 dark:border-slate-700">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-700 text-[10px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-wider sticky top-0 z-10 border-b border-slate-200 dark:border-slate-600">
+                            <th class="px-3 py-2.5">Lote</th>
+                            <th class="px-3 py-2.5 text-right">Quantidade</th>
+                            <th class="px-3 py-2.5">Embalagem</th>
+                            <th class="px-3 py-2.5 text-center">Fabricação</th>
+                            <th class="px-3 py-2.5 text-center">Validade (Mês/Ano)</th>
+                            <th class="px-3 py-2.5 text-center">Status</th>
+                            <th class="px-3 py-2.5">Observação</th>
+                            <th class="px-3 py-2.5 text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plModalTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 font-bold text-slate-700 dark:text-slate-200">
+                        <!-- Linhas dos lotes inseridas via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- RODAPÉ DO MODAL -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 font-bold">
+                <span id="plModalLotsCount">0 lote(s) cadastrado(s)</span>
+                <button type="button" onclick="closeProductLotsModal()" class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl font-bold">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL IMPRESSÃO FICHA A4 (PALETE / ESTOQUE)-->
+    <!-- ========================================== -->
+    <div id="a4PrintModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh]">
+            
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-slate-900 dark:text-white">Ficha de Identificação de Palete (Folha A4)</h3>
+                        <p class="text-[10px] font-bold text-slate-400">Escolha quais lotes devem constar na impressão desta folha de palete</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeA4PrintModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- SELETOR DE LOTES DO PALETE -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-black text-slate-800 dark:text-slate-200">Lotes Presentes neste Palete / Local:</label>
+                    <div class="space-x-2">
+                        <button type="button" onclick="toggleAllA4LotCheckboxes(true)" class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline">Marcar Todos</button>
+                        <span class="text-slate-300 dark:text-slate-600">|</span>
+                        <button type="button" onclick="toggleAllA4LotCheckboxes(false)" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:underline">Desmarcar Todos</button>
+                    </div>
+                </div>
+
+                <div id="a4LotCheckboxesContainer" class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 max-h-48 overflow-y-auto space-y-2">
+                    <!-- Checkboxes de lotes gerados dinamicamente -->
+                </div>
+            </div>
+
+            <!-- OPÇÕES E QUANTIDADE DE CÓPIAS DA FOLHA A4 -->
+            <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-600">
+                <div>
+                    <label class="block text-xs font-black text-slate-800 dark:text-slate-100">Quantidade de Cópias (Folhas A4)</label>
+                    <span class="text-[10px] text-slate-400 font-bold">Número de folhas a imprimir para colar nos paletes</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button type="button" onclick="adjustA4Copies(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">-</button>
+                    <input type="number" id="a4LabelCopiesInput" value="1" min="1" max="100" class="w-14 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl py-1 text-sm font-black text-slate-900 dark:text-white">
+                    <button type="button" onclick="adjustA4Copies(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">+</button>
+                </div>
+            </div>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeA4PrintModal()" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs">Cancelar</button>
+                <button type="button" onclick="printA4PalletSheet()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 touch-active">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Imprimir Folha A4</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- MODAL IMPRESSÃO DE ETIQUETA (PADRÃO ARGOX) -->
     <!-- ========================================== -->
     <div id="argoxLabelModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 no-print">
@@ -879,7 +1083,7 @@
                         </div>
                         <div class="col-span-5 flex items-center justify-center">
                             <div class="bg-white p-1 border border-black rounded flex items-center justify-center">
-                                <canvas id="argoxCanvasQR" class="w-24 h-24 max-w-full"></canvas>
+                                <img id="argoxImgQR" src="" alt="QR Code" class="w-24 h-24 max-w-full object-contain" />
                             </div>
                         </div>
                     </div>
@@ -921,8 +1125,9 @@
         </div>
     </div>
 
-    <!-- ÁREA DE IMPRESSÃO ESPECÍFICA PARA A IMPRESSORA TÉRMICA ARGOX -->
+    <!-- ÁREAS DE IMPRESSÃO (TÉRMICA ARGOX E FOLHA A4) -->
     <div id="argoxPrintContainer" class="hidden"></div>
+    <div id="a4PrintContainer" class="hidden"></div>
 
     <!-- MODAL CONFIRMAÇÃO DE LOGOUT -->
     <div id="logoutModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity">
@@ -1180,6 +1385,9 @@
             populateProductsDatalist();
             populateEmbalagensDatalist();
             applyValidadeFilters();
+            if (currentProductLotsData) {
+                renderProductLotsModal();
+            }
         }
 
         /**
@@ -1505,6 +1713,76 @@
             });
         }
 
+        let groupedValidadeDataset = [];
+        let currentProductLotsData = null;
+        let currentA4PalletData = null;
+
+        function groupValidadeDatasetByProduct(validadeList) {
+            const map = new Map();
+
+            validadeList.forEach(v => {
+                const f = String(v.filial || '01').trim().padStart(2, '0');
+                const a = String(v.armazem || '01').trim().padStart(2, '0');
+                const p = String(v.produto || '').trim().toUpperCase();
+                const key = `${f}__${a}__${p}`;
+
+                if (!map.has(key)) {
+                    map.set(key, {
+                        filial: f,
+                        armazem: a,
+                        produto: p,
+                        lotes: [],
+                        totalLotes: 0,
+                        saldoSistema: getSystemBalance(f, a, p),
+                        statusGeral: 'OK'
+                    });
+                }
+
+                const item = map.get(key);
+                item.lotes.push(v);
+                item.totalLotes += parseFloat(v.quantidade || 0);
+
+                const lotStatus = getValidadeStatus(v.data_validade);
+                if (lotStatus === 'VENCIDO') {
+                    item.statusGeral = 'VENCIDO';
+                } else if (lotStatus === 'AVENCER' && item.statusGeral !== 'VENCIDO') {
+                    item.statusGeral = 'AVENCER';
+                }
+            });
+
+            const result = [];
+            map.forEach(item => {
+                item.diff = item.totalLotes - item.saldoSistema;
+                let status = 'ALINHADO';
+                if (Math.abs(item.diff) > 0.0001) {
+                    if (item.saldoSistema === 0 && item.totalLotes > 0) {
+                        status = 'EXCEDENTE';
+                    } else if (item.diff < 0) {
+                        status = 'FALTA_LOTE';
+                    } else {
+                        status = 'EXCEDENTE';
+                    }
+                }
+                item.statusConferencia = status;
+
+                // Ordena os lotes do material pelo vencimento mais próximo
+                item.lotes.sort((a, b) => (a.data_validade || '').localeCompare(b.data_validade || ''));
+                result.push(item);
+            });
+
+            return result.sort((a, b) => {
+                const compFil = a.filial.localeCompare(b.filial, undefined, { numeric: true });
+                if (compFil !== 0) return compFil;
+
+                const statusOrder = { 'VENCIDO': 1, 'AVENCER': 2, 'OK': 3 };
+                const stA = statusOrder[a.statusGeral] || 4;
+                const stB = statusOrder[b.statusGeral] || 4;
+                if (stA !== stB) return stA - stB;
+
+                return a.produto.localeCompare(b.produto, undefined, { numeric: true });
+            });
+        }
+
         function applyValidadeFilters() {
             const filial = document.getElementById('valFilterFilial') ? document.getElementById('valFilterFilial').value : 'ALL';
             const armazem = document.getElementById('valFilterArmazem') ? document.getElementById('valFilterArmazem').value : 'ALL';
@@ -1535,21 +1813,26 @@
                 return true;
             });
 
-            // 2. Filtro Completo para Tabela (incluindo Status e Conferência de Saldos)
-            const unSorted = baseScopeDataset.filter(v => {
-                const status = getValidadeStatus(v.data_validade);
-                if (statusFilter !== 'ALL' && status !== statusFilter) return false;
+            // 2. Agrupamento por Produto
+            const groupedList = groupValidadeDatasetByProduct(baseScopeDataset);
 
-                const comp = getBalanceComparison(v.filial, v.armazem, v.produto);
-                if (confFilter === 'DIVERGENCIA' && comp.status === 'ALINHADO') return false;
-                if (confFilter === 'FALTA_LOTE' && comp.status !== 'FALTA_LOTE') return false;
-                if (confFilter === 'EXCEDENTE' && comp.status !== 'EXCEDENTE') return false;
-                if (confFilter === 'ALINHADO' && comp.status !== 'ALINHADO') return false;
+            // 3. Filtro Completo para a Tabela Agrupada (incluindo Status e Conferência de Saldos)
+            const unSorted = groupedList.filter(item => {
+                if (statusFilter !== 'ALL') {
+                    const hasLotWithStatus = item.lotes.some(l => getValidadeStatus(l.data_validade) === statusFilter);
+                    if (!hasLotWithStatus && item.statusGeral !== statusFilter) return false;
+                }
+
+                if (confFilter === 'DIVERGENCIA' && item.statusConferencia === 'ALINHADO') return false;
+                if (confFilter === 'FALTA_LOTE' && item.statusConferencia !== 'FALTA_LOTE') return false;
+                if (confFilter === 'EXCEDENTE' && item.statusConferencia !== 'EXCEDENTE') return false;
+                if (confFilter === 'ALINHADO' && item.statusConferencia !== 'ALINHADO') return false;
 
                 return true;
             });
 
-            filteredValidadeDataset = sortValidadeDataset(unSorted);
+            groupedValidadeDataset = unSorted;
+            filteredValidadeDataset = unSorted;
 
             renderValidadeDashboard(baseScopeDataset, unSorted, statusFilter, confFilter);
             renderValidadeTable();
@@ -1557,7 +1840,7 @@
 
         function renderValidadeDashboard(baseScopeDataset, filteredList, activeStatus, activeConf) {
             const list = Array.isArray(baseScopeDataset) ? baseScopeDataset : rawValidadeDataset;
-            const fullFiltered = Array.isArray(filteredList) ? filteredList : filteredValidadeDataset;
+            const fullFiltered = Array.isArray(filteredList) ? filteredList : groupedValidadeDataset;
             const status = activeStatus || (document.getElementById('valFilterStatus') ? document.getElementById('valFilterStatus').value : 'ALL');
             const conf = activeConf || (document.getElementById('valFilterSaldoConferencia') ? document.getElementById('valFilterSaldoConferencia').value : 'ALL');
 
@@ -1576,8 +1859,8 @@
             });
 
             let filteredQtd = 0;
-            fullFiltered.forEach(v => {
-                filteredQtd += parseFloat(v.quantidade || 0);
+            fullFiltered.forEach(item => {
+                filteredQtd += parseFloat(item.totalLotes || 0);
             });
 
             const filial = document.getElementById('valFilterFilial') ? document.getElementById('valFilterFilial').value : 'ALL';
@@ -1694,104 +1977,103 @@
             const sb1Map = {};
             rawSb1Dataset.forEach(p => {
                 const c = p.Codigo;
-                if (c) sb1Map[c] = p['Descr.Espec.'] || '-';
+                if (c) sb1Map[c] = {
+                    descricao: p['Descr.Espec.'] || '-',
+                    unidade: p.Unidade ? String(p.Unidade).trim().toUpperCase() : 'UN'
+                };
             });
 
-            if (filteredValidadeDataset.length === 0) {
+            if (groupedValidadeDataset.length === 0) {
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="12" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum registro de lote ou validade encontrado com os filtros selecionados.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="10" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum produto com lotes ou validade encontrado com os filtros selecionados.</td></tr>`;
                 }
                 if (mobileList) {
-                    mobileList.innerHTML = `<div class="p-8 text-center text-xs font-bold text-slate-400 bg-white rounded-2xl border border-slate-200">Nenhum registro de lote ou validade encontrado com os filtros selecionados.</div>`;
+                    mobileList.innerHTML = `<div class="p-8 text-center text-xs font-bold text-slate-400 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">Nenhum produto com lotes ou validade encontrado com os filtros selecionados.</div>`;
                 }
                 return;
             }
 
-            filteredValidadeDataset.forEach(item => {
-                const status = getValidadeStatus(item.data_validade);
+            groupedValidadeDataset.forEach(item => {
                 let badgeHtml = '';
-                if (status === 'VENCIDO') {
+                if (item.statusGeral === 'VENCIDO') {
                     badgeHtml = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 flex items-center justify-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Vencido</span>`;
-                } else if (status === 'AVENCER') {
+                } else if (item.statusGeral === 'AVENCER') {
                     badgeHtml = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 flex items-center justify-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> A Vencer (60d)</span>`;
                 } else {
                     badgeHtml = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 flex items-center justify-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i> No Prazo (OK)</span>`;
                 }
 
-                const desc = sb1Map[item.produto] || 'Material Não Cadastrado no SB1';
-                const fabDisplay = formatAnoMesDisplay(item.data_fabricacao);
-                const valDisplay = formatAnoMesDisplay(item.data_validade);
+                const sbInfo = sb1Map[item.produto] || { descricao: 'Material Não Cadastrado no SB1', unidade: 'UN' };
+                const desc = sbInfo.descricao;
+                const unidade = sbInfo.unidade;
 
                 const armLabel = item.armazem === '50' 
                     ? `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200">Armazém 50</span>` 
                     : (item.armazem === '99' ? `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 text-slate-800 border border-slate-200">Armazém 99</span>` : `Armazém ${item.armazem}`);
 
-                const loteBadge = item.lote 
-                    ? `<span class="px-2 py-0.5 rounded-lg text-[10px] font-black bg-blue-50 text-blue-800 border border-blue-200">${item.lote}</span>` 
-                    : `<span class="text-slate-300 text-[10px]">-</span>`;
+                // Chips dos lotes do produto (até 3 visíveis na listagem)
+                let lotChipsHtml = '';
+                const maxPreviewLots = 3;
+                const visibleLots = item.lotes.slice(0, maxPreviewLots);
+                visibleLots.forEach(l => {
+                    const lSt = getValidadeStatus(l.data_validade);
+                    let chipCls = "bg-slate-100 text-slate-700 border-slate-200";
+                    if (lSt === 'VENCIDO') chipCls = "bg-rose-50 text-rose-800 border-rose-200";
+                    else if (lSt === 'AVENCER') chipCls = "bg-amber-50 text-amber-800 border-amber-200";
 
-                const embalagemBadge = item.embalagem 
-                    ? `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">${item.embalagem}</span>` 
-                    : `<span class="text-slate-300 text-[10px]">-</span>`;
+                    lotChipsHtml += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${chipCls}">${l.lote || 'S/L'}: ${Number(l.quantidade || 0).toLocaleString('pt-BR')} (${formatAnoMesDisplay(l.data_validade)})</span>`;
+                });
+                if (item.lotes.length > maxPreviewLots) {
+                    lotChipsHtml += `<span class="text-[9px] font-bold text-slate-400">+${item.lotes.length - maxPreviewLots} outro(s)</span>`;
+                }
 
-                // Comparação da Soma dos Lotes x Saldo Sistema do Armazém
-                const comp = getBalanceComparison(item.filial, item.armazem, item.produto);
+                // Badge de Conferência
                 let conferenciaBadgeHtml = '';
-                if (comp.status === 'ALINHADO') {
-                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200" title="Soma dos lotes bate perfeitamente com o saldo do sistema (${comp.saldoSistema.toLocaleString('pt-BR')})"><i data-lucide="check" class="w-3 h-3"></i> Alinhado</span>`;
-                } else if (comp.status === 'FALTA_LOTE') {
-                    const diffAbs = Math.abs(comp.diff).toLocaleString('pt-BR');
-                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 animate-pulse" title="Falta cadastrar lote de ${diffAbs} para igualar ao saldo no sistema (${comp.saldoSistema.toLocaleString('pt-BR')})"><i data-lucide="alert-circle" class="w-3 h-3 text-amber-700"></i> Falta ${diffAbs}</span>`;
+                if (item.statusConferencia === 'ALINHADO') {
+                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200" title="Soma dos lotes confere perfeitamente com o saldo ERP"><i data-lucide="check" class="w-3.5 h-3.5"></i> Alinhado (100%)</span>`;
+                } else if (item.statusConferencia === 'FALTA_LOTE') {
+                    const diffAbs = Math.abs(item.diff).toLocaleString('pt-BR');
+                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 animate-pulse" title="Falta cadastrar lote de ${diffAbs} para igualar ao saldo no sistema"><i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-700"></i> Falta ${diffAbs} ${unidade}</span>`;
                 } else {
-                    const diffAbs = comp.diff.toLocaleString('pt-BR');
-                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-900 border border-rose-300 animate-pulse" title="Soma dos lotes (${comp.totalLotes.toLocaleString('pt-BR')}) excede o saldo no sistema (${comp.saldoSistema.toLocaleString('pt-BR')}) em +${diffAbs}"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-700"></i> Excede +${diffAbs}</span>`;
+                    const diffAbs = item.diff.toLocaleString('pt-BR');
+                    conferenciaBadgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-100 text-rose-900 border border-rose-300 animate-pulse" title="Soma dos lotes excede o saldo no sistema em +${diffAbs}"><i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-rose-700"></i> Excede +${diffAbs} ${unidade}</span>`;
                 }
 
                 if (tbody) {
                     const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 border-b border-slate-100 text-slate-700 transition-colors";
+                    tr.className = "hover:bg-amber-50/40 dark:hover:bg-slate-700/60 border-b border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer";
+                    tr.onclick = (e) => {
+                        if (e.target.closest('button')) return;
+                        openProductLotsModal(item.filial, item.armazem, item.produto);
+                    };
                     tr.innerHTML = `
                         <td class="px-3 py-3 text-xs font-bold text-slate-500">${item.filial}</td>
-                        <td class="px-3 py-3 text-xs font-bold text-slate-700">${armLabel}</td>
-                        <td class="px-3 py-3 text-xs font-bold text-slate-900">${item.produto}</td>
-                        <td class="px-4 py-3 text-xs font-black text-slate-800">
+                        <td class="px-3 py-3 text-xs font-bold text-slate-700 dark:text-slate-300">${armLabel}</td>
+                        <td class="px-3 py-3 text-xs font-black font-mono text-[#002f6c] dark:text-blue-400">${item.produto}</td>
+                        <td class="px-4 py-3 text-xs font-black text-slate-800 dark:text-slate-100">
                             <div>${desc}</div>
-                            ${item.observacao ? `<div class="text-[10px] text-slate-400 font-bold italic mt-0.5">${item.observacao}</div>` : ''}
+                            <div class="flex items-center gap-1.5 mt-1 flex-wrap">${lotChipsHtml}</div>
                         </td>
-                        <td class="px-3 py-3 text-xs font-bold">${loteBadge}</td>
-                        <td class="px-3 py-3 text-right text-xs font-black text-[#002f6c]">${item.quantidade ? item.quantidade.toLocaleString('pt-BR') : '0'}</td>
-                        <td class="px-4 py-3 text-xs">
-                            <div class="flex flex-col gap-0.5 bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700">
-                                <div class="flex items-center justify-between text-[10px] font-bold">
-                                    <span class="text-slate-500 dark:text-slate-400">Soma Lotes:</span>
-                                    <span class="font-black text-[#002f6c] dark:text-blue-400">${comp.totalLotes.toLocaleString('pt-BR')}</span>
-                                </div>
-                                <div class="flex items-center justify-between text-[10px] font-bold">
-                                    <span class="text-slate-500 dark:text-slate-400">Saldo Sistema:</span>
-                                    <span class="font-black text-slate-800 dark:text-slate-200">${comp.saldoSistema.toLocaleString('pt-BR')}</span>
-                                </div>
-                                <div class="mt-1 flex justify-center">
-                                    ${conferenciaBadgeHtml}
-                                </div>
-                            </div>
+                        <td class="px-3 py-3 text-right text-xs font-black text-slate-700 dark:text-slate-300">${item.saldoSistema.toLocaleString('pt-BR')} <span class="text-[10px] text-slate-400">${unidade}</span></td>
+                        <td class="px-3 py-3 text-right text-xs font-black text-[#002f6c] dark:text-blue-400">${item.totalLotes.toLocaleString('pt-BR')} <span class="text-[10px] text-slate-400">${unidade}</span></td>
+                        <td class="px-4 py-3 text-xs text-center">
+                            ${conferenciaBadgeHtml}
                         </td>
-                        <td class="px-3 py-3 text-xs font-bold">${embalagemBadge}</td>
-                        <td class="px-3 py-3 text-center text-xs font-bold text-slate-600">${fabDisplay}</td>
-                        <td class="px-3 py-3 text-center text-xs font-black text-slate-900">${valDisplay}</td>
+                        <td class="px-3 py-3 text-center text-xs">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                <i data-lucide="boxes" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"></i>
+                                <span>${item.lotes.length} lote(s)</span>
+                            </span>
+                        </td>
                         <td class="px-3 py-3 text-center">${badgeHtml}</td>
                         <td class="px-3 py-3 text-center">
                             <div class="flex items-center justify-center gap-1.5">
-                                <button type="button" onclick="openArgoxLabelModalFromValidade(${item.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Imprimir Etiqueta Argox (A5:F10)">
-                                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                                <button type="button" onclick="openProductLotsModal('${item.filial}', '${item.armazem}', '${item.produto}')" class="bg-[#002f6c] hover:bg-[#00204a] text-white px-3 py-1.5 rounded-xl text-xs font-black shadow-sm flex items-center gap-1.5 touch-active" title="Gerenciar todos os lotes deste material">
+                                    <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                                    <span>Lotes (${item.lotes.length})</span>
                                 </button>
-                                <button type="button" onclick="openEditValidadeModal(${item.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Editar Lote">
-                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="openTransferValidadeModal(${item.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Mover para Armazém de Vencidos">
-                                    <i data-lucide="truck" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="deleteValidadeEntry(${item.id})" class="bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Excluir Registro">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                <button type="button" onclick="openA4PalletPrintModal('${item.filial}', '${item.armazem}', '${item.produto}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Imprimir Ficha A4 para Identificação de Palete">
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </td>
@@ -1801,56 +2083,39 @@
 
                 if (mobileList) {
                     const card = document.createElement('div');
-                    card.className = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 hover:border-slate-300 transition-colors";
+                    card.className = "bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3 hover:border-slate-300 transition-colors cursor-pointer";
+                    card.onclick = (e) => {
+                        if (e.target.closest('button')) return;
+                        openProductLotsModal(item.filial, item.armazem, item.produto);
+                    };
                     card.innerHTML = `
-                        <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="px-2 py-0.5 rounded-lg text-[11px] font-black bg-slate-100 text-slate-700 border border-slate-200">
+                                <span class="px-2 py-0.5 rounded-lg text-[11px] font-black font-mono bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                                     ${item.produto}
                                 </span>
-                                ${loteBadge}
                                 <span class="text-xs font-bold text-slate-500">
-                                    ${armLabel}
+                                    Filial ${item.filial} • ${armLabel}
                                 </span>
                             </div>
                             <div>${badgeHtml}</div>
                         </div>
 
                         <div>
-                            <h4 class="text-xs font-black text-slate-900 leading-snug">${desc}</h4>
-                            ${item.observacao ? `<p class="text-[10px] text-slate-400 font-bold italic mt-1">${item.observacao}</p>` : ''}
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center text-xs">
-                            <div>
-                                <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Qtd / Embalagem</span>
-                                <span class="font-black text-[#002f6c] text-xs">${item.quantidade ? item.quantidade.toLocaleString('pt-BR') : '0'}</span>
-                                <span class="block text-[9px] text-slate-500 truncate">${item.embalagem || 'Unidade'}</span>
-                            </div>
-                            <div>
-                                <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Fabricação</span>
-                                <span class="font-bold text-slate-700 text-xs">${fabDisplay}</span>
-                            </div>
-                            <div>
-                                <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Validade</span>
-                                <span class="font-black text-slate-900 text-xs">${valDisplay}</span>
-                            </div>
+                            <h4 class="text-xs font-black text-slate-900 dark:text-white leading-snug">${desc}</h4>
+                            <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">${lotChipsHtml}</div>
                         </div>
 
                         <!-- Card de Comparação Saldo no Mobile -->
-                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5 text-xs">
-                            <div class="grid grid-cols-3 gap-1 text-center text-[10px] font-bold">
-                                <div class="bg-white p-1 rounded-lg border border-slate-100">
-                                    <span class="text-slate-400 block text-[9px]">Qtd. Lote</span>
-                                    <b class="text-[#002f6c]">${item.quantidade ? item.quantidade.toLocaleString('pt-BR') : '0'}</b>
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5 text-xs">
+                            <div class="grid grid-cols-2 gap-2 text-center text-[10px] font-bold">
+                                <div class="bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <span class="text-slate-400 block text-[9px] uppercase">Saldo ERP</span>
+                                    <b class="text-slate-800 dark:text-slate-200 text-xs">${item.saldoSistema.toLocaleString('pt-BR')} ${unidade}</b>
                                 </div>
-                                <div class="bg-white p-1 rounded-lg border border-slate-100">
-                                    <span class="text-slate-400 block text-[9px]">Soma Lotes</span>
-                                    <b class="text-slate-800">${comp.totalLotes.toLocaleString('pt-BR')}</b>
-                                </div>
-                                <div class="bg-white p-1 rounded-lg border border-slate-100">
-                                    <span class="text-slate-400 block text-[9px]">Saldo Sistema</span>
-                                    <b class="text-slate-800">${comp.saldoSistema.toLocaleString('pt-BR')}</b>
+                                <div class="bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <span class="text-slate-400 block text-[9px] uppercase">Soma Lotes (${item.lotes.length})</span>
+                                    <b class="text-[#002f6c] dark:text-blue-400 text-xs">${item.totalLotes.toLocaleString('pt-BR')} ${unidade}</b>
                                 </div>
                             </div>
                             <div class="flex justify-center pt-0.5">
@@ -1859,19 +2124,13 @@
                         </div>
 
                         <div class="flex items-center justify-end gap-2 pt-1">
-                            <button type="button" onclick="openArgoxLabelModalFromValidade(${item.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-2 rounded-xl text-xs font-bold shadow-sm touch-active" title="Imprimir Etiqueta Argox">
-                                <i data-lucide="printer" class="w-4 h-4"></i>
+                            <button type="button" onclick="openA4PalletPrintModal('${item.filial}', '${item.armazem}', '${item.produto}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-3 py-2 rounded-xl text-xs font-black shadow-sm flex items-center gap-1.5 touch-active" title="Imprimir Ficha A4 para Palete">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                <span>Ficha A4</span>
                             </button>
-                            <button type="button" onclick="openEditValidadeModal(${item.id})" class="flex-1 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1.5 touch-active">
-                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                                <span>Editar</span>
-                            </button>
-                            <button type="button" onclick="openTransferValidadeModal(${item.id})" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1.5 touch-active">
-                                <i data-lucide="truck" class="w-3.5 h-3.5"></i>
-                                <span>Mover Vencidos</span>
-                            </button>
-                            <button type="button" onclick="deleteValidadeEntry(${item.id})" class="bg-rose-50 text-rose-700 p-2 rounded-xl text-xs font-bold touch-active">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <button type="button" onclick="openProductLotsModal('${item.filial}', '${item.armazem}', '${item.produto}')" class="flex-1 bg-[#002f6c] hover:bg-[#00204a] text-white py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1.5 touch-active">
+                                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                                <span>Gerenciar Lotes (${item.lotes.length})</span>
                             </button>
                         </div>
                     `;
@@ -1879,7 +2138,390 @@
                 }
             });
 
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // --- GERENCIAMENTO DE LOTES POR PRODUTO (MODAL DEDICADO) ---
+
+        function openProductLotsModal(filial, armazem, produto) {
+            const f = String(filial || '01').padStart(2, '0');
+            const a = String(armazem || '01').padStart(2, '0');
+            const p = String(produto || '').trim().toUpperCase();
+
+            currentProductLotsData = { filial: f, armazem: a, produto: p };
+            renderProductLotsModal();
+
+            const modal = document.getElementById('productLotsModal');
+            if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
+        }
+
+        function closeProductLotsModal() {
+            const modal = document.getElementById('productLotsModal');
+            if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
+            currentProductLotsData = null;
+        }
+
+        function renderProductLotsModal() {
+            if (!currentProductLotsData) return;
+            const { filial, armazem, produto } = currentProductLotsData;
+
+            const sbMatch = rawSb1Dataset ? rawSb1Dataset.find(item => String(item.Codigo).trim().toUpperCase() === produto) : null;
+            const desc = sbMatch ? (sbMatch['Descr.Espec.'] || produto) : produto;
+            const unidade = sbMatch && sbMatch.Unidade ? String(sbMatch.Unidade).trim().toUpperCase() : 'UN';
+
+            const matchingLots = rawValidadeDataset.filter(v => 
+                isFilialMatch(v.filial, filial) && 
+                isArmMatch(v.armazem, armazem) && 
+                String(v.produto).trim().toUpperCase() === produto
+            ).sort((a, b) => (a.data_validade || '').localeCompare(b.data_validade || ''));
+
+            const saldoERP = getSystemBalance(filial, armazem, produto);
+            let totalLotes = 0;
+            matchingLots.forEach(l => totalLotes += parseFloat(l.quantidade || 0));
+            const diff = totalLotes - saldoERP;
+
+            // Preenche cabeçalho
+            const elCod = document.getElementById('plModalCodigo');
+            const elDesc = document.getElementById('plModalDescricao');
+            const elFilArm = document.getElementById('plModalFilialArmazem');
+            const elBadge = document.getElementById('plModalStatusGeralBadge');
+
+            if (elCod) elCod.innerText = produto;
+            if (elDesc) elDesc.innerText = desc;
+            if (elFilArm) elFilArm.innerText = `Filial ${filial} • Armazém ${armazem}`;
+
+            let worstStatus = 'OK';
+            matchingLots.forEach(l => {
+                const st = getValidadeStatus(l.data_validade);
+                if (st === 'VENCIDO') worstStatus = 'VENCIDO';
+                else if (st === 'AVENCER' && worstStatus !== 'VENCIDO') worstStatus = 'AVENCER';
+            });
+
+            if (elBadge) {
+                if (worstStatus === 'VENCIDO') {
+                    elBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800";
+                    elBadge.innerText = "🔴 Lote(s) Vencido(s)";
+                } else if (worstStatus === 'AVENCER') {
+                    elBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-800";
+                    elBadge.innerText = "🟡 A Vencer (60d)";
+                } else {
+                    elBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800";
+                    elBadge.innerText = "🟢 No Prazo";
+                }
+            }
+
+            // Comparativo de saldo
+            const elSaldo = document.getElementById('plModalSaldoERP');
+            const elSoma = document.getElementById('plModalSomaLotes');
+            const elDiff = document.getElementById('plModalDiferenca');
+            const fillBtnContainer = document.getElementById('plModalFillRemainingBtnContainer');
+            const fillBtnLabel = document.getElementById('plModalFillRemainingLabel');
+
+            if (elSaldo) elSaldo.innerText = `${saldoERP.toLocaleString('pt-BR')} ${unidade}`;
+            if (elSoma) elSoma.innerText = `${totalLotes.toLocaleString('pt-BR')} ${unidade}`;
+            
+            if (elDiff) {
+                if (Math.abs(diff) < 0.0001) {
+                    elDiff.innerText = "0 (Alinhado)";
+                    elDiff.className = "text-lg font-black text-emerald-600";
+                } else if (diff < 0) {
+                    elDiff.innerText = `Falta ${Math.abs(diff).toLocaleString('pt-BR')} ${unidade}`;
+                    elDiff.className = "text-lg font-black text-amber-600 animate-pulse";
+                } else {
+                    elDiff.innerText = `Excede +${diff.toLocaleString('pt-BR')} ${unidade}`;
+                    elDiff.className = "text-lg font-black text-rose-600 animate-pulse";
+                }
+            }
+
+            if (fillBtnContainer) {
+                if (diff < -0.0001) {
+                    fillBtnContainer.classList.remove('hidden');
+                    if (fillBtnLabel) fillBtnLabel.innerText = `Preencher Falta de ${Math.abs(diff).toLocaleString('pt-BR')} ${unidade}`;
+                } else {
+                    fillBtnContainer.classList.add('hidden');
+                }
+            }
+
+            // Renderiza linhas da tabela
+            const tbody = document.getElementById('plModalTableBody');
+            const elCount = document.getElementById('plModalLotsCount');
+            if (elCount) elCount.innerText = `${matchingLots.length} lote(s) cadastrado(s)`;
+
+            if (tbody) {
+                tbody.innerHTML = '';
+                if (matchingLots.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum lote registrado para este material neste armazém.</td></tr>`;
+                } else {
+                    matchingLots.forEach(lot => {
+                        const lotSt = getValidadeStatus(lot.data_validade);
+                        let badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">No Prazo</span>`;
+                        if (lotSt === 'VENCIDO') badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">Vencido</span>`;
+                        else if (lotSt === 'AVENCER') badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800">A Vencer</span>`;
+
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/60 border-b border-slate-100 dark:border-slate-700";
+                        tr.innerHTML = `
+                            <td class="px-3 py-2.5 font-black text-slate-900 dark:text-white">
+                                <span class="bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded-lg text-xs font-black">${lot.lote || 'S/ LOTE'}</span>
+                            </td>
+                            <td class="px-3 py-2.5 text-right font-black text-[#002f6c] dark:text-blue-400">${Number(lot.quantidade || 0).toLocaleString('pt-BR')}</td>
+                            <td class="px-3 py-2.5 font-bold text-slate-600 dark:text-slate-300">${lot.embalagem || '-'}</td>
+                            <td class="px-3 py-2.5 text-center font-bold text-slate-500">${formatAnoMesDisplay(lot.data_fabricacao)}</td>
+                            <td class="px-3 py-2.5 text-center font-black text-slate-900 dark:text-white">${formatAnoMesDisplay(lot.data_validade)}</td>
+                            <td class="px-3 py-2.5 text-center">${badge}</td>
+                            <td class="px-3 py-2.5 text-[11px] text-slate-500 dark:text-slate-400 italic">${lot.observacao || '-'}</td>
+                            <td class="px-3 py-2.5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button type="button" onclick="openArgoxLabelModalFromValidade(${lot.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active" title="Imprimir Etiqueta Argox Individual">
+                                        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button type="button" onclick="openEditValidadeModal(${lot.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active" title="Editar este Lote">
+                                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button type="button" onclick="openTransferValidadeModal(${lot.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active" title="Mover para Armazém 50 (Vencidos)">
+                                        <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button type="button" onclick="deleteValidadeEntry(${lot.id})" class="bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active" title="Excluir este Lote">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            }
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function openNewValidadeModalForCurrentProduct() {
+            if (!currentProductLotsData) return;
+            openNewValidadeModal(currentProductLotsData.produto, currentProductLotsData.armazem);
+        }
+
+        function fillRemainingBalanceFromModal() {
+            if (!currentProductLotsData) return;
+            const { filial, armazem, produto } = currentProductLotsData;
+            const comp = getBalanceComparison(filial, armazem, produto);
+            if (comp.diff < 0) {
+                openNewValidadeModal(produto, armazem);
+                const qtdInput = document.getElementById('valInputQuantidade');
+                if (qtdInput) {
+                    qtdInput.value = String(Math.abs(comp.diff));
+                    updateValidadeQtdPreview();
+                }
+            }
+        }
+
+        // --- IMPRESSÃO DE FICHA DE PALETE EM FOLHA A4 COM SELETOR DE LOTES ---
+
+        function openA4PalletPrintModalFromProductLots() {
+            if (!currentProductLotsData) return;
+            openA4PalletPrintModal(currentProductLotsData.filial, currentProductLotsData.armazem, currentProductLotsData.produto);
+        }
+
+        function openA4PalletPrintModal(filial, armazem, produto) {
+            const f = String(filial || '01').padStart(2, '0');
+            const a = String(armazem || '01').padStart(2, '0');
+            const p = String(produto || '').trim().toUpperCase();
+
+            const matchingLots = rawValidadeDataset.filter(v => 
+                isFilialMatch(v.filial, f) && 
+                isArmMatch(v.armazem, a) && 
+                String(v.produto).trim().toUpperCase() === p
+            ).sort((lotA, lotB) => (lotA.data_validade || '').localeCompare(lotB.data_validade || ''));
+
+            currentA4PalletData = {
+                filial: f,
+                armazem: a,
+                produto: p,
+                lotes: matchingLots
+            };
+
+            renderA4LotCheckboxes();
+
+            const modal = document.getElementById('a4PrintModal');
+            if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function closeA4PrintModal() {
+            const modal = document.getElementById('a4PrintModal');
+            if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
+        }
+
+        function renderA4LotCheckboxes() {
+            const container = document.getElementById('a4LotCheckboxesContainer');
+            if (!container || !currentA4PalletData) return;
+
+            container.innerHTML = '';
+            if (currentA4PalletData.lotes.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 font-bold p-2">Nenhum lote cadastrado para este material.</p>`;
+                return;
+            }
+
+            currentA4PalletData.lotes.forEach((lot, idx) => {
+                const itemDiv = document.createElement('label');
+                itemDiv.className = "flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors";
+                
+                const lotSt = getValidadeStatus(lot.data_validade);
+                let badge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800">No Prazo</span>`;
+                if (lotSt === 'VENCIDO') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800">Vencido</span>`;
+                else if (lotSt === 'AVENCER') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800">A Vencer</span>`;
+
+                itemDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" id="a4_lot_chk_${lot.id}" value="${lot.id}" checked class="a4-lot-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <div>
+                            <span class="font-black text-xs text-slate-900 dark:text-white">Lote: ${lot.lote || 'S/ LOTE'}</span>
+                            <span class="text-[11px] text-slate-500 font-bold ml-2">• Qtd: ${Number(lot.quantidade || 0).toLocaleString('pt-BR')} ${lot.embalagem || 'UN'}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-black text-slate-800 dark:text-slate-200 font-mono">Val: ${formatAnoMesDisplay(lot.data_validade)}</span>
+                        ${badge}
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function toggleAllA4LotCheckboxes(check) {
+            const chks = document.querySelectorAll('.a4-lot-chk');
+            chks.forEach(c => c.checked = check);
+        }
+
+        function adjustA4Copies(delta) {
+            const input = document.getElementById('a4LabelCopiesInput');
+            if (!input) return;
+            let val = parseInt(input.value, 10) || 1;
+            val += delta;
+            if (val < 1) val = 1;
+            if (val > 100) val = 100;
+            input.value = val;
+        }
+
+        function printA4PalletSheet() {
+            if (!currentA4PalletData) return;
+            const { filial, armazem, produto, lotes } = currentA4PalletData;
+
+            const chks = document.querySelectorAll('.a4-lot-chk:checked');
+            const selectedIds = Array.from(chks).map(c => String(c.value));
+
+            if (selectedIds.length === 0) {
+                showAlert("Por favor, selecione ao menos um lote para sair na impressão da folha A4.", "warning");
+                return;
+            }
+
+            const selectedLots = lotes.filter(l => selectedIds.includes(String(l.id)));
+            const copiesInput = document.getElementById('a4LabelCopiesInput');
+            const copies = copiesInput ? (parseInt(copiesInput.value, 10) || 1) : 1;
+
+            const sbMatch = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === produto) : null;
+            const desc = sbMatch ? (sbMatch['Descr.Espec.'] || produto) : produto;
+            const unidade = sbMatch && sbMatch.Unidade ? String(sbMatch.Unidade).trim().toUpperCase() : 'UN';
+
+            let totalSelectedQtd = 0;
+            selectedLots.forEach(l => totalSelectedQtd += parseFloat(l.quantidade || 0));
+
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(produto)}`;
+
+            const printContainer = document.getElementById('a4PrintContainer');
+            if (!printContainer) return;
+
+            let fullHtml = '';
+            for (let c = 0; c < copies; c++) {
+                let rowsHtml = '';
+                selectedLots.forEach(l => {
+                    const st = getValidadeStatus(l.data_validade);
+                    let stText = 'NO PRAZO';
+                    if (st === 'VENCIDO') stText = 'VENCIDO';
+                    else if (st === 'AVENCER') stText = 'A VENCER (60d)';
+
+                    rowsHtml += `
+                        <tr>
+                            <td style="font-family: monospace; font-size: 13pt; font-weight: 900;">${l.lote || 'S/ LOTE'}</td>
+                            <td style="text-align: right; font-size: 13pt; font-weight: 900;">${Number(l.quantidade || 0).toLocaleString('pt-BR')} ${l.embalagem || unidade}</td>
+                            <td style="text-align: center; font-size: 11pt;">${formatAnoMesDisplay(l.data_fabricacao)}</td>
+                            <td style="text-align: center; font-size: 13pt; font-weight: 900;">${formatAnoMesDisplay(l.data_validade)}</td>
+                            <td style="text-align: center; font-size: 10pt; font-weight: 900;">${stText}</td>
+                            <td style="font-size: 10pt;">${l.observacao || '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                fullHtml += `
+                    <div class="a4-pallet-page">
+                        <div class="a4-pallet-card">
+                            <!-- CABEÇALHO COM LOGO E CÓDIGO GIGANTE -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000000; padding-bottom: 12px;">
+                                <div>
+                                    <h1 style="margin: 0; font-size: 18pt; font-weight: 900; color: #002f6c; text-transform: uppercase;">AMAZON AÇO • CONTROLE DE ESTOQUE</h1>
+                                    <p style="margin: 3px 0 0 0; font-size: 12pt; font-weight: 800; color: #333333;">FICHA DE IDENTIFICAÇÃO DE PALETE / PRATELEIRA</p>
+                                    <p style="margin: 4px 0 0 0; font-size: 11pt; font-weight: 800; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <img src="${qrUrl}" alt="QR Code" style="width: 100px; height: 100px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
+                                </div>
+                            </div>
+
+                            <!-- CÓDIGO DO MATERIAL EM DESTAQUE MÁXIMO -->
+                            <div style="text-align: center; background: #002f6c; color: #ffffff; padding: 10px; margin-top: 12px; border-radius: 6px;">
+                                <span style="font-family: monospace; font-size: 38pt; font-weight: 900; letter-spacing: 2px;">${produto}</span>
+                            </div>
+
+                            <!-- DESCRIÇÃO COMPLETA -->
+                            <div style="margin-top: 12px; border: 2px solid #000000; padding: 10px; border-radius: 6px; background: #f8fafc;">
+                                <span style="font-size: 9pt; font-weight: 900; color: #666666; text-transform: uppercase;">Descrição do Material:</span>
+                                <h2 style="margin: 2px 0 0 0; font-size: 16pt; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1.2;">${desc}</h2>
+                            </div>
+
+                            <!-- TABELA DE LOTES PRESENTES NESTE PALETE -->
+                            <div style="margin-top: 14px;">
+                                <h3 style="margin: 0 0 4px 0; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Lotes e Validades deste Palete:</h3>
+                                <table class="a4-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 22%;">Lote</th>
+                                            <th style="width: 20%; text-align: right;">Quantidade</th>
+                                            <th style="width: 15%; text-align: center;">Fabricação</th>
+                                            <th style="width: 18%; text-align: center;">Validade</th>
+                                            <th style="width: 15%; text-align: center;">Status</th>
+                                            <th style="width: 10%;">Obs.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rowsHtml}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td style="text-align: right; font-weight: 900; text-transform: uppercase;">TOTAL DO PALETE:</td>
+                                            <td style="text-align: right; font-weight: 900; font-size: 14pt; color: #002f6c;">${totalSelectedQtd.toLocaleString('pt-BR')} ${unidade}</td>
+                                            <td colspan="4" style="text-align: right; font-size: 10pt; font-weight: 800; color: #555555;">${selectedLots.length} lote(s) selecionado(s)</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- RODAPÉ DA FOLHA -->
+                            <div style="margin-top: 18px; border-top: 2px dashed #999999; padding-top: 8px; display: flex; justify-content: space-between; font-size: 9pt; font-weight: 700; color: #666666;">
+                                <span>Emitido por: ${currentUser ? currentUser.nome : 'ALMOXARIFADO'}</span>
+                                <span>Data/Hora: ${new Date().toLocaleString('pt-BR')}</span>
+                                <span>Portal de Estoques Amazon Aço</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            printContainer.innerHTML = fullHtml;
+            document.body.classList.add('printing-a4');
+            window.print();
+
+            setTimeout(() => {
+                document.body.classList.remove('printing-a4');
+            }, 1000);
         }
 
         // --- GESTÃO DE LOTES E VALIDADE (MODAL NOVO / EDIÇÃO) ---
@@ -2671,7 +3313,7 @@
         // --- EXPORTAÇÃO PARA EXCEL (.XLSX) ---
 
         function exportValidadeToExcel() {
-            if (!filteredValidadeDataset || filteredValidadeDataset.length === 0) {
+            if (!groupedValidadeDataset || groupedValidadeDataset.length === 0) {
                 showAlert("Nenhum registro de validade encontrado para exportar.", "warning");
                 return;
             }
@@ -2687,38 +3329,47 @@
                 }
             });
 
-            // Ordem das colunas: Filial, Produto, Descrição, Unidade de Medida, Armazem, Lote, Qtd Lote, Soma Total Lotes, Saldo no Sistema, Diferença, Situação Saldo, Palete/Caixa/Unidade, Mês de Vencimento, Status Validade
-            const exportData = filteredValidadeDataset.map(item => {
+            const allExportRows = [];
+            groupedValidadeDataset.forEach(item => {
                 const sbInfo = sb1Map[item.produto] || { descricao: 'Material Não Cadastrado no SB1', unidade: 'UN' };
-                const status = getValidadeStatus(item.data_validade);
-                let statusText = 'No Prazo (OK)';
-                if (status === 'VENCIDO') statusText = 'Vencido';
-                else if (status === 'AVENCER') statusText = 'A Vencer (60d)';
-
                 const comp = getBalanceComparison(item.filial, item.armazem, item.produto);
                 let situacaoSaldo = 'Alinhado (100%)';
                 if (comp.status === 'FALTA_LOTE') situacaoSaldo = `Falta Lote (-${Math.abs(comp.diff)})`;
                 else if (comp.status === 'EXCEDENTE') situacaoSaldo = `Lotes Excedentes (+${comp.diff})`;
 
-                return {
-                    "Filial": item.filial || '01',
-                    "Produto": item.produto || '',
-                    "Descrição": sbInfo.descricao,
-                    "Unidade de Medida": sbInfo.unidade,
-                    "Armazem": item.armazem || '',
-                    "Lote": item.lote || '',
-                    "Qtd Lote": Number(item.quantidade || 0),
-                    "Soma Total Lotes (Armazém)": Number(comp.totalLotes || 0),
-                    "Saldo no Sistema (Armazém)": Number(comp.saldoSistema || 0),
-                    "Diferença (Lotes - Sistema)": Number(comp.diff || 0),
-                    "Situação Saldo": situacaoSaldo,
-                    "Palete/Caixa/Unidade": item.embalagem || '',
-                    "Mês de Vencimento": formatAnoMesDisplay(item.data_validade),
-                    "Status Validade": statusText
-                };
+                item.lotes.forEach(l => {
+                    const status = getValidadeStatus(l.data_validade);
+                    let statusText = 'No Prazo (OK)';
+                    if (status === 'VENCIDO') statusText = 'Vencido';
+                    else if (status === 'AVENCER') statusText = 'A Vencer (60d)';
+
+                    allExportRows.push({
+                        "Filial": item.filial || '01',
+                        "Produto": item.produto || '',
+                        "Descrição": sbInfo.descricao,
+                        "Unidade de Medida": sbInfo.unidade,
+                        "Armazem": item.armazem || '',
+                        "Lote": l.lote || '',
+                        "Qtd Lote": Number(l.quantidade || 0),
+                        "Soma Total Lotes (Armazém)": Number(comp.totalLotes || 0),
+                        "Saldo no Sistema (Armazém)": Number(comp.saldoSistema || 0),
+                        "Diferença (Lotes - Sistema)": Number(comp.diff || 0),
+                        "Situação Saldo": situacaoSaldo,
+                        "Palete/Caixa/Unidade": l.embalagem || '',
+                        "Mês de Fabricação": formatAnoMesDisplay(l.data_fabricacao),
+                        "Mês de Vencimento": formatAnoMesDisplay(l.data_validade),
+                        "Status Validade": statusText,
+                        "Observação": l.observacao || ''
+                    });
+                });
             });
 
-            const ws = XLSX.utils.json_to_sheet(exportData);
+            if (allExportRows.length === 0) {
+                showAlert("Nenhum lote registrado para exportar.", "warning");
+                return;
+            }
+
+            const ws = XLSX.utils.json_to_sheet(allExportRows);
 
             ws['!cols'] = [
                 { wch: 10 }, // Filial
@@ -2733,8 +3384,10 @@
                 { wch: 24 }, // Diferença (Lotes - Sistema)
                 { wch: 22 }, // Situação Saldo
                 { wch: 22 }, // Palete/Caixa/Unidade
+                { wch: 20 }, // Mês de Fabricação
                 { wch: 22 }, // Mês de Vencimento
-                { wch: 18 }  // Status Validade
+                { wch: 18 }, // Status Validade
+                { wch: 30 }  // Observação
             ];
 
             const wb = XLSX.utils.book_new();
@@ -2783,7 +3436,7 @@
             const elValText = document.getElementById('argoxLblValText');
             const elArm = document.getElementById('argoxLblArmCode');
             const elQtd = document.getElementById('argoxLblQtd');
-            const canvas = document.getElementById('argoxCanvasQR');
+            const imgQR = document.getElementById('argoxImgQR');
 
             if (elCod) elCod.innerText = currentLabelItemData.codigo;
             if (elDesc) elDesc.innerText = currentLabelItemData.descricao;
@@ -2798,15 +3451,8 @@
                 if (elLoteBadge) elLoteBadge.classList.add('hidden');
             }
 
-            if (canvas && typeof QRCode !== 'undefined') {
-                const qrText = currentLabelItemData.codigo;
-                QRCode.toCanvas(canvas, qrText, {
-                    width: 110,
-                    margin: 0,
-                    errorCorrectionLevel: 'M'
-                }, function (error) {
-                    if (error) console.error("Erro ao gerar QR Code:", error);
-                });
+            if (imgQR && currentLabelItemData.codigo) {
+                imgQR.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentLabelItemData.codigo)}`;
             }
         }
 
@@ -2827,7 +3473,8 @@
 
         function setLabelCopies(num) {
             const input = document.getElementById('argoxLabelCopiesInput');
-            if (input) input.value = num;
+            if (!input) return;
+            input.value = num;
         }
 
         function printArgoxLabels() {
@@ -2838,8 +3485,7 @@
             const printContainer = document.getElementById('argoxPrintContainer');
             if (!printContainer) return;
 
-            const canvas = document.getElementById('argoxCanvasQR');
-            const qrDataUrl = canvas ? canvas.toDataURL('image/png') : '';
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentLabelItemData.codigo)}`;
 
             let labelsHtml = '';
             for (let i = 0; i < copies; i++) {
@@ -2862,7 +3508,7 @@
                                     <p class="argox-label-meta">ARM: ${currentLabelItemData.armazem} ${currentLabelItemData.quantidade ? `| ${currentLabelItemData.quantidade}` : ''}</p>
                                 </div>
                                 <div class="argox-label-qr-col">
-                                    <img src="${qrDataUrl}" class="argox-label-qr-img" alt="QR Code">
+                                    <img src="${qrUrl}" class="argox-label-qr-img" alt="QR Code">
                                 </div>
                             </div>
                         </div>
