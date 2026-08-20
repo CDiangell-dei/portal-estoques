@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="./icon.png">
     <link rel="shortcut icon" type="image/png" href="./icon.png">
     <link rel="apple-touch-icon" href="./icon.png">
-    <title>Transferência para Armazém 01 - Amazon Aço</title>
+    <title>Transferência entre Armazéns - Amazon Aço</title>
     <script>
         if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -125,7 +125,7 @@
                             <span>Portal de Controle de Estoques</span>
                             <span class="bg-blue-100 text-[#002f6c] dark:bg-blue-950 dark:text-blue-200 text-[9px] px-2 py-0.5 rounded-full font-black border border-blue-200 shadow-xs">Transferência</span>
                         </p>
-                        <h1 class="text-sm font-black text-slate-900 leading-tight">Transferência para Armazém 01</h1>
+                        <h1 class="text-sm font-black text-slate-900 leading-tight">Transferência entre Armazéns</h1>
                     </div>
                 </a>
             </div>
@@ -146,7 +146,7 @@
                 <div class="relative">
                     <button onclick="toggleDesktopSubmenu('estoque')" id="desktopBtnEstoqueGroup" class="bg-blue-50 dark:bg-blue-950/60 text-[#002f6c] dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-3.5 py-2 rounded-2xl text-xs font-black inline-flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer">
                         <i data-lucide="truck" class="w-4 h-4 text-blue-600"></i>
-                        <span>Transferência 01</span>
+                        <span>Transferência</span>
                         <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-blue-400"></i>
                     </button>
 
@@ -156,7 +156,7 @@
                                 <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                             </div>
                             <div>
-                                <p class="text-xs font-black">Transferência Armazém 01</p>
+                                <p class="text-xs font-black">Transferência entre Armazéns</p>
                             </div>
                         </a>
                         <a href="inventario.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
@@ -178,65 +178,41 @@
                         <a href="validade.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
                             <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
                                 <i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs font-black text-slate-800 dark:text-slate-200">Controle de Validade</p>
+                                <span>Controle de Validade</span>
                             </div>
                         </a>
                     </div>
                 </div>
 
-                <!-- GRUPO ALMOXARIFADO -->
-                <div id="desktopAlmoxGroupContainer" class="relative hidden">
-                    <button onclick="toggleDesktopSubmenu('almox')" id="desktopBtnAlmoxGroup" class="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 px-3.5 py-2 rounded-2xl text-xs font-black inline-flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer">
-                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
-                        <span>Almoxarifado</span>
-                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
-                    </button>
+                <a href="minutas.html" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                    <i data-lucide="file-check" class="w-4 h-4"></i>
+                    <span>Minutas</span>
+                </a>
 
-                    <div id="desktopAlmoxSubmenu" class="hidden absolute top-12 left-0 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-50 p-2 space-y-1">
-                        <a href="luvas.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                                <i data-lucide="shield" class="w-3.5 h-3.5"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs font-black text-slate-800 dark:text-slate-200">Consumo de EPIs (Luvas)</p>
-                            </div>
-                        </a>
-                        <a href="minutas.html" class="w-full flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition-colors">
-                            <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
-                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs font-black text-slate-800 dark:text-slate-200">Minutas & Recebimento</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- ADMIN -->
-                <a href="admin.html" id="desktopBtnAdmin" class="hidden px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 bg-amber-500/10 text-amber-700 hover:text-amber-900 border border-amber-500/20 cursor-pointer">
-                    <i data-lucide="settings" class="w-4 h-4"></i>
-                    <span>Admin</span>
+                <a href="luvas.html" class="px-3.5 py-2 rounded-2xl text-xs font-black transition-all inline-flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                    <i data-lucide="shield" class="w-4 h-4"></i>
+                    <span>EPIs</span>
                 </a>
             </div>
 
-            <!-- PERFIL E CONTROLES -->
+            <!-- CONTROLES DO USUÁRIO & THEME -->
             <div class="flex items-center space-x-3">
-                <div title="Status da Conexão com o Servidor" class="p-2 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center space-x-1">
-                    <span id="appStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                </div>
-
-                <div class="flex flex-col text-right">
-                    <span id="headerUserName" class="text-xs font-black text-slate-900 dark:text-white">Usuário</span>
-                    <span id="headerUserFilial" class="text-[10px] font-bold text-[#9c0e25] uppercase tracking-wider">Filial 01</span>
-                </div>
-
-                <button onclick="toggleDarkMode()" title="Modo Escuro" id="darkModeBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 dark:border-slate-600 p-2.5 rounded-xl border border-slate-200 transition-all touch-active">
-                    <i data-lucide="moon" class="w-4 h-4"></i>
+                <button onclick="toggleDarkMode()" class="p-2 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-all cursor-pointer">
+                    <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
                 </button>
 
-                <button onclick="confirmLogout()" title="Sair da Sessão" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-[#9c0e25] p-2.5 rounded-xl border border-slate-200 transition-all touch-active">
+                <div class="flex items-center space-x-2 border-l border-slate-200 pl-3">
+                    <div class="w-8 h-8 rounded-full bg-[#002f6c] text-white flex items-center justify-center font-black text-xs">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                    </div>
+                    <div class="hidden sm:block text-left">
+                        <p id="headerUserName" class="text-xs font-black text-slate-800 dark:text-slate-200 leading-tight">Usuário</p>
+                        <p id="headerUserRole" class="text-[10px] font-bold text-slate-400">Operador</p>
+                    </div>
+                </div>
+
+                <button onclick="handleLogout()" class="p-2 rounded-2xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all cursor-pointer" title="Sair">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -255,10 +231,10 @@
                 </div>
                 <h2 class="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
                     <i data-lucide="truck" class="w-6 h-6 text-blue-400"></i>
-                    <span>Transferência para Armazém 01</span>
+                    <span>Transferência entre Armazéns</span>
                 </h2>
                 <p class="text-xs sm:text-sm text-blue-100/80 font-semibold max-w-xl">
-                    Escaneie QR Codes, consulte a situação de inventário e monte a lista de movimentação física e baixa no ERP.
+                    Selecione o armazém de destino e origem, escaneie QR Codes e monte a lista de movimentação física e baixa no ERP.
                 </p>
             </div>
 
@@ -276,15 +252,15 @@
                     </button>
                 </div>
 
-                <!-- Seletor de Abas (Nova Transferência / Histórico) -->
+                <!-- Seletor de Abas (Histórico / Lote Ativo) -->
                 <div class="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/15 flex items-center gap-1.5 shadow-inner">
-                    <button id="tabActiveTransferBtn" onclick="switchTransferTab('active')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 bg-[#9c0e25] text-white shadow-sm cursor-pointer">
-                        <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
-                        <span>Lote Ativo</span>
-                    </button>
-                    <button id="tabHistoryBtn" onclick="switchTransferTab('history')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 text-blue-100 hover:text-white cursor-pointer">
+                    <button id="tabHistoryBtn" onclick="switchTransferTab('history')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 bg-[#9c0e25] text-white shadow-sm cursor-pointer">
                         <i data-lucide="history" class="w-3.5 h-3.5"></i>
                         <span>Histórico</span>
+                    </button>
+                    <button id="tabActiveTransferBtn" onclick="switchTransferTab('active')" class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 text-blue-100 hover:text-white cursor-pointer">
+                        <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
+                        <span>Lote em Coleta</span>
                     </button>
                 </div>
             </div>
@@ -293,7 +269,7 @@
         <!-- ============================================================ -->
         <!-- ABA 1: LOTE ATIVO / COLETA & SEPARAÇÃO                       -->
         <!-- ============================================================ -->
-        <div id="viewActiveTransfer" class="space-y-6">
+        <div id="viewActiveTransfer" class="hidden space-y-6">
 
             <!-- HEADER DO LOTE ATIVO -->
             <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -309,19 +285,23 @@
                             </span>
                         </div>
                         <p id="activeLoteInfo" class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-                            Destino: <strong class="text-slate-800 dark:text-slate-200">Armazém 01</strong> | Criado por: <span id="activeLoteCriador">Você</span>
+                            Destino: <strong id="activeLoteDestinoBadge" class="text-emerald-700 dark:text-emerald-300 font-black bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Armazém 01</strong> | Criado por: <span id="activeLoteCriador">Você</span>
                         </p>
                     </div>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+                    <button onclick="switchTransferTab('history')" class="px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                        <span>Voltar ao Histórico</span>
+                    </button>
                     <button onclick="saveDraftManually()" id="btnSalvarRascunho" class="px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 cursor-pointer shadow-xs">
                         <i data-lucide="bookmark" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
                         <span>Salvar Rascunho</span>
                     </button>
-                    <button onclick="startNewTransferBatch(true)" class="px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 flex items-center gap-1.5 cursor-pointer">
-                        <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-blue-600"></i>
-                        <span>Novo Lote</span>
+                    <button onclick="openModalNovaTransferencia()" class="px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-[#002f6c] hover:bg-[#00204a] text-white flex items-center gap-1.5 cursor-pointer shadow-xs">
+                        <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <span>Nova Transferência</span>
                     </button>
                     <button onclick="printTransferManifest()" class="px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 flex items-center gap-1.5 cursor-pointer">
                         <i data-lucide="printer" class="w-3.5 h-3.5"></i>
@@ -413,11 +393,11 @@
                             <h4 id="diagProductDesc" class="text-xs sm:text-sm font-black text-slate-900 dark:text-white mt-1">---</h4>
                         </div>
 
-                    <!-- SALDOS EM TEMPO REAL NOS ARMAZÉNS -->
+                        <!-- SALDOS EM TEMPO REAL NOS ARMAZÉNS -->
                         <div class="flex items-center gap-2">
-                            <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-center min-w-[90px]">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Destino (01)</span>
-                                <span id="diagSaldo01" class="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400">0</span>
+                            <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-center min-w-[95px]">
+                                <span id="diagDestinoLabel" class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Destino (01)</span>
+                                <span id="diagSaldoDestino" class="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400">0</span>
                             </div>
                             <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-center min-w-[100px]">
                                 <span id="diagOrigemLabel" class="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider block">Origem (02)</span>
@@ -588,7 +568,24 @@
         <!-- ============================================================ -->
         <!-- ABA 2: HISTÓRICO DE TRANSFERÊNCIAS                          -->
         <!-- ============================================================ -->
-        <div id="viewHistoryTransfer" class="hidden space-y-6">
+        <div id="viewHistoryTransfer" class="space-y-6">
+
+            <!-- BANNER DE AÇÃO RÁPIDA: NOVA TRANSFERÊNCIA -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-slate-700 text-[#002f6c] dark:text-blue-400 flex items-center justify-center font-black text-lg border border-blue-100 dark:border-slate-600">
+                        <i data-lucide="history" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white">Histórico de Transferências</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Consulte transferências anteriores ou inicie um novo lote escolhendo o armazém de destino.</p>
+                    </div>
+                </div>
+                <button onclick="openModalNovaTransferencia()" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-[#9c0e25] hover:bg-[#800b1d] text-white font-black text-xs uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer touch-active">
+                    <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-400"></i>
+                    <span>+ Nova Transferência</span>
+                </button>
+            </div>
 
             <!-- FILTROS DO HISTÓRICO -->
             <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
@@ -744,6 +741,71 @@
     </div>
 
     <!-- ============================================================ -->
+    <!-- MODAL DE CONFIGURAÇÃO / INÍCIO DE NOVA TRANSFERÊNCIA         -->
+    <!-- ============================================================ -->
+    <div id="modalNovaTransferencia" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm transition-opacity no-print">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-11/12 max-w-lg shadow-2xl p-6 border border-slate-200 dark:border-slate-700 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-red-50 dark:bg-red-950/60 text-[#9c0e25] dark:text-red-400 flex items-center justify-center">
+                        <i data-lucide="truck" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white">Iniciar Nova Transferência</h3>
+                        <p class="text-[11px] text-slate-400 font-semibold">Defina o armazém de destino e a origem padrão</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModalNovaTransferencia()" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <!-- Armazém de Destino (Para onde vai levar) -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                        <span>1. Armazém de Destino (Para onde vai levar)</span>
+                        <span class="text-emerald-600 dark:text-emerald-400 font-black">Destino Fixo do Lote</span>
+                    </label>
+                    <select id="modalNewTransferDestino" onchange="onModalDestinoChange()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3.5 py-3 text-xs font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer">
+                        <!-- Inserido dinamicamente via JS -->
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1 font-semibold">Este será o armazém que receberá todos os materiais movimentados neste lote.</p>
+                </div>
+
+                <!-- Armazém de Origem Padrão (De onde vai tirar inicialmente) -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                        <span>2. Armazém de Origem Padrão (De onde retirar)</span>
+                        <span class="text-blue-600 dark:text-blue-400 font-black">Pode alterar por item</span>
+                    </label>
+                    <select id="modalNewTransferOrigem" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3.5 py-3 text-xs font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer">
+                        <!-- Inserido dinamicamente via JS -->
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1 font-semibold">Sugestão padrão de saída. Você ainda poderá selecionar o armazém de origem para cada material individualmente.</p>
+                </div>
+
+                <!-- Observação / Finalidade -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">3. Finalidade / Observação do Lote (Opcional)</label>
+                    <input type="text" id="modalNewTransferObs" placeholder="Ex: Abastecimento de Frente de Loja, Reposição de Estoque, etc."
+                           class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                </div>
+            </div>
+
+            <div class="flex gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button type="button" onclick="closeModalNovaTransferencia()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-2xl transition cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="button" onclick="executeStartNewTransfer()" class="flex-1 py-3 bg-[#002f6c] hover:bg-[#00204a] text-white font-black text-xs rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer touch-active">
+                    <i data-lucide="play" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Iniciar Transferência</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
     <!-- ROMANEIO DE TRANSFERÊNCIA PARA IMPRESSÃO A4 (PRINT ONLY)     -->
     <!-- ============================================================ -->
     <div id="printManifestArea" class="print-only p-6 space-y-6">
@@ -751,7 +813,7 @@
             <div class="flex items-center space-x-3">
                 <img src="https://amazonaco.com.br/wp-content/uploads/2024/02/IMG_4689.png" alt="Amazon Aço" class="h-10 w-auto object-contain">
                 <div>
-                    <h1 class="text-base font-black uppercase text-slate-900">Guia / Romaneio de Transferência para Armazém 01</h1>
+                    <h1 id="printManifestTitle" class="text-base font-black uppercase text-slate-900">Guia / Romaneio de Transferência entre Armazéns</h1>
                     <p class="text-xs text-slate-600">Amazon Aço - Controle de Movimentação Interna de Estoque</p>
                 </div>
             </div>
@@ -811,11 +873,11 @@
             </div>
             <div class="border-t border-slate-900 pt-2">
                 <p class="font-bold">Transportador / Movimentação</p>
-                <p class="text-[10px] text-slate-500">Deslocamento para 01</p>
+                <p class="text-[10px] text-slate-500">Deslocamento</p>
             </div>
             <div class="border-t border-slate-900 pt-2">
-                <p class="font-bold">Recebedor / Armazém 01</p>
-                <p class="text-[10px] text-slate-500">Conferência Física no 01</p>
+                <p id="printReceiverSignatureLabel" class="font-bold">Recebedor / Armazém Destino</p>
+                <p class="text-[10px] text-slate-500">Conferência Física no Destino</p>
             </div>
         </div>
     </div>
@@ -855,7 +917,7 @@
                 <i data-lucide="truck" class="w-4 h-4"></i>
             </div>
             <div>
-                <p class="text-xs font-black">Transferência Armazém 01</p>
+                <p class="text-xs font-black">Transferência entre Armazéns</p>
                 <p class="text-[10px] font-bold text-blue-600">QR Code, separação física e ERP</p>
             </div>
         </a>
@@ -1016,6 +1078,9 @@
             // Carrega dados e lote pendente
             await switchSector('COMERCIO', false);
             await restoreOrInitActiveBatch();
+
+            // Abre por padrão na aba de Histórico
+            switchTransferTab('history');
         };
 
         function setupTransferFilialUI() {
@@ -1142,18 +1207,106 @@
         }
 
         // --- GERENCIAMENTO DO LOTE ATIVO ---
-        function initInMemoryDraftBatch() {
+        function initInMemoryDraftBatch(destino = '01', origemPadrao = '02', observacao = '') {
             const sec = currentSector === 'INDUSTRIA' ? 'IND' : 'COM';
             activeBatch = {
                 id: null,
                 codigo_lote: `TMA-${sec}-NOVO`,
                 setor: currentSector,
                 filial_id: String(currentFilialId).padStart(2, '0'),
+                armazem_destino: String(destino).padStart(2, '0'),
+                armazem_origem_padrao: String(origemPadrao).padStart(2, '0'),
                 status: 'EM_ABERTO',
-                observacao: '',
+                observacao: observacao || '',
                 criado_por: getFormattedLoggedUserName(),
                 itens: []
             };
+        }
+
+        // --- MODAL DE NOVA TRANSFERÊNCIA (SETUP DE DESTINO E ORIGEM) ---
+        function openModalNovaTransferencia() {
+            const modal = document.getElementById('modalNovaTransferencia');
+            if (!modal) return;
+
+            if (activeBatch && activeBatch.itens && activeBatch.itens.length > 0 && activeBatch.status === 'EM_ABERTO') {
+                if (!confirm(`Já existe uma lista de transferência em andamento (${activeBatch.codigo_lote}) com ${activeBatch.itens.length} item(ns). Deseja iniciar um novo lote zerado?`)) {
+                    return;
+                }
+            }
+
+            const selDest = document.getElementById('modalNewTransferDestino');
+            const warehouses = availableWarehousesInBranch && availableWarehousesInBranch.length > 0
+                ? availableWarehousesInBranch
+                : ['01', '02', '03', '04', '05', '06', '50'];
+
+            let destOpts = '';
+            warehouses.forEach(arm => {
+                let desc = `Armazém ${arm}`;
+                if (arm === '01') desc += ' (Frente de Loja / Principal)';
+                else if (arm === '02') desc += ' (Almoxarifado CD / Pulmão)';
+                else if (arm === '50') desc += ' (Validade / Quarentena / Avarias)';
+                destOpts += `<option value="${arm}">${desc}</option>`;
+            });
+            selDest.innerHTML = destOpts;
+            selDest.value = '01'; // Default
+
+            onModalDestinoChange();
+
+            document.getElementById('modalNewTransferObs').value = '';
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModalNovaTransferencia() {
+            const modal = document.getElementById('modalNovaTransferencia');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function onModalDestinoChange() {
+            const destVal = document.getElementById('modalNewTransferDestino').value;
+            const selOrig = document.getElementById('modalNewTransferOrigem');
+            const warehouses = availableWarehousesInBranch && availableWarehousesInBranch.length > 0
+                ? availableWarehousesInBranch
+                : ['01', '02', '03', '04', '05', '06', '50'];
+
+            let origOpts = '';
+            warehouses.forEach(arm => {
+                if (arm === destVal) return; // Não permite origem idêntica ao destino
+                let desc = `Armazém ${arm}`;
+                if (arm === '02') desc += ' (Padrão Almoxarifado)';
+                else if (arm === '01') desc += ' (Frente de Loja)';
+                else if (arm === '50') desc += ' (Validade / Quarentena)';
+                origOpts += `<option value="${arm}">${desc}</option>`;
+            });
+            selOrig.innerHTML = origOpts;
+
+            if (warehouses.includes('02') && destVal !== '02') {
+                selOrig.value = '02';
+            } else if (warehouses.includes('01') && destVal !== '01') {
+                selOrig.value = '01';
+            }
+        }
+
+        function executeStartNewTransfer() {
+            const dest = document.getElementById('modalNewTransferDestino').value || '01';
+            const orig = document.getElementById('modalNewTransferOrigem').value || '02';
+            const obs = document.getElementById('modalNewTransferObs').value.trim();
+
+            clearSelectedProduct();
+            initInMemoryDraftBatch(dest, orig, obs);
+
+            const selOrigPage = document.getElementById('selectArmazemOrigem');
+            if (selOrigPage) selOrigPage.value = orig;
+
+            closeModalNovaTransferencia();
+            switchTransferTab('active');
+            renderActiveBatchUI();
+            showAlert(`Nova transferência iniciada! Destino: Armazém ${dest}.`, "success");
+
+            setTimeout(() => {
+                const inp = document.getElementById('inputProductSearch');
+                if (inp) inp.focus();
+            }, 250);
         }
 
         async function restoreOrInitActiveBatch() {
@@ -1176,6 +1329,8 @@
                         codigo_lote: row.codigo_lote,
                         setor: row.setor,
                         filial_id: row.filial_id,
+                        armazem_destino: row.armazem_destino || '01',
+                        armazem_origem_padrao: row.armazem_origem_padrao || '02',
                         status: row.status,
                         observacao: row.observacao || '',
                         criado_por: row.criado_por || getFormattedLoggedUserName(),
@@ -1189,11 +1344,11 @@
                     };
                 } else {
                     // Inicializa apenas em memória (NÃO insere no Supabase se estiver zerado)
-                    initInMemoryDraftBatch();
+                    initInMemoryDraftBatch('01', '02');
                 }
             } catch(e) {
                 console.error("Erro ao restaurar lote ativo:", e);
-                initInMemoryDraftBatch();
+                initInMemoryDraftBatch('01', '02');
             }
 
             renderActiveBatchUI();
@@ -1218,6 +1373,8 @@
                 codigo_lote: newCode,
                 setor: currentSector,
                 filial_id: String(currentFilialId).padStart(2, '0'),
+                armazem_destino: activeBatch.armazem_destino || '01',
+                armazem_origem_padrao: activeBatch.armazem_origem_padrao || '02',
                 status: 'EM_ABERTO',
                 observacao: activeBatch.observacao || '',
                 criado_por: userName
@@ -1238,26 +1395,16 @@
             return data.id;
         }
 
-        async function startNewTransferBatch(promptConfirm = true) {
-            if (promptConfirm && activeBatch && activeBatch.itens && activeBatch.itens.length > 0 && activeBatch.status === 'EM_ABERTO') {
-                if (!confirm("Já existe uma lista com itens em aberto. Deseja iniciar um novo lote zerado?")) {
-                    return;
-                }
-            }
-
-            clearSelectedProduct();
-            initInMemoryDraftBatch();
-            renderActiveBatchUI();
-            if (promptConfirm) {
-                showAlert("Novo lote limpo iniciado (será salvo automaticamente ao adicionar itens).", "info");
-            }
-        }
-
         function renderActiveBatchUI() {
             // Header do Lote
             document.getElementById('activeLoteCodigo').innerText = activeBatch.codigo_lote || 'TMA-NOVO';
             document.getElementById('activeLoteCriador').innerText = activeBatch.criado_por || getFormattedLoggedUserName();
             document.getElementById('activeBatchObservacao').value = activeBatch.observacao || '';
+
+            const destBadge = document.getElementById('activeLoteDestinoBadge');
+            if (destBadge) {
+                destBadge.innerText = `Armazém ${activeBatch.armazem_destino || '01'}`;
+            }
 
             const statusBadge = document.getElementById('activeLoteStatusBadge');
             const btnFinalizar = document.getElementById('btnFinalizarFisico');
@@ -1265,6 +1412,10 @@
             const btnSalvar = document.getElementById('btnSalvarRascunho');
             const btnSalvarBottom = document.getElementById('btnSalvarRascunhoBottom');
             const scannerCard = document.getElementById('scannerSectionCard');
+
+            if (btnFinalizar) {
+                btnFinalizar.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i><span>1. Finalizar Separação Física (Entregue no Arm. ${activeBatch.armazem_destino || '01'})</span>`;
+            }
 
             if (activeBatch.status === 'TRANSFERIDO_ERP') {
                 statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200";
@@ -1477,12 +1628,14 @@
             const selectEl = document.getElementById('selectArmazemOrigem');
             if (!selectEl) return '02';
 
-            // Se não houver produto específico selecionado, preenche com os armazéns disponíveis da filial (exceto 01)
+            const currentDestArm = String(activeBatch.armazem_destino || '01').padStart(2, '0');
+
+            // Se não houver produto específico selecionado, preenche com os armazéns disponíveis da filial (exceto o destino)
             if (!productCode) {
                 let html = '';
-                const defaultArm = selectedArm || '02';
+                const defaultArm = selectedArm || activeBatch.armazem_origem_padrao || (currentDestArm === '02' ? '01' : '02');
                 availableWarehousesInBranch.forEach(arm => {
-                    if (arm === '01') return; // 01 é destino fixo
+                    if (arm === currentDestArm) return; // Exclui o armazém de destino do lote
                     const isSelected = arm === defaultArm ? 'selected' : '';
                     html += `<option value="${arm}" ${isSelected}>Armazém ${arm} ${arm === '02' ? '(Padrão)' : ''}</option>`;
                 });
@@ -1504,12 +1657,12 @@
                 }
             });
 
-            // Separa armazéns com saldo positivo (excluindo armazém 01 que é destino)
+            // Separa armazéns com saldo positivo (excluindo o armazém de destino deste lote)
             const withStock = [];
             const withoutStock = [];
 
             Object.keys(warehouseBalances).forEach(arm => {
-                if (arm === '01') return; // Armazém 01 é destino fixo
+                if (arm === currentDestArm) return; // Exclui o destino deste lote
                 const qty = warehouseBalances[arm];
                 if (qty > 0) {
                     withStock.push({ arm, qty });
@@ -1518,16 +1671,17 @@
                 }
             });
 
-            // Ordena os com saldo: prioriza 02 se tiver saldo, depois maior quantidade
+            // Ordena os com saldo: prioriza 02 se tiver saldo (ou 01 se 02 for o destino), depois maior quantidade
+            const preferredStockArm = currentDestArm === '02' ? '01' : '02';
             withStock.sort((a, b) => {
-                if (a.arm === '02') return -1;
-                if (b.arm === '02') return 1;
+                if (a.arm === preferredStockArm) return -1;
+                if (b.arm === preferredStockArm) return 1;
                 return b.qty - a.qty;
             });
 
             let chosenArm = selectedArm;
             if (!chosenArm || (!withStock.some(w => w.arm === chosenArm) && withStock.length > 0)) {
-                chosenArm = withStock.length > 0 ? withStock[0].arm : (selectedArm || '02');
+                chosenArm = withStock.length > 0 ? withStock[0].arm : (selectedArm || preferredStockArm);
             }
 
             let html = '';
@@ -1570,7 +1724,7 @@
                 container.innerHTML = `
                     <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-bold text-rose-700 dark:text-rose-300 w-full flex items-center gap-2">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 flex-shrink-0"></i>
-                        <span>Atenção: Este produto não possui saldo positivo registrado nos armazéns desta filial.</span>
+                        <span>Atenção: Este produto não possui saldo positivo registrado nos armazéns de origem desta filial.</span>
                     </div>
                 `;
                 lucide.createIcons();
@@ -1680,15 +1834,16 @@
             const currentSelectedInDropdown = forceArmOrigem || document.getElementById('selectArmazemOrigem').value;
             const armOrigem = populateOriginWarehousesDropdown(prod.codigo, currentSelectedInDropdown, prodSaldos);
 
-            // 4. Calcula saldos no Armazém 01 (Destino) e no Armazém de Origem Selecionado
-            let saldo01 = 0;
+            // 4. Calcula saldos no Armazém de Destino e no Armazém de Origem Selecionado
+            const destArm = String(activeBatch.armazem_destino || '01').padStart(2, '0');
+            let saldoDest = 0;
             let saldoOrig = 0;
 
             prodSaldos.forEach(s => {
                 const arm = String(s.armazem || s.Armazem || '').trim().padStart(2, '0');
                 const qtd = Number(s.quantidade !== undefined ? s.quantidade : (s['Qtde.1a.U.M.'] || 0));
 
-                if (arm === '01') saldo01 += qtd;
+                if (arm === destArm) saldoDest += qtd;
                 if (arm === armOrigem) saldoOrig += qtd;
             });
 
@@ -1696,7 +1851,8 @@
             document.getElementById('diagProductCode').innerText = prod.codigo;
             document.getElementById('diagProductDesc').innerText = prod.descricao;
             document.getElementById('diagProductUM').innerText = prod.unidade || 'PC';
-            document.getElementById('diagSaldo01').innerText = saldo01.toLocaleString('pt-BR');
+            document.getElementById('diagSaldoDestino').innerText = saldoDest.toLocaleString('pt-BR');
+            document.getElementById('diagDestinoLabel').innerText = `Destino (${destArm})`;
             document.getElementById('diagSaldoOrigem').innerText = saldoOrig.toLocaleString('pt-BR');
             document.getElementById('diagOrigemLabel').innerText = `Origem (${armOrigem})`;
 
@@ -2093,7 +2249,7 @@
                 descricao: selectedProductForDiag.descricao,
                 unidade: selectedProductForDiag.unidade || 'PC',
                 armazem_origem: armOrigem,
-                armazem_destino: '01',
+                armazem_destino: activeBatch.armazem_destino || '01',
                 quantidade: qty,
                 saldo_origem_momento: saldoOrig,
                 confiabilidade_inventario: relBadgeText,
@@ -2212,6 +2368,8 @@
                     await supabaseClient.from('transferencias_armazem')
                         .update({
                             observacao: obsVal,
+                            armazem_destino: activeBatch.armazem_destino || '01',
+                            armazem_origem_padrao: activeBatch.armazem_origem_padrao || '02',
                             status: 'EM_ABERTO'
                         })
                         .eq('id', activeBatch.id);
@@ -2235,8 +2393,9 @@
 
             const userName = getFormattedLoggedUserName();
             const timestamp = new Date().toISOString();
+            const destArm = activeBatch.armazem_destino || '01';
 
-            if (!confirm("Confirmar que a separação física foi concluída e o material foi entregue no Armazém 01?")) {
+            if (!confirm(`Confirmar que a separação física foi concluída e os materiais foram entregues no Armazém ${destArm}?`)) {
                 return;
             }
 
@@ -2255,7 +2414,7 @@
             }
 
             renderActiveBatchUI();
-            showAlert("Separação física finalizada com sucesso! Aguardando baixa no ERP.", "success");
+            showAlert(`Separação física finalizada (Entregue no Arm. ${destArm})! Aguardando baixa no ERP.`, "success");
         }
 
         function openModalTransferirERP() {
@@ -2342,6 +2501,7 @@
                 return;
             }
 
+            const destArm = activeBatch.armazem_destino || '01';
             document.getElementById('printLoteCodigo').innerText = activeBatch.codigo_lote || 'TMA-COM-1';
             document.getElementById('printSetor').innerText = activeBatch.setor || 'COMÉRCIO';
             document.getElementById('printFilial').innerText = getFilialDisplayName(currentFilialId);
@@ -2356,6 +2516,7 @@
             const tbody = document.getElementById('printItemsTableBody');
             let html = '';
             activeBatch.itens.forEach((it, idx) => {
+                const itemDest = it.armazem_destino || destArm;
                 html += `
                     <tr class="border-b border-slate-300">
                         <td class="p-2 border-r border-slate-300 text-center">${idx + 1}</td>
@@ -2365,7 +2526,7 @@
                             ${it.lote ? `<div class="text-[10px] font-bold text-slate-600">Lote: ${it.lote} | Val: ${formatAnoMesDisplay(it.data_validade)}</div>` : ''}
                         </td>
                         <td class="p-2 border-r border-slate-300 text-center">Arm. ${it.armazem_origem || '02'}</td>
-                        <td class="p-2 border-r border-slate-300 text-center">Arm. 01</td>
+                        <td class="p-2 border-r border-slate-300 text-center font-bold">Arm. ${itemDest}</td>
                         <td class="p-2 border-r border-slate-300 text-right font-bold">${Number(it.quantidade).toLocaleString('pt-BR')}</td>
                         <td class="p-2 text-center">${it.unidade || 'PC'}</td>
                     </tr>
@@ -2393,7 +2554,7 @@
                 "Lote Validade": it.lote || 'N/A',
                 "Data Validade": it.data_validade ? formatAnoMesDisplay(it.data_validade) : 'N/A',
                 "Armazém Origem": it.armazem_origem,
-                "Armazém Destino": it.armazem_destino,
+                "Armazém Destino": it.armazem_destino || activeBatch.armazem_destino || '01',
                 "Quantidade Transferida": it.quantidade,
                 "Unidade": it.unidade,
                 "Status Lote": activeBatch.status,
@@ -2403,7 +2564,7 @@
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Transferencia");
-            XLSX.writeFile(wb, `${activeBatch.codigo_lote || 'Transferencia'}_Armazém01.xlsx`);
+            XLSX.writeFile(wb, `${activeBatch.codigo_lote || 'Transferencia'}_Armazem${activeBatch.armazem_destino || '01'}.xlsx`);
         }
 
         // --- ABA DE HISTÓRICO ---
@@ -2444,11 +2605,12 @@
                 if (query) {
                     const matchCode = String(b.codigo_lote).toLowerCase().includes(query);
                     const matchCreator = String(b.criado_por).toLowerCase().includes(query);
+                    const matchDest = String(b.armazem_destino || '').toLowerCase().includes(query);
                     const matchItem = (b.transferencias_armazem_itens || []).some(it => 
                         String(it.produto).toLowerCase().includes(query) || 
                         String(it.descricao).toLowerCase().includes(query)
                     );
-                    return matchCode || matchCreator || matchItem;
+                    return matchCode || matchCreator || matchDest || matchItem;
                 }
                 return true;
             });
@@ -2464,6 +2626,7 @@
                 const dt = b.criado_em ? new Date(b.criado_em) : new Date();
                 const dtFormatted = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 const skus = (b.transferencias_armazem_itens || []).length;
+                const destArm = b.armazem_destino || '01';
 
                 let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-100 text-amber-800 border border-amber-200">🟡 Rascunho</span>`;
                 if (b.status === 'FINALIZADO_FISICO') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-800 border border-blue-200">🔵 Físico OK</span>`;
@@ -2488,7 +2651,12 @@
 
                 html += `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700/80 text-xs">
-                        <td class="px-3 py-2.5 font-mono font-black text-[#002f6c] dark:text-blue-400">${b.codigo_lote}</td>
+                        <td class="px-3 py-2.5">
+                            <div class="flex flex-col">
+                                <span class="font-mono font-black text-[#002f6c] dark:text-blue-400">${b.codigo_lote}</span>
+                                <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 font-mono">➜ Destino: Arm. ${destArm}</span>
+                            </div>
+                        </td>
                         <td class="px-3 py-2.5 text-center font-bold">${b.setor === 'INDUSTRIA' ? 'Indústria' : 'Comércio'}</td>
                         <td class="px-3 py-2.5 text-center">${statusBadge}</td>
                         <td class="px-3 py-2.5 text-center font-black text-slate-700 dark:text-slate-300">${skus}</td>
@@ -2526,6 +2694,8 @@
                 codigo_lote: batch.codigo_lote,
                 setor: batch.setor,
                 filial_id: batch.filial_id,
+                armazem_destino: batch.armazem_destino || '01',
+                armazem_origem_padrao: batch.armazem_origem_padrao || '02',
                 status: batch.status,
                 observacao: batch.observacao || '',
                 criado_por: batch.criado_por,
@@ -2542,7 +2712,7 @@
             renderActiveBatchUI();
 
             if (batch.status === 'EM_ABERTO') {
-                showAlert(`Rascunho ${activeBatch.codigo_lote} carregado! Você pode continuar adicionando ou removendo itens.`, "success");
+                showAlert(`Rascunho ${activeBatch.codigo_lote} carregado! Destino: Armazém ${activeBatch.armazem_destino}.`, "success");
             } else {
                 showAlert(`Lote ${activeBatch.codigo_lote} carregado para visualização!`, "info");
             }
