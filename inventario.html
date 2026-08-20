@@ -35,6 +35,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <!-- SheetJS (xlsx) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS Client -->
@@ -66,6 +68,122 @@
             .no-print { display: none !important; }
             .print-card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; page-break-inside: avoid; background-color: #ffffff !important; color: #000000 !important; margin-bottom: 1.25rem !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            /* ESTILOS ESPECÍFICOS PARA A IMPRESSORA TÉRMICA ARGOX */
+            body.printing-argox * {
+                visibility: hidden !important;
+            }
+            body.printing-argox #argoxPrintContainer,
+            body.printing-argox #argoxPrintContainer * {
+                visibility: visible !important;
+            }
+            body.printing-argox #argoxPrintContainer {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+            .argox-label-page {
+                page-break-after: always !important;
+                break-after: page !important;
+                width: 100mm !important;
+                height: 50mm !important;
+                box-sizing: border-box !important;
+                padding: 2mm 3mm !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+            }
+            .argox-label-card {
+                width: 100% !important;
+                height: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                border: 2px solid #000000 !important;
+                padding: 2mm !important;
+                box-sizing: border-box !important;
+                background: #ffffff !important;
+            }
+            .argox-label-header {
+                text-align: center !important;
+                border-bottom: 2px solid #000000 !important;
+                padding-bottom: 1.5mm !important;
+            }
+            .argox-label-code {
+                font-size: 26pt !important;
+                font-weight: 900 !important;
+                font-family: monospace, Arial, sans-serif !important;
+                line-height: 1 !important;
+                display: block !important;
+                color: #000000 !important;
+                letter-spacing: -0.5px !important;
+            }
+            .argox-label-lote-strip {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 4px !important;
+                font-size: 8.5pt !important;
+                font-weight: 900 !important;
+                margin-top: 1mm !important;
+                text-transform: uppercase !important;
+                color: #000000 !important;
+            }
+            .argox-label-body {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 2mm !important;
+                flex-grow: 1 !important;
+                padding-top: 1.5mm !important;
+            }
+            .argox-label-desc-col {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+            }
+            .argox-label-desc {
+                font-size: 11pt !important;
+                font-weight: 900 !important;
+                text-transform: uppercase !important;
+                line-height: 1.15 !important;
+                margin: 0 !important;
+                word-break: break-word !important;
+                color: #000000 !important;
+            }
+            .argox-label-meta {
+                font-size: 7.5pt !important;
+                font-weight: 800 !important;
+                color: #111111 !important;
+                margin-top: 1mm !important;
+            }
+            .argox-label-qr-col {
+                width: 22mm !important;
+                height: 22mm !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                flex-shrink: 0 !important;
+            }
+            .argox-label-qr-img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain !important;
+            }
+            @page {
+                size: 100mm 50mm portrait;
+                margin: 0;
+            }
         }
 
         /* Estilização Dark Mode */
@@ -279,8 +397,8 @@
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
                 
                 <div class="w-full sm:w-auto">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Sua Filial (Logada)</label>
-                    <select id="invFilterFilial" onchange="loadInventoryData()" disabled class="bg-slate-100 border border-slate-200 text-xs font-bold text-[#002f6c] rounded-xl px-3 py-2 w-full sm:w-48 cursor-not-allowed">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Filial Filtrada</label>
+                    <select id="invFilterFilial" onchange="onFilialFilterChange()" disabled class="bg-slate-100 border border-slate-200 text-xs font-bold text-[#002f6c] rounded-xl px-3 py-2 w-full sm:w-48 cursor-not-allowed">
                         <option value="">Carregando...</option>
                     </select>
                 </div>
@@ -873,6 +991,101 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- MODAL IMPRESSÃO DE ETIQUETA (PADRÃO ARGOX) -->
+    <!-- ========================================== -->
+    <div id="argoxLabelModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 no-print">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col space-y-4 max-h-[90vh] overflow-y-auto">
+            <!-- CABEÇALHO -->
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-teal-500/10 text-teal-600 flex items-center justify-center">
+                        <i data-lucide="printer" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-slate-900 dark:text-white">Etiqueta Argox Almoxarifado</h3>
+                        <p class="text-[10px] font-bold text-slate-400">Layout padrão A5:F10 em modo retrato</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeArgoxLabelModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- PREVIEW DA ETIQUETA ARGOX -->
+            <div class="bg-slate-100 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
+                <p class="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-wider">Pré-visualização da Etiqueta (Térmica)</p>
+                
+                <!-- CONTAINER DA ETIQUETA -->
+                <div id="argoxPreviewBox" class="w-full max-w-[340px] bg-white text-black p-4 rounded-xl border-2 border-black shadow-lg flex flex-col justify-between" style="min-height: 240px; font-family: Arial, Helvetica, sans-serif;">
+                    <!-- TOPO: CÓDIGO GIGANTE -->
+                    <div class="text-center border-b-2 border-black pb-2">
+                        <span id="argoxLblCodigo" class="text-4xl sm:text-5xl font-black font-mono tracking-tight block text-black">53000003</span>
+                        <!-- SUB-INFO LOTE (SE APLICÁVEL) -->
+                        <div id="argoxLblLoteSubBadge" class="hidden mt-1 flex items-center justify-center gap-1.5 text-[11px] font-black uppercase bg-slate-100 py-0.5 px-2 rounded border border-slate-300 text-black">
+                            <span id="argoxLblLoteText">LOTE: S/LOTE</span>
+                            <span>•</span>
+                            <span id="argoxLblValText">VAL: 12/2026</span>
+                        </div>
+                    </div>
+
+                    <!-- CORPO: DESCRIÇÃO + QR CODE -->
+                    <div class="grid grid-cols-12 gap-2 pt-2.5 items-center flex-grow">
+                        <div class="col-span-7 flex flex-col justify-center pr-1">
+                            <p id="argoxLblDescricao" class="text-base sm:text-lg font-black uppercase leading-tight text-black break-words">
+                                RODIZIO DUPLO 1POL
+                            </p>
+                            <p id="argoxLblArmazemQtd" class="text-[11px] font-extrabold text-slate-700 mt-1.5">
+                                ARM: <span id="argoxLblArmCode">01</span> | <span id="argoxLblQtd">ESTOQUE</span>
+                            </p>
+                        </div>
+                        <div class="col-span-5 flex items-center justify-center">
+                            <div class="bg-white p-1 border border-black rounded flex items-center justify-center">
+                                <canvas id="argoxCanvasQR" class="w-24 h-24 max-w-full"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPÇÕES E QUANTIDADE DE CÓPIAS -->
+            <div class="space-y-3 pt-1">
+                <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-600">
+                    <div>
+                        <label class="block text-xs font-black text-slate-800 dark:text-slate-100">Quantidade de Etiquetas</label>
+                        <span class="text-[10px] text-slate-400 font-bold">Número de impressões no rolo</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="adjustLabelCopies(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">-</button>
+                        <input type="number" id="argoxLabelCopiesInput" value="1" min="1" max="100" class="w-14 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl py-1 text-sm font-black text-slate-900 dark:text-white">
+                        <button type="button" onclick="adjustLabelCopies(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">+</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="setLabelCopies(1)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">1 cópia</button>
+                    <button type="button" onclick="setLabelCopies(2)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">2 cópias</button>
+                    <button type="button" onclick="setLabelCopies(5)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">5 cópias</button>
+                    <button type="button" onclick="setLabelCopies(10)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">10 cópias</button>
+                </div>
+            </div>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeArgoxLabelModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-2xl transition-colors">
+                    Cancelar
+                </button>
+                <button type="button" onclick="printArgoxLabels()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-black py-3 rounded-2xl shadow-md transition-all flex items-center justify-center space-x-2 touch-active">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Imprimir na Argox</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÁREA DE IMPRESSÃO ESPECÍFICA PARA A IMPRESSORA TÉRMICA ARGOX -->
+    <div id="argoxPrintContainer" class="hidden"></div>
+
     <!-- MODAL CONFIRMAÇÃO DE LOGOUT -->
     <div id="logoutModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl w-11/12 max-w-sm shadow-2xl scale-95 transition-transform duration-200">
@@ -1020,12 +1233,78 @@
 
         function getTargetFilialForSector() {
             if (!currentUser) return '01';
-            if (isGlobalFilial(currentUser)) return '00';
+            if (isGlobalFilial(currentUser)) {
+                const sel = document.getElementById('invFilterFilial');
+                if (sel && sel.value && sel.value !== '00') {
+                    return sel.value;
+                }
+                return 'ALL';
+            }
             if (currentSector === 'INDUSTRIA') {
                 return String(currentUser.filial_industria || currentUser.filial_atual || '06').trim().padStart(2, '0');
             } else {
                 return String(currentUser.filial_comercio || currentUser.filial_atual || '01').trim().padStart(2, '0');
             }
+        }
+
+        function initFilialFilterUI() {
+            const selFilial = document.getElementById('invFilterFilial');
+            if (!selFilial) return;
+
+            const isGlobal = isGlobalFilial(currentUser);
+            const userAssigned = (currentSector === 'INDUSTRIA')
+                ? String(currentUser ? (currentUser.filial_industria || currentUser.filial_atual || '06') : '06').trim().padStart(2, '0')
+                : String(currentUser ? (currentUser.filial_comercio || currentUser.filial_atual || '01') : '01').trim().padStart(2, '0');
+
+            if (isGlobal) {
+                selFilial.disabled = false;
+                selFilial.className = "bg-white border border-slate-200 text-xs font-bold text-[#002f6c] rounded-xl px-3 py-2 w-full sm:w-48 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#002f6c]";
+
+                let savedFilial = null;
+                try { savedFilial = localStorage.getItem('amazon_selected_filial'); } catch(e) {}
+                if (savedFilial === '00') savedFilial = 'ALL';
+
+                let currentVal = selFilial.value || savedFilial || 'ALL';
+                if (currentVal === '00') currentVal = 'ALL';
+
+                let opts = `<option value="ALL">Todas as Filiais</option>`;
+                if (currentSector === 'INDUSTRIA') {
+                    const indList = ['01', '02', '03', '04', '05', '06'];
+                    indList.forEach(f => {
+                        const label = getFilialDisplayName(f, 'industria');
+                        opts += `<option value="${f}">${label}</option>`;
+                    });
+                } else {
+                    const comList = getCachedFiliaisList().filter(f => f.num_filial !== '00').map(f => String(f.num_filial).padStart(2, '0'));
+                    const allCom = [...new Set(['01', '02', '04', '05', '06', '12', ...comList])].sort((a,b) => parseInt(a,10) - parseInt(b,10));
+                    allCom.forEach(f => {
+                        const label = getFilialDisplayName(f, 'comercio');
+                        opts += `<option value="${f}">${label}</option>`;
+                    });
+                }
+                selFilial.innerHTML = opts;
+                selFilial.value = currentVal;
+                if (!selFilial.value) {
+                    selFilial.value = 'ALL';
+                }
+            } else {
+                selFilial.disabled = true;
+                selFilial.className = "bg-slate-100 border border-slate-200 text-xs font-bold text-[#002f6c] rounded-xl px-3 py-2 w-full sm:w-48 cursor-not-allowed opacity-80";
+                const label = getFilialDisplayName(userAssigned, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
+                selFilial.innerHTML = `<option value="${userAssigned}" selected>${label}</option>`;
+                selFilial.value = userAssigned;
+            }
+        }
+
+        function onFilialFilterChange() {
+            const selFilial = document.getElementById('invFilterFilial');
+            if (selFilial) {
+                let val = selFilial.value || 'ALL';
+                if (val === '00') val = 'ALL';
+                try { localStorage.setItem('amazon_selected_filial', val); } catch(e) {}
+            }
+            extractInventoryMetadata();
+            applyInventoryFilters(true);
         }
 
         function switchSector(sector) {
@@ -1041,10 +1320,7 @@
                 if (btnI) btnI.className = "px-4 py-2 rounded-xl text-xs font-black transition-all bg-[#002f6c] text-white shadow-sm flex items-center gap-1.5";
             }
 
-            const selFilial = document.getElementById('invFilterFilial');
-            if (selFilial) {
-                selFilial.value = getTargetFilialForSector();
-            }
+            initFilialFilterUI();
 
             localCountsMap = {};
             currentPage = 1;
@@ -1092,18 +1368,16 @@
                 const contagemTable = currentSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
                 const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
 
-                // Determina a filial alvo: se filial 00, respeita seleção ou ALL; senão, fixa rigorosamente na filial logada
-                const selFilial = document.getElementById('invFilterFilial');
                 const isGlobal = isGlobalFilial(currentUser);
-                const targetFilial = isGlobal ? (selFilial && selFilial.value ? selFilial.value : 'ALL') : getTargetFilialForSector();
+                const userFilial = isGlobal ? 'ALL' : getTargetFilialForSector();
 
                 // 1. Carrega Saldos
                 let saldoAll = [];
                 let from2 = 0, step2 = 1000, fetchMore2 = true;
                 while (fetchMore2) {
                     let query = supabaseClient.from(saldoTable).select('produto, filial, armazem, quantidade');
-                    if (targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
-                        query = query.eq('filial', targetFilial);
+                    if (!isGlobal && userFilial && userFilial !== 'ALL' && userFilial !== '00') {
+                        query = query.eq('filial', userFilial);
                     }
                     const { data, error } = await query.range(from2, from2 + step2 - 1);
                     if (error || !data || data.length === 0) { fetchMore2 = false; } 
@@ -1119,8 +1393,8 @@
                     let from3 = 0, step3 = 1000, fetchMore3 = true;
                     while (fetchMore3) {
                         let query = supabaseClient.from(contagemTable).select('*');
-                        if (targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
-                            query = query.eq('filial', targetFilial);
+                        if (!isGlobal && userFilial && userFilial !== 'ALL' && userFilial !== '00') {
+                            query = query.eq('filial', userFilial);
                         }
                         const { data, error } = await query.range(from3, from3 + step3 - 1);
                         if (error) {
@@ -1146,8 +1420,8 @@
                         let from4 = 0, fetchMore4 = true;
                         while (fetchMore4) {
                             let query = supabaseClient.from('conferencia_comercio').select('*');
-                            if (targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
-                                query = query.eq('filial', targetFilial);
+                            if (!isGlobal && userFilial && userFilial !== 'ALL' && userFilial !== '00') {
+                                query = query.eq('filial', userFilial);
                             }
                             const fallbackRes = await query.range(from4, from4 + step3 - 1);
                             if (!fallbackRes.error && fallbackRes.data && fallbackRes.data.length > 0) {
@@ -1176,8 +1450,8 @@
                     let fromV = 0, stepV = 1000, fetchMoreV = true;
                     while (fetchMoreV) {
                         let query = supabaseClient.from(valTable).select('*');
-                        if (targetFilial && targetFilial !== 'ALL' && targetFilial !== '00') {
-                            query = query.eq('filial', targetFilial);
+                        if (!isGlobal && userFilial && userFilial !== 'ALL' && userFilial !== '00') {
+                            query = query.eq('filial', userFilial);
                         }
                         const { data, error } = await query.range(fromV, fromV + stepV - 1);
                         if (error || !data || data.length === 0) { fetchMoreV = false; }
@@ -1357,52 +1631,29 @@
         }
 
         function extractInventoryMetadata() {
+            initFilialFilterUI();
+
             const selFilial = document.getElementById('invFilterFilial');
-            if (selFilial) {
-                const isGlobal = isGlobalFilial(currentUser);
-                const userAssigned = getTargetFilialForSector();
+            const isGlobal = isGlobalFilial(currentUser);
+            const userAssigned = getTargetFilialForSector();
 
-                if (isGlobal) {
-                    selFilial.disabled = false;
-                    selFilial.className = "bg-white border border-slate-200 text-xs font-bold text-[#002f6c] rounded-xl px-3 py-2 w-full sm:w-48 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#002f6c]";
+            let selectedFilial = (isGlobal && selFilial) ? (selFilial.value || 'ALL') : userAssigned;
+            if (selectedFilial === '00') selectedFilial = 'ALL';
 
-                    let savedFilial = null;
-                    try { savedFilial = localStorage.getItem('amazon_selected_filial'); } catch(e) {}
-                    let currentVal = savedFilial || selFilial.value || 'ALL';
+            const isFilialMatch = (itemFilial, filterFilial) => {
+                if (!filterFilial || filterFilial === 'ALL' || filterFilial === '00' || filterFilial === 'TODAS') return true;
+                const fPad = String(itemFilial || '01').trim().padStart(2, '0');
+                const fRaw = fPad.replace(/^0+/, '') || '0';
+                const targetPad = String(filterFilial).trim().padStart(2, '0');
+                const targetRaw = targetPad.replace(/^0+/, '') || '0';
+                return fPad === targetPad || fRaw === targetRaw;
+            };
 
-                    let opts = `<option value="ALL" ${currentVal === 'ALL' ? 'selected' : ''}>Todas as Filiais</option>`;
-                    if (currentSector === 'INDUSTRIA') {
-                        const indList = ['01', '02', '03', '04', '05'];
-                        indList.forEach(f => {
-                            const label = getFilialDisplayName(f, 'industria');
-                            opts += `<option value="${f}" ${currentVal === f ? 'selected' : ''}>${label}</option>`;
-                        });
-                    } else {
-                        const comList = ['01', '02', '04', '05', '06', '12'];
-                        comList.forEach(f => {
-                            const label = getFilialDisplayName(f, 'comercio');
-                            opts += `<option value="${f}" ${currentVal === f ? 'selected' : ''}>${label}</option>`;
-                        });
-                    }
-                    selFilial.innerHTML = opts;
-                    selFilial.value = currentVal;
-                } else {
-                    selFilial.disabled = true;
-                    selFilial.className = "bg-slate-100 border border-slate-200 text-xs font-bold text-[#002f6c] rounded-xl px-3 py-2 w-full sm:w-48 cursor-not-allowed opacity-80";
-                    const label = getFilialDisplayName(userAssigned, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
-                    selFilial.innerHTML = `<option value="${userAssigned}" selected>${label}</option>`;
-                    selFilial.value = userAssigned;
-                    try { localStorage.setItem('amazon_selected_filial', userAssigned); } catch(e) {}
-                }
-            }
-
-            const selectedFilial = (isGlobalFilial(currentUser) && selFilial) ? selFilial.value : getTargetFilialForSector();
-            
             const targetSaldos = (selectedFilial === 'ALL') 
                 ? rawSaldoDataset 
-                : rawSaldoDataset.filter(s => s.filial === selectedFilial);
+                : rawSaldoDataset.filter(s => isFilialMatch(s.filial, selectedFilial));
 
-            const armazens = [...new Set(targetSaldos.map(s => s.armazem ? String(s.armazem).trim() : '').filter(a => a && a.length <= 4))].sort((a,b) => {
+            const armazens = [...new Set(targetSaldos.map(s => s.armazem ? String(s.armazem).trim().padStart(2, '0') : '').filter(a => a && a.length <= 4))].sort((a,b) => {
                 const numA = parseInt(a, 10);
                 const numB = parseInt(b, 10);
                 if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
@@ -1684,19 +1935,32 @@
             try { localStorage.setItem('amazon_show_zero_saldo', String(showZeroSaldo)); } catch(e) {}
 
             const selFilial = document.getElementById('invFilterFilial');
-            const selectedFilial = selFilial ? selFilial.value : 'ALL';
+            let selectedFilial = (isGlobalFilial(currentUser) && selFilial) ? (selFilial.value || 'ALL') : getTargetFilialForSector();
+            if (selectedFilial === '00') selectedFilial = 'ALL';
             if (selFilial && selFilial.value) {
                 try { localStorage.setItem('amazon_selected_filial', selFilial.value); } catch(e) {}
             }
 
+            const isFilialMatch = (itemFilial, filterFilial) => {
+                if (!filterFilial || filterFilial === 'ALL' || filterFilial === '00' || filterFilial === 'TODAS') return true;
+                const fPad = String(itemFilial || '01').trim().padStart(2, '0');
+                const fRaw = fPad.replace(/^0+/, '') || '0';
+                const targetPad = String(filterFilial).trim().padStart(2, '0');
+                const targetRaw = targetPad.replace(/^0+/, '') || '0';
+                return fPad === targetPad || fRaw === targetRaw;
+            };
+
+            const isArmSelectedCheck = (rawArm) => {
+                const arm = String(rawArm || '01').trim();
+                const armPad = arm.padStart(2, '0');
+                const armRaw = arm.replace(/^0+/, '') || '0';
+                return selectedArmazens.includes(arm) || selectedArmazens.includes(armPad) || selectedArmazens.includes(armRaw);
+            };
+
             const saldoMap = {};
             rawSaldoDataset.forEach(s => {
-                if (selectedFilial !== 'ALL' && s.filial !== selectedFilial) return;
-                const arm = String(s.armazem).trim();
-                const armPad = arm.padStart(2, '0');
-                const armNum = String(parseInt(arm, 10));
-                const isArmSelected = selectedArmazens.includes(arm) || selectedArmazens.includes(armPad) || selectedArmazens.includes(armNum);
-                if (!isArmSelected) return;
+                if (!isFilialMatch(s.filial, selectedFilial)) return;
+                if (!isArmSelectedCheck(s.armazem)) return;
                 const cod = s.produto ? String(s.produto).trim() : '';
                 saldoMap[cod] = (saldoMap[cod] || 0) + (s.quantidade || 0);
             });
@@ -1707,11 +1971,11 @@
             const productLastObsMap = {};
 
             rawConfDataset.forEach(c => {
-                if (selectedFilial !== 'ALL' && c.filial !== selectedFilial) return;
+                if (!isFilialMatch(c.filial, selectedFilial)) return;
                 const arm = String(c.armazem || '01').trim().padStart(2, '0');
-                const cod = String(c.produto).trim();
-                if (!selectedArmazens.includes(arm)) return;
+                if (!isArmSelectedCheck(arm)) return;
                 
+                const cod = String(c.produto).trim();
                 if (localCountsMap[`${arm}_${cod}`] !== undefined) return;
                 
                 productCountsMap[cod] = (productCountsMap[cod] || 0) + Number(c.quantidade_contada !== undefined ? c.quantidade_contada : (c.qtd_contada || 0));
@@ -2184,16 +2448,20 @@
                         <td class="px-4 py-3 text-right text-xs font-black text-[#002f6c]">${contadaDisplay}</td>
                         <td class="px-4 py-3 text-center">${statusBadge}</td>
                         <td class="px-4 py-3 text-center">
-                            <div class="flex items-center justify-center gap-1.5">
+                            <div class="flex items-center justify-center gap-1.5 flex-wrap">
                                 <button type="button" onclick="openCountModal('${item.codigo}', '${escapedDesc}')" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Registrar Contagem">
                                     <i data-lucide="clipboard" class="w-3.5 h-3.5"></i>
                                     <span>Contar</span>
                                 </button>
-                                <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Tags">
+                                <button type="button" onclick="openArgoxLabelModalFromInventario('${item.codigo}', '${escapedDesc}', '${item.unidade}')" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Imprimir Etiqueta Argox (A5:F10)">
+                                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                                    <span>Etiqueta</span>
+                                </button>
+                                <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Tags">
                                     <i data-lucide="tag" class="w-3.5 h-3.5"></i>
                                     <span>Tags</span>
                                 </button>
-                                <button type="button" onclick="openFornecedoresModal('${item.codigo}', '${escapedDesc}', '${(item.fornecedores || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Fornecedores">
+                                <button type="button" onclick="openFornecedoresModal('${item.codigo}', '${escapedDesc}', '${(item.fornecedores || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Fornecedores">
                                     <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                                     <span>Forn.</span>
                                 </button>
@@ -2238,17 +2506,20 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-2 pt-1">
-                            <button type="button" onclick="openCountModal('${item.codigo}', '${escapedDesc}')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1.5 touch-active">
-                                <i data-lucide="clipboard" class="w-4 h-4"></i>
+                        <div class="flex items-center gap-1.5 pt-1">
+                            <button type="button" onclick="openCountModal('${item.codigo}', '${escapedDesc}')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1 touch-active">
+                                <i data-lucide="clipboard" class="w-3.5 h-3.5"></i>
                                 <span>Contar</span>
                             </button>
-                            <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active">
-                                <i data-lucide="tag" class="w-4 h-4"></i>
+                            <button type="button" onclick="openArgoxLabelModalFromInventario('${item.codigo}', '${escapedDesc}', '${item.unidade}')" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white px-2.5 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Imprimir Etiqueta Argox">
+                                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2.5 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active">
+                                <i data-lucide="tag" class="w-3.5 h-3.5"></i>
                                 <span>Tags</span>
                             </button>
-                            <button type="button" onclick="openFornecedoresModal('${item.codigo}', '${escapedDesc}', '${(item.fornecedores || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active">
-                                <i data-lucide="truck" class="w-4 h-4"></i>
+                            <button type="button" onclick="openFornecedoresModal('${item.codigo}', '${escapedDesc}', '${(item.fornecedores || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white px-2.5 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active">
+                                <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                                 <span>Forn.</span>
                             </button>
                         </div>
@@ -2284,8 +2555,20 @@
             const prodItem = filteredInventoryDataset.find(p => p.codigo === codigo);
             const factor = (prodItem && prodItem.fatorConv) ? Number(prodItem.fatorConv) : 1;
 
-            const userFilial = currentUser ? parseInt(currentUser.filial_atual, 10) : 1;
-            const saldosProduto = rawSaldoDataset.filter(s => String(s.produto).trim() === codigo);
+            const selFilial = document.getElementById('invFilterFilial');
+            const isGlobal = isGlobalFilial(currentUser);
+            const activeFilial = (isGlobal && selFilial && selFilial.value !== 'ALL' && selFilial.value !== '00') ? selFilial.value : getTargetFilialForSector();
+            const filStr = (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') ? String(activeFilial).padStart(2, '0') : '01';
+
+            const saldosProduto = rawSaldoDataset.filter(s => {
+                if (String(s.produto).trim() !== codigo) return false;
+                if (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') {
+                    const sf = String(s.filial || '01').padStart(2, '0');
+                    return sf === filStr || sf.replace(/^0+/, '') === filStr.replace(/^0+/, '');
+                }
+                return true;
+            });
+
             const container = document.getElementById('countWarehousesContainer');
             container.innerHTML = '';
             
@@ -2295,7 +2578,14 @@
                 armMap[a] = (armMap[a] || 0) + (s.quantidade || 0);
             });
 
-            rawConfDataset.filter(c => String(c.produto).trim() === codigo).forEach(c => {
+            rawConfDataset.filter(c => {
+                if (String(c.produto).trim() !== codigo) return false;
+                if (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') {
+                    const cf = String(c.filial || '01').padStart(2, '0');
+                    return cf === filStr || cf.replace(/^0+/, '') === filStr.replace(/^0+/, '');
+                }
+                return true;
+            }).forEach(c => {
                 const a = String(c.armazem || '01').trim().padStart(2, '0');
                 if (armMap[a] === undefined) armMap[a] = 0;
             });
@@ -2308,7 +2598,7 @@
             armazens.sort((a,b) => parseInt(a.armazem, 10) - parseInt(b.armazem, 10));
 
             armazens.forEach(s => {
-                renderWarehouseCountCard(s.armazem, s.quantidade, factor, codigo, userFilial);
+                renderWarehouseCountCard(s.armazem, s.quantidade, factor, codigo, filStr);
             });
 
             // Carrega a observação mais recente do produto se existir
@@ -2321,20 +2611,26 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        function renderWarehouseCountCard(armazemCode, sysQty, factor, codigo, userFilial) {
+        function renderWarehouseCountCard(armazemCode, sysQty, factor, codigo, filStr) {
             const container = document.getElementById('countWarehousesContainer');
             if (!container) return;
 
             if (document.getElementById(`countInput_${armazemCode}`)) return;
 
-            const filStr = userFilial.toString().padStart(2, '0');
-            const existingVal = getProductValidadeForArmazem(codigo, armazemCode, filStr);
+            const targetFilStr = String(filStr || '01').padStart(2, '0');
+            const targetFilRaw = targetFilStr.replace(/^0+/, '') || '0';
+            const existingVal = getProductValidadeForArmazem(codigo, armazemCode, targetFilStr);
 
-            const historyForArm = rawConfDataset.filter(c => 
-                String(c.produto).trim() === codigo && 
-                String(c.armazem).trim().padStart(2, '0') === String(armazemCode).trim().padStart(2, '0') &&
-                (!c.filial || parseInt(c.filial, 10) === userFilial)
-            );
+            const historyForArm = rawConfDataset.filter(c => {
+                if (String(c.produto).trim() !== codigo) return false;
+                if (String(c.armazem).trim().padStart(2, '0') !== String(armazemCode).trim().padStart(2, '0')) return false;
+                if (targetFilStr && targetFilStr !== 'ALL' && targetFilStr !== '00') {
+                    const cFil = String(c.filial || '01').trim().padStart(2, '0');
+                    const cFilRaw = cFil.replace(/^0+/, '') || '0';
+                    return cFil === targetFilStr || cFilRaw === targetFilRaw;
+                }
+                return true;
+            });
             
             historyForArm.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
             const lastCount = historyForArm[0];
@@ -2656,11 +2952,14 @@
             const obs = document.getElementById('countInputObs').value.trim();
             const inputs = document.querySelectorAll('.count-warehouse-input');
             
-            const rawFilial = currentUser ? String(currentUser.filial_atual).trim() : '01';
+            const selFilial = document.getElementById('invFilterFilial');
+            const isGlobal = isGlobalFilial(currentUser);
+            const activeFilial = (isGlobal && selFilial && selFilial.value !== 'ALL' && selFilial.value !== '00') ? selFilial.value : getTargetFilialForSector();
+            const rawFilial = (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') ? String(activeFilial).padStart(2, '0') : (currentUser ? String(currentUser.filial_atual || '01').padStart(2, '0') : '01');
+            const userFilStr = rawFilial;
+
             const insertsContagem = [];
             const conferenteIdent = currentUser ? `${currentUser.matricula} - ${currentUser.nome}` : 'SISTEMA';
-
-            const userFilStr = currentUser ? String(currentUser.filial_atual).trim().padStart(2, '0') : '01';
 
             inputs.forEach(inp => {
                 const armazem = String(inp.getAttribute('data-armazem')).trim().padStart(2, '0');
@@ -2675,7 +2974,11 @@
                         const qtdContada = (mode === 'peca') ? (evaluatedVal * factor) : evaluatedVal;
                         localCountsMap[`${armazem}_${codigo}`] = qtdContada;
 
-                        const currentSysRecord = rawSaldoDataset.find(s => s.produto === codigo && s.armazem === armazem && s.filial === userFilStr);
+                        const currentSysRecord = rawSaldoDataset.find(s => {
+                            if (s.produto !== codigo || s.armazem !== armazem) return false;
+                            const sf = String(s.filial || '01').padStart(2, '0');
+                            return sf === userFilStr || sf.replace(/^0+/, '') === userFilStr.replace(/^0+/, '');
+                        });
                         const qtdSistema = currentSysRecord ? parseFloat(currentSysRecord.quantidade || 0) : 0;
 
                         insertsContagem.push({
@@ -3612,17 +3915,143 @@
             showAlert("Planilha exportada com sucesso!", "success");
         }
 
+        // --- IMPRESSÃO DE ETIQUETAS ARGOX ALMOXARIFADO QR (A5:F10) ---
+
+        let currentLabelItemData = null;
+
+        function openArgoxLabelModalFromInventario(codigo, descricao, unidade) {
+            const currentArmazem = document.getElementById('invFilterArmazem') ? document.getElementById('invFilterArmazem').value : '01';
+            const armCode = (currentArmazem && currentArmazem !== 'ALL') ? String(currentArmazem).padStart(2, '0') : '01';
+
+            openArgoxLabelModal({
+                codigo: String(codigo || '').trim().toUpperCase(),
+                descricao: String(descricao || '').trim().toUpperCase(),
+                lote: '',
+                validade: '',
+                armazem: armCode,
+                quantidade: `ESTOQUE (${unidade || 'UN'})`
+            });
+        }
+
+        function openArgoxLabelModal(data) {
+            currentLabelItemData = data;
+            renderArgoxLabelPreview();
+            const modal = document.getElementById('argoxLabelModal');
+            if (modal) modal.classList.remove('hidden');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function renderArgoxLabelPreview() {
+            if (!currentLabelItemData) return;
+            const elCod = document.getElementById('argoxLblCodigo');
+            const elDesc = document.getElementById('argoxLblDescricao');
+            const elLoteBadge = document.getElementById('argoxLblLoteSubBadge');
+            const elLoteText = document.getElementById('argoxLblLoteText');
+            const elValText = document.getElementById('argoxLblValText');
+            const elArm = document.getElementById('argoxLblArmCode');
+            const elQtd = document.getElementById('argoxLblQtd');
+            const canvas = document.getElementById('argoxCanvasQR');
+
+            if (elCod) elCod.innerText = currentLabelItemData.codigo;
+            if (elDesc) elDesc.innerText = currentLabelItemData.descricao;
+            if (elArm) elArm.innerText = currentLabelItemData.armazem || '01';
+            if (elQtd) elQtd.innerText = currentLabelItemData.quantidade || 'ESTOQUE';
+
+            if (currentLabelItemData.lote || currentLabelItemData.validade) {
+                if (elLoteBadge) elLoteBadge.classList.remove('hidden');
+                if (elLoteText) elLoteText.innerText = currentLabelItemData.lote ? `LOTE: ${currentLabelItemData.lote}` : 'S/ LOTE';
+                if (elValText) elValText.innerText = currentLabelItemData.validade ? `VAL: ${currentLabelItemData.validade}` : '';
+            } else {
+                if (elLoteBadge) elLoteBadge.classList.add('hidden');
+            }
+
+            if (canvas && typeof QRCode !== 'undefined') {
+                const qrText = currentLabelItemData.codigo;
+                QRCode.toCanvas(canvas, qrText, {
+                    width: 110,
+                    margin: 0,
+                    errorCorrectionLevel: 'M'
+                }, function (error) {
+                    if (error) console.error("Erro ao gerar QR Code:", error);
+                });
+            }
+        }
+
+        function closeArgoxLabelModal() {
+            const modal = document.getElementById('argoxLabelModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function adjustLabelCopies(delta) {
+            const input = document.getElementById('argoxLabelCopiesInput');
+            if (!input) return;
+            let val = parseInt(input.value, 10) || 1;
+            val += delta;
+            if (val < 1) val = 1;
+            if (val > 100) val = 100;
+            input.value = val;
+        }
+
+        function setLabelCopies(num) {
+            const input = document.getElementById('argoxLabelCopiesInput');
+            if (input) input.value = num;
+        }
+
+        function printArgoxLabels() {
+            if (!currentLabelItemData) return;
+            const input = document.getElementById('argoxLabelCopiesInput');
+            const copies = input ? (parseInt(input.value, 10) || 1) : 1;
+
+            const printContainer = document.getElementById('argoxPrintContainer');
+            if (!printContainer) return;
+
+            const canvas = document.getElementById('argoxCanvasQR');
+            const qrDataUrl = canvas ? canvas.toDataURL('image/png') : '';
+
+            let labelsHtml = '';
+            for (let i = 0; i < copies; i++) {
+                labelsHtml += `
+                    <div class="argox-label-page">
+                        <div class="argox-label-card">
+                            <div class="argox-label-header">
+                                <span class="argox-label-code">${currentLabelItemData.codigo}</span>
+                                ${currentLabelItemData.lote || currentLabelItemData.validade ? `
+                                    <div class="argox-label-lote-strip">
+                                        <span>${currentLabelItemData.lote ? `LOTE: ${currentLabelItemData.lote}` : ''}</span>
+                                        ${currentLabelItemData.lote && currentLabelItemData.validade ? `<span>•</span>` : ''}
+                                        <span>${currentLabelItemData.validade ? `VAL: ${currentLabelItemData.validade}` : ''}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="argox-label-body">
+                                <div class="argox-label-desc-col">
+                                    <p class="argox-label-desc">${currentLabelItemData.descricao}</p>
+                                    <p class="argox-label-meta">ARM: ${currentLabelItemData.armazem} ${currentLabelItemData.quantidade ? `| ${currentLabelItemData.quantidade}` : ''}</p>
+                                </div>
+                                <div class="argox-label-qr-col">
+                                    <img src="${qrDataUrl}" class="argox-label-qr-img" alt="QR Code">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            printContainer.innerHTML = labelsHtml;
+            document.body.classList.add('printing-argox');
+
+            window.print();
+
+            setTimeout(() => {
+                document.body.classList.remove('printing-argox');
+            }, 1000);
+        }
+
         window.onload = async function() {
             const user = await checkAuth('inventario');
             if (!user) return;
 
-            const selFilial = document.getElementById('invFilterFilial');
-            if (selFilial) {
-                const targetFil = getTargetFilialForSector();
-                selFilial.innerHTML = `<option value="${targetFil}">${getFilialDisplayName(targetFil, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio')}</option>`;
-                selFilial.value = targetFil;
-            }
-
+            initFilialFilterUI();
             await loadInventoryData();
         };
     </script>

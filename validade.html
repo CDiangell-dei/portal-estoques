@@ -32,6 +32,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- SheetJS (xlsx) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS Client -->
@@ -62,6 +64,122 @@
             .no-print { display: none !important; }
             .print-card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; page-break-inside: avoid; background-color: #ffffff !important; color: #000000 !important; margin-bottom: 1.25rem !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            /* ESTILOS ESPECÍFICOS PARA A IMPRESSORA TÉRMICA ARGOX */
+            body.printing-argox * {
+                visibility: hidden !important;
+            }
+            body.printing-argox #argoxPrintContainer,
+            body.printing-argox #argoxPrintContainer * {
+                visibility: visible !important;
+            }
+            body.printing-argox #argoxPrintContainer {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+            .argox-label-page {
+                page-break-after: always !important;
+                break-after: page !important;
+                width: 100mm !important;
+                height: 50mm !important;
+                box-sizing: border-box !important;
+                padding: 2mm 3mm !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+            }
+            .argox-label-card {
+                width: 100% !important;
+                height: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                border: 2px solid #000000 !important;
+                padding: 2mm !important;
+                box-sizing: border-box !important;
+                background: #ffffff !important;
+            }
+            .argox-label-header {
+                text-align: center !important;
+                border-bottom: 2px solid #000000 !important;
+                padding-bottom: 1.5mm !important;
+            }
+            .argox-label-code {
+                font-size: 26pt !important;
+                font-weight: 900 !important;
+                font-family: monospace, Arial, sans-serif !important;
+                line-height: 1 !important;
+                display: block !important;
+                color: #000000 !important;
+                letter-spacing: -0.5px !important;
+            }
+            .argox-label-lote-strip {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 4px !important;
+                font-size: 8.5pt !important;
+                font-weight: 900 !important;
+                margin-top: 1mm !important;
+                text-transform: uppercase !important;
+                color: #000000 !important;
+            }
+            .argox-label-body {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 2mm !important;
+                flex-grow: 1 !important;
+                padding-top: 1.5mm !important;
+            }
+            .argox-label-desc-col {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+            }
+            .argox-label-desc {
+                font-size: 11pt !important;
+                font-weight: 900 !important;
+                text-transform: uppercase !important;
+                line-height: 1.15 !important;
+                margin: 0 !important;
+                word-break: break-word !important;
+                color: #000000 !important;
+            }
+            .argox-label-meta {
+                font-size: 7.5pt !important;
+                font-weight: 800 !important;
+                color: #111111 !important;
+                margin-top: 1mm !important;
+            }
+            .argox-label-qr-col {
+                width: 22mm !important;
+                height: 22mm !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                flex-shrink: 0 !important;
+            }
+            .argox-label-qr-img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain !important;
+            }
+            @page {
+                size: 100mm 50mm portrait;
+                margin: 0;
+            }
         }
 
         .dark body { background-color: #0f172a !important; color: #ffffff !important; }
@@ -576,10 +694,14 @@
                     <input type="text" id="valInputObservacao" placeholder="Ex: Lançado via inventário ou conferência" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
                 </div>
 
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 flex-wrap">
                     <button type="button" onclick="closeNewValidadeModal()" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs">Cancelar</button>
-                    <button type="submit" id="btnSaveValidade" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md">
+                    <button type="submit" id="btnSaveValidade" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md">
                         Salvar Lote
+                    </button>
+                    <button type="button" onclick="saveAndPrintArgoxLabel()" id="btnSaveAndPrintValidade" class="bg-[#002f6c] hover:bg-[#00204a] text-white px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5" title="Salva o lote e abre a impressão da etiqueta Argox">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                        <span>Salvar &amp; Imprimir</span>
                     </button>
                 </div>
             </form>
@@ -702,6 +824,101 @@
             </div>
         </div>
     </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL IMPRESSÃO DE ETIQUETA (PADRÃO ARGOX) -->
+    <!-- ========================================== -->
+    <div id="argoxLabelModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 no-print">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col space-y-4 max-h-[90vh] overflow-y-auto">
+            <!-- CABEÇALHO -->
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                        <i data-lucide="printer" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-slate-900 dark:text-white">Etiqueta Argox Almoxarifado</h3>
+                        <p class="text-[10px] font-bold text-slate-400">Layout padrão A5:F10 em modo retrato</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeArgoxLabelModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- PREVIEW DA ETIQUETA ARGOX -->
+            <div class="bg-slate-100 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
+                <p class="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-wider">Pré-visualização da Etiqueta (Térmica)</p>
+                
+                <!-- CONTAINER DA ETIQUETA -->
+                <div id="argoxPreviewBox" class="w-full max-w-[340px] bg-white text-black p-4 rounded-xl border-2 border-black shadow-lg flex flex-col justify-between" style="min-height: 240px; font-family: Arial, Helvetica, sans-serif;">
+                    <!-- TOPO: CÓDIGO GIGANTE -->
+                    <div class="text-center border-b-2 border-black pb-2">
+                        <span id="argoxLblCodigo" class="text-4xl sm:text-5xl font-black font-mono tracking-tight block text-black">53000003</span>
+                        <!-- SUB-INFO LOTE (SE APLICÁVEL) -->
+                        <div id="argoxLblLoteSubBadge" class="mt-1 flex items-center justify-center gap-1.5 text-[11px] font-black uppercase bg-slate-100 py-0.5 px-2 rounded border border-slate-300 text-black">
+                            <span id="argoxLblLoteText">LOTE: S/LOTE</span>
+                            <span>•</span>
+                            <span id="argoxLblValText">VAL: 12/2026</span>
+                        </div>
+                    </div>
+
+                    <!-- CORPO: DESCRIÇÃO + QR CODE -->
+                    <div class="grid grid-cols-12 gap-2 pt-2.5 items-center flex-grow">
+                        <div class="col-span-7 flex flex-col justify-center pr-1">
+                            <p id="argoxLblDescricao" class="text-base sm:text-lg font-black uppercase leading-tight text-black break-words">
+                                RODIZIO DUPLO 1POL
+                            </p>
+                            <p id="argoxLblArmazemQtd" class="text-[11px] font-extrabold text-slate-700 mt-1.5">
+                                ARM: <span id="argoxLblArmCode">01</span> | <span id="argoxLblQtd">100 UN</span>
+                            </p>
+                        </div>
+                        <div class="col-span-5 flex items-center justify-center">
+                            <div class="bg-white p-1 border border-black rounded flex items-center justify-center">
+                                <canvas id="argoxCanvasQR" class="w-24 h-24 max-w-full"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPÇÕES E QUANTIDADE DE CÓPIAS -->
+            <div class="space-y-3 pt-1">
+                <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-600">
+                    <div>
+                        <label class="block text-xs font-black text-slate-800 dark:text-slate-100">Quantidade de Etiquetas</label>
+                        <span class="text-[10px] text-slate-400 font-bold">Número de impressões no rolo</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="adjustLabelCopies(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">-</button>
+                        <input type="number" id="argoxLabelCopiesInput" value="1" min="1" max="100" class="w-14 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl py-1 text-sm font-black text-slate-900 dark:text-white">
+                        <button type="button" onclick="adjustLabelCopies(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">+</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="setLabelCopies(1)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">1 cópia</button>
+                    <button type="button" onclick="setLabelCopies(2)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">2 cópias</button>
+                    <button type="button" onclick="setLabelCopies(5)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">5 cópias</button>
+                    <button type="button" onclick="setLabelCopies(10)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">10 cópias</button>
+                </div>
+            </div>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeArgoxLabelModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-2xl transition-colors">
+                    Cancelar
+                </button>
+                <button type="button" onclick="printArgoxLabels()" class="flex-1 bg-[#002f6c] hover:bg-[#00204a] text-white font-black py-3 rounded-2xl shadow-md transition-all flex items-center justify-center space-x-2 touch-active">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Imprimir na Argox</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÁREA DE IMPRESSÃO ESPECÍFICA PARA A IMPRESSORA TÉRMICA ARGOX -->
+    <div id="argoxPrintContainer" class="hidden"></div>
 
     <!-- MODAL CONFIRMAÇÃO DE LOGOUT -->
     <div id="logoutModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity">
@@ -834,7 +1051,13 @@
 
         function getTargetFilialForSector() {
             if (!currentUser) return '01';
-            if (isGlobalFilial(currentUser)) return '00';
+            if (isGlobalFilial(currentUser)) {
+                const sel = document.getElementById('valFilterFilial');
+                if (sel && sel.value && sel.value !== '00') {
+                    return sel.value;
+                }
+                return 'ALL';
+            }
             if (currentSector === 'COMERCIO') {
                 return String(currentUser.filial_comercio || currentUser.filial_atual || '01').trim().padStart(2, '0');
             } else {
@@ -1411,6 +1634,9 @@
                         <td class="px-3 py-3 text-center">${badgeHtml}</td>
                         <td class="px-3 py-3 text-center">
                             <div class="flex items-center justify-center gap-1.5">
+                                <button type="button" onclick="openArgoxLabelModalFromValidade(${item.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Imprimir Etiqueta Argox (A5:F10)">
+                                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                                </button>
                                 <button type="button" onclick="openEditValidadeModal(${item.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Editar Lote">
                                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                                 </button>
@@ -1486,6 +1712,9 @@
                         </div>
 
                         <div class="flex items-center justify-end gap-2 pt-1">
+                            <button type="button" onclick="openArgoxLabelModalFromValidade(${item.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-2 rounded-xl text-xs font-bold shadow-sm touch-active" title="Imprimir Etiqueta Argox">
+                                <i data-lucide="printer" class="w-4 h-4"></i>
+                            </button>
                             <button type="button" onclick="openEditValidadeModal(${item.id})" class="flex-1 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1.5 touch-active">
                                 <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                                 <span>Editar</span>
@@ -2360,14 +2589,192 @@
             showAlert("Planilha de validades exportada com sucesso!", "success");
         }
 
+        // --- IMPRESSÃO DE ETIQUETAS ARGOX ALMOXARIFADO QR (A5:F10) ---
+
+        let currentLabelItemData = null;
+
+        function openArgoxLabelModalFromValidade(id) {
+            const item = rawValidadeDataset.find(v => String(v.id) === String(id) || Number(v.id) === Number(id));
+            if (!item) return;
+
+            const sbMatch = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === String(item.produto).trim().toUpperCase()) : null;
+            const desc = sbMatch ? (sbMatch['Descr.Espec.'] || item.produto) : item.produto;
+
+            openArgoxLabelModal({
+                codigo: String(item.produto).trim().toUpperCase(),
+                descricao: desc,
+                lote: item.lote ? String(item.lote).trim().toUpperCase() : '',
+                validade: item.data_validade ? formatAnoMesDisplay(item.data_validade) : '',
+                armazem: String(item.armazem || '01').padStart(2, '0'),
+                quantidade: item.quantidade ? `${Number(item.quantidade).toLocaleString('pt-BR')} ${item.embalagem || 'UN'}` : ''
+            });
+        }
+
+        function openArgoxLabelModal(data) {
+            currentLabelItemData = data;
+            renderArgoxLabelPreview();
+            const modal = document.getElementById('argoxLabelModal');
+            if (modal) modal.classList.remove('hidden');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function renderArgoxLabelPreview() {
+            if (!currentLabelItemData) return;
+            const elCod = document.getElementById('argoxLblCodigo');
+            const elDesc = document.getElementById('argoxLblDescricao');
+            const elLoteBadge = document.getElementById('argoxLblLoteSubBadge');
+            const elLoteText = document.getElementById('argoxLblLoteText');
+            const elValText = document.getElementById('argoxLblValText');
+            const elArm = document.getElementById('argoxLblArmCode');
+            const elQtd = document.getElementById('argoxLblQtd');
+            const canvas = document.getElementById('argoxCanvasQR');
+
+            if (elCod) elCod.innerText = currentLabelItemData.codigo;
+            if (elDesc) elDesc.innerText = currentLabelItemData.descricao;
+            if (elArm) elArm.innerText = currentLabelItemData.armazem || '01';
+            if (elQtd) elQtd.innerText = currentLabelItemData.quantidade || 'ESTOQUE';
+
+            if (currentLabelItemData.lote || currentLabelItemData.validade) {
+                if (elLoteBadge) elLoteBadge.classList.remove('hidden');
+                if (elLoteText) elLoteText.innerText = currentLabelItemData.lote ? `LOTE: ${currentLabelItemData.lote}` : 'S/ LOTE';
+                if (elValText) elValText.innerText = currentLabelItemData.validade ? `VAL: ${currentLabelItemData.validade}` : '';
+            } else {
+                if (elLoteBadge) elLoteBadge.classList.add('hidden');
+            }
+
+            if (canvas && typeof QRCode !== 'undefined') {
+                const qrText = currentLabelItemData.codigo;
+                QRCode.toCanvas(canvas, qrText, {
+                    width: 110,
+                    margin: 0,
+                    errorCorrectionLevel: 'M'
+                }, function (error) {
+                    if (error) console.error("Erro ao gerar QR Code:", error);
+                });
+            }
+        }
+
+        function closeArgoxLabelModal() {
+            const modal = document.getElementById('argoxLabelModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function adjustLabelCopies(delta) {
+            const input = document.getElementById('argoxLabelCopiesInput');
+            if (!input) return;
+            let val = parseInt(input.value, 10) || 1;
+            val += delta;
+            if (val < 1) val = 1;
+            if (val > 100) val = 100;
+            input.value = val;
+        }
+
+        function setLabelCopies(num) {
+            const input = document.getElementById('argoxLabelCopiesInput');
+            if (input) input.value = num;
+        }
+
+        function printArgoxLabels() {
+            if (!currentLabelItemData) return;
+            const input = document.getElementById('argoxLabelCopiesInput');
+            const copies = input ? (parseInt(input.value, 10) || 1) : 1;
+
+            const printContainer = document.getElementById('argoxPrintContainer');
+            if (!printContainer) return;
+
+            const canvas = document.getElementById('argoxCanvasQR');
+            const qrDataUrl = canvas ? canvas.toDataURL('image/png') : '';
+
+            let labelsHtml = '';
+            for (let i = 0; i < copies; i++) {
+                labelsHtml += `
+                    <div class="argox-label-page">
+                        <div class="argox-label-card">
+                            <div class="argox-label-header">
+                                <span class="argox-label-code">${currentLabelItemData.codigo}</span>
+                                ${currentLabelItemData.lote || currentLabelItemData.validade ? `
+                                    <div class="argox-label-lote-strip">
+                                        <span>${currentLabelItemData.lote ? `LOTE: ${currentLabelItemData.lote}` : ''}</span>
+                                        ${currentLabelItemData.lote && currentLabelItemData.validade ? `<span>•</span>` : ''}
+                                        <span>${currentLabelItemData.validade ? `VAL: ${currentLabelItemData.validade}` : ''}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="argox-label-body">
+                                <div class="argox-label-desc-col">
+                                    <p class="argox-label-desc">${currentLabelItemData.descricao}</p>
+                                    <p class="argox-label-meta">ARM: ${currentLabelItemData.armazem} ${currentLabelItemData.quantidade ? `| ${currentLabelItemData.quantidade}` : ''}</p>
+                                </div>
+                                <div class="argox-label-qr-col">
+                                    <img src="${qrDataUrl}" class="argox-label-qr-img" alt="QR Code">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            printContainer.innerHTML = labelsHtml;
+            document.body.classList.add('printing-argox');
+
+            window.print();
+
+            setTimeout(() => {
+                document.body.classList.remove('printing-argox');
+            }, 1000);
+        }
+
+        async function saveAndPrintArgoxLabel() {
+            const produtoInput = document.getElementById('valInputCodigo');
+            const produto = produtoInput ? produtoInput.value.trim().toUpperCase() : '';
+            const lote = document.getElementById('valInputLote').value.trim().toUpperCase();
+            const armazem = document.getElementById('valInputArmazem').value.padStart(2, '0');
+            const validade = document.getElementById('valInputValidade').value;
+            const rawQtd = document.getElementById('valInputQuantidade').value.trim();
+            const embalagem = document.getElementById('valInputEmbalagem').value.trim().toUpperCase();
+
+            const match = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === produto) : null;
+            const desc = match ? (match['Descr.Espec.'] || produto) : produto;
+
+            await saveValidadeEntry();
+
+            openArgoxLabelModal({
+                codigo: produto,
+                descricao: desc,
+                lote: lote,
+                validade: validade ? formatAnoMesDisplay(validade) : '',
+                armazem: armazem,
+                quantidade: rawQtd ? `${rawQtd} ${embalagem || 'UN'}` : ''
+            });
+        }
+
         window.onload = async function() {
             const user = await checkAuth();
             if (!user) return;
             
             await loadValidadeData();
 
-            // Verifica query param "codigo"
+            // Verifica query params de filtro (vindo da tela inicial)
             const urlParams = new URLSearchParams(window.location.search);
+            const filtroParam = urlParams.get('filtro');
+            if (filtroParam) {
+                if (filtroParam === 'vencidos') {
+                    const sel = document.getElementById('valFilterStatus');
+                    if (sel) sel.value = 'VENCIDO';
+                } else if (filtroParam === 'vencendo30' || filtroParam === 'vencendo60') {
+                    const sel = document.getElementById('valFilterStatus');
+                    if (sel) sel.value = 'AVENCER';
+                } else if (filtroParam === 'noPrazo') {
+                    const sel = document.getElementById('valFilterStatus');
+                    if (sel) sel.value = 'OK';
+                } else if (filtroParam === 'divergencias') {
+                    const sel = document.getElementById('valFilterSaldoConferencia');
+                    if (sel) sel.value = 'DIVERGENCIA';
+                }
+                applyValidadeFilters();
+            }
+
+            // Verifica query param "codigo"
             const initialCode = urlParams.get('codigo');
             if (initialCode) {
                 openNewValidadeModal(initialCode);
