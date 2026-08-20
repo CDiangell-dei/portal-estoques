@@ -178,6 +178,10 @@
             }
 
             /* ESTILOS ESPECÍFICOS PARA A FICHA DE PALETE EM FOLHA A4 */
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
             body.printing-a4 * {
                 visibility: hidden !important;
             }
@@ -193,6 +197,7 @@
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                box-sizing: border-box !important;
                 background: #ffffff !important;
             }
             .a4-pallet-page {
@@ -200,45 +205,57 @@
                 break-after: page !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
-                padding: 12mm !important;
+                padding: 0 !important;
+                margin: 0 !important;
                 background: #ffffff !important;
                 color: #000000 !important;
-                font-family: Arial, Helvetica, sans-serif !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
             }
             .a4-pallet-card {
                 width: 100% !important;
-                border: 3px solid #000000 !important;
-                border-radius: 8px !important;
+                max-width: 100% !important;
+                border: 3.5px solid #000000 !important;
+                border-radius: 12px !important;
                 padding: 16px !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
+                overflow: hidden !important;
             }
             .a4-table {
                 width: 100% !important;
+                table-layout: fixed !important;
                 border-collapse: collapse !important;
                 margin-top: 14px !important;
+                box-sizing: border-box !important;
             }
             .a4-table th {
-                background: #f1f5f9 !important;
+                background: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
                 border: 2px solid #000000 !important;
-                padding: 8px !important;
+                padding: 8px 6px !important;
                 font-size: 11pt !important;
                 font-weight: 900 !important;
                 text-align: left !important;
                 text-transform: uppercase !important;
                 color: #000000 !important;
+                box-sizing: border-box !important;
             }
             .a4-table td {
                 border: 1.5px solid #000000 !important;
-                padding: 8px 10px !important;
+                padding: 8px 6px !important;
                 font-size: 11pt !important;
                 font-weight: 700 !important;
                 color: #000000 !important;
+                box-sizing: border-box !important;
             }
             .a4-table tfoot td {
-                background: #f8fafc !important;
+                background: #f1f5f9 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
                 font-weight: 900 !important;
                 font-size: 12pt !important;
+                box-sizing: border-box !important;
             }
         }
 
@@ -2436,17 +2453,23 @@
                 selectedLots.forEach(l => {
                     const st = getValidadeStatus(l.data_validade);
                     let stText = 'NO PRAZO';
-                    if (st === 'VENCIDO') stText = 'VENCIDO';
-                    else if (st === 'AVENCER') stText = 'A VENCER (60d)';
+                    let stColor = '#059669';
+                    if (st === 'VENCIDO') {
+                        stText = 'VENCIDO';
+                        stColor = '#dc2626';
+                    } else if (st === 'AVENCER') {
+                        stText = 'A VENCER (60d)';
+                        stColor = '#d97706';
+                    }
 
                     rowsHtml += `
                         <tr>
-                            <td style="font-family: monospace; font-size: 13pt; font-weight: 900;">${l.lote || 'S/ LOTE'}</td>
-                            <td style="text-align: right; font-size: 13pt; font-weight: 900;">${Number(l.quantidade || 0).toLocaleString('pt-BR')} ${l.embalagem || unidade}</td>
-                            <td style="text-align: center; font-size: 11pt;">${formatAnoMesDisplay(l.data_fabricacao)}</td>
-                            <td style="text-align: center; font-size: 13pt; font-weight: 900;">${formatAnoMesDisplay(l.data_validade)}</td>
-                            <td style="text-align: center; font-size: 10pt; font-weight: 900;">${stText}</td>
-                            <td style="font-size: 10pt;">${l.observacao || '-'}</td>
+                            <td style="font-family: monospace, Courier, sans-serif; font-size: 13pt; font-weight: 900; word-break: break-word;">${l.lote || 'S/ LOTE'}</td>
+                            <td style="text-align: right; font-size: 13pt; font-weight: 900; white-space: nowrap;">${Number(l.quantidade || 0).toLocaleString('pt-BR')} ${l.embalagem || unidade}</td>
+                            <td style="text-align: center; font-size: 11pt; font-weight: 800; white-space: nowrap;">${formatAnoMesDisplay(l.data_fabricacao)}</td>
+                            <td style="text-align: center; font-size: 13pt; font-weight: 900; white-space: nowrap;">${formatAnoMesDisplay(l.data_validade)}</td>
+                            <td style="text-align: center; font-size: 10pt; font-weight: 900; color: ${stColor};">${stText}</td>
+                            <td style="font-size: 10pt; font-weight: 600; word-break: break-word;">${l.observacao || '-'}</td>
                         </tr>
                     `;
                 });
@@ -2455,40 +2478,40 @@
                     <div class="a4-pallet-page">
                         <div class="a4-pallet-card">
                             <!-- CABEÇALHO COM LOGO E CÓDIGO GIGANTE -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000000; padding-bottom: 12px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000000; padding-bottom: 10px;">
                                 <div>
-                                    <h1 style="margin: 0; font-size: 18pt; font-weight: 900; color: #002f6c; text-transform: uppercase;">AMAZON AÇO • CONTROLE DE ESTOQUE</h1>
-                                    <p style="margin: 3px 0 0 0; font-size: 12pt; font-weight: 800; color: #333333;">FICHA DE IDENTIFICAÇÃO DE PALETE / PRATELEIRA</p>
-                                    <p style="margin: 4px 0 0 0; font-size: 11pt; font-weight: 800; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                                    <h1 style="margin: 0; font-size: 20pt; font-weight: 900; color: #002f6c; text-transform: uppercase; letter-spacing: 0.5px;">AMAZON AÇO • CONTROLE DE ESTOQUE</h1>
+                                    <p style="margin: 4px 0 0 0; font-size: 13pt; font-weight: 900; color: #1e293b;">FICHA DE IDENTIFICAÇÃO DE PALETE / PRATELEIRA</p>
+                                    <p style="margin: 5px 0 0 0; font-size: 12pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
                                 </div>
-                                <div style="text-align: right;">
-                                    <img src="${qrUrl}" alt="QR Code" style="width: 100px; height: 100px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
+                                <div style="text-align: right; flex-shrink: 0;">
+                                    <img src="${qrUrl}" alt="QR Code" style="width: 105px; height: 105px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
                                 </div>
                             </div>
 
                             <!-- CÓDIGO DO MATERIAL EM DESTAQUE MÁXIMO -->
-                            <div style="text-align: center; background: #002f6c; color: #ffffff; padding: 10px; margin-top: 12px; border-radius: 6px;">
-                                <span style="font-family: monospace; font-size: 38pt; font-weight: 900; letter-spacing: 2px;">${produto}</span>
+                            <div style="text-align: center; background: #002f6c; color: #ffffff; padding: 12px 8px; margin-top: 12px; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                <span style="font-family: monospace, Courier, sans-serif; font-size: 42pt; font-weight: 900; letter-spacing: 3px; line-height: 1;">${produto}</span>
                             </div>
 
                             <!-- DESCRIÇÃO COMPLETA -->
-                            <div style="margin-top: 12px; border: 2px solid #000000; padding: 10px; border-radius: 6px; background: #f8fafc;">
-                                <span style="font-size: 9pt; font-weight: 900; color: #666666; text-transform: uppercase;">Descrição do Material:</span>
-                                <h2 style="margin: 2px 0 0 0; font-size: 16pt; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1.2;">${desc}</h2>
+                            <div style="margin-top: 12px; border: 2.5px solid #000000; padding: 10px 14px; border-radius: 8px; background: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                <span style="font-size: 9.5pt; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Descrição do Material:</span>
+                                <h2 style="margin: 3px 0 0 0; font-size: 17pt; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1.25;">${desc}</h2>
                             </div>
 
                             <!-- TABELA DE LOTES PRESENTES NESTE PALETE -->
-                            <div style="margin-top: 14px;">
-                                <h3 style="margin: 0 0 4px 0; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Lotes e Validades deste Palete:</h3>
-                                <table class="a4-table">
+                            <div style="margin-top: 14px; width: 100%;">
+                                <h3 style="margin: 0 0 6px 0; font-size: 11.5pt; font-weight: 900; text-transform: uppercase; color: #000000;">Lotes e Validades deste Palete:</h3>
+                                <table class="a4-table" style="width: 100%; table-layout: fixed; border-collapse: collapse; box-sizing: border-box;">
                                     <thead>
                                         <tr>
                                             <th style="width: 22%;">Lote</th>
-                                            <th style="width: 20%; text-align: right;">Quantidade</th>
+                                            <th style="width: 18%; text-align: right;">Quantidade</th>
                                             <th style="width: 15%; text-align: center;">Fabricação</th>
-                                            <th style="width: 18%; text-align: center;">Validade</th>
-                                            <th style="width: 15%; text-align: center;">Status</th>
-                                            <th style="width: 10%;">Obs.</th>
+                                            <th style="width: 17%; text-align: center;">Validade</th>
+                                            <th style="width: 14%; text-align: center;">Status</th>
+                                            <th style="width: 14%;">Obs.</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2496,16 +2519,16 @@
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <td style="text-align: right; font-weight: 900; text-transform: uppercase;">TOTAL DO PALETE:</td>
-                                            <td style="text-align: right; font-weight: 900; font-size: 14pt; color: #002f6c;">${totalSelectedQtd.toLocaleString('pt-BR')} ${unidade}</td>
-                                            <td colspan="4" style="text-align: right; font-size: 10pt; font-weight: 800; color: #555555;">${selectedLots.length} lote(s) selecionado(s)</td>
+                                            <td style="text-align: right; font-weight: 900; font-size: 11pt; text-transform: uppercase;">TOTAL:</td>
+                                            <td style="text-align: right; font-weight: 900; font-size: 14pt; color: #002f6c; -webkit-print-color-adjust: exact; print-color-adjust: exact; white-space: nowrap;">${totalSelectedQtd.toLocaleString('pt-BR')} ${unidade}</td>
+                                            <td colspan="4" style="text-align: right; font-size: 11pt; font-weight: 900; color: #334155;">${selectedLots.length} lote(s) selecionado(s)</td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
 
                             <!-- RODAPÉ DA FOLHA -->
-                            <div style="margin-top: 18px; border-top: 2px dashed #999999; padding-top: 8px; display: flex; justify-content: space-between; font-size: 9pt; font-weight: 700; color: #666666;">
+                            <div style="margin-top: 16px; border-top: 2px dashed #64748b; padding-top: 8px; display: flex; justify-content: space-between; font-size: 9pt; font-weight: 700; color: #475569;">
                                 <span>Emitido por: ${currentUser ? currentUser.nome : 'ALMOXARIFADO'}</span>
                                 <span>Data/Hora: ${new Date().toLocaleString('pt-BR')}</span>
                                 <span>Portal de Estoques Amazon Aço</span>
@@ -2516,6 +2539,16 @@
             }
 
             printContainer.innerHTML = fullHtml;
+
+            let pageStyle = document.getElementById('dynamicPrintPageStyle');
+            if (!pageStyle) {
+                pageStyle = document.createElement('style');
+                pageStyle.id = 'dynamicPrintPageStyle';
+                document.head.appendChild(pageStyle);
+            }
+            pageStyle.innerHTML = `@page { size: A4 portrait !important; margin: 8mm !important; }`;
+
+            document.body.classList.remove('printing-argox');
             document.body.classList.add('printing-a4');
             window.print();
 
@@ -3517,6 +3550,16 @@
             }
 
             printContainer.innerHTML = labelsHtml;
+
+            let pageStyle = document.getElementById('dynamicPrintPageStyle');
+            if (!pageStyle) {
+                pageStyle = document.createElement('style');
+                pageStyle.id = 'dynamicPrintPageStyle';
+                document.head.appendChild(pageStyle);
+            }
+            pageStyle.innerHTML = `@page { size: 100mm 50mm landscape !important; margin: 0 !important; }`;
+
+            document.body.classList.remove('printing-a4');
             document.body.classList.add('printing-argox');
 
             window.print();

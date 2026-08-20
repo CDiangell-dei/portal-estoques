@@ -4031,6 +4031,15 @@
             }
 
             printContainer.innerHTML = labelsHtml;
+
+            let pageStyle = document.getElementById('dynamicPrintPageStyle');
+            if (!pageStyle) {
+                pageStyle = document.createElement('style');
+                pageStyle.id = 'dynamicPrintPageStyle';
+                document.head.appendChild(pageStyle);
+            }
+            pageStyle.innerHTML = `@page { size: 100mm 50mm landscape !important; margin: 0 !important; }`;
+
             document.body.classList.add('printing-argox');
 
             window.print();
