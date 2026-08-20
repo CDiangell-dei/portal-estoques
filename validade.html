@@ -407,52 +407,56 @@
 
         <!-- CARDS KPIS DE VALIDADE -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 no-print">
-            <div class="bg-white p-5 rounded-3xl border border-rose-200 shadow-sm flex items-center justify-between">
+            <!-- 1. VENCIDOS -->
+            <div id="cardKpiVencidos" onclick="filterByStatusCard('VENCIDO')" class="bg-white p-5 rounded-3xl border border-rose-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-rose-400 hover:shadow-md transition-all group touch-active" title="Clique para filtrar apenas lotes vencidos">
                 <div>
-                    <p class="text-[10px] font-black text-rose-600 uppercase tracking-wider">Lotes Vencidos (🔴)</p>
+                    <p class="text-[10px] font-black text-rose-600 uppercase tracking-wider group-hover:text-rose-800 transition-colors">Lotes Vencidos (🔴)</p>
                     <h3 id="kpiValidadeVencidos" class="text-2xl font-black text-rose-600 mt-1">0</h3>
                     <p class="text-[11px] text-slate-500 font-semibold mt-0.5">Validade expirada</p>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                     <i data-lucide="alert-triangle" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-3xl border border-amber-200 shadow-sm flex items-center justify-between">
+            <!-- 2. A VENCER -->
+            <div id="cardKpiAVencer" onclick="filterByStatusCard('AVENCER')" class="bg-white p-5 rounded-3xl border border-amber-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-amber-400 hover:shadow-md transition-all group touch-active" title="Clique para filtrar apenas lotes a vencer em 60 dias">
                 <div>
-                    <p class="text-[10px] font-black text-amber-600 uppercase tracking-wider">A Vencer em 60d (🟡)</p>
+                    <p class="text-[10px] font-black text-amber-600 uppercase tracking-wider group-hover:text-amber-800 transition-colors">A Vencer em 60d (🟡)</p>
                     <h3 id="kpiValidadeAVencer" class="text-2xl font-black text-amber-600 mt-1">0</h3>
                     <p class="text-[11px] text-slate-500 font-semibold mt-0.5">Vencimento próximo</p>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                     <i data-lucide="clock" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-3xl border border-emerald-200 shadow-sm flex items-center justify-between">
+            <!-- 3. NO PRAZO (OK) -->
+            <div id="cardKpiOK" onclick="filterByStatusCard('OK')" class="bg-white p-5 rounded-3xl border border-emerald-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all group touch-active" title="Clique para filtrar apenas lotes no prazo">
                 <div>
-                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-wider">No Prazo / OK (🟢)</p>
+                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-wider group-hover:text-emerald-800 transition-colors">No Prazo / OK (🟢)</p>
                     <h3 id="kpiValidadeOK" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
                     <p class="text-[11px] text-slate-500 font-semibold mt-0.5">Dentro da validade</p>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                     <i data-lucide="check-circle-2" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-3xl border border-blue-200 shadow-sm flex items-center justify-between">
+            <!-- 4. TOTAL MONITORADO -->
+            <div id="cardKpiTotal" onclick="filterResetAll()" class="bg-white p-5 rounded-3xl border border-blue-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-blue-400 hover:shadow-md transition-all group touch-active" title="Clique para ver todos os lotes sem restrição de status">
                 <div>
-                    <p class="text-[10px] font-black text-blue-600 uppercase tracking-wider">Total em Lotes</p>
+                    <p class="text-[10px] font-black text-blue-600 uppercase tracking-wider group-hover:text-blue-800 transition-colors">Total em Lotes</p>
                     <h3 id="kpiValidadeTotalQtd" class="text-2xl font-black text-[#002f6c] mt-1">0</h3>
-                    <p class="text-[11px] text-slate-500 font-semibold mt-0.5">Qtd. total monitorada</p>
+                    <p id="kpiValidadeTotalQtdSub" class="text-[11px] text-slate-500 font-semibold mt-0.5">Qtd. total monitorada</p>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                     <i data-lucide="boxes" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <!-- NOVO KPI: DIVERGÊNCIAS SALDO X LOTES -->
-            <div id="cardKpiDivergencias" onclick="filterByDivergenceOnly()" class="bg-white p-5 rounded-3xl border border-purple-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-purple-400 hover:shadow-md transition-all group" title="Clique para filtrar apenas materiais com divergência">
+            <!-- 5. DIVERGÊNCIAS SALDO X LOTES -->
+            <div id="cardKpiDivergencias" onclick="filterByDivergenceOnly()" class="bg-white p-5 rounded-3xl border border-purple-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-purple-400 hover:shadow-md transition-all group touch-active" title="Clique para filtrar apenas materiais com divergência">
                 <div>
                     <p class="text-[10px] font-black text-purple-700 uppercase tracking-wider group-hover:text-purple-900 transition-colors">Divergências de Saldo (⚠️)</p>
                     <h3 id="kpiValidadeDivergencias" class="text-2xl font-black text-purple-700 mt-1">0</h3>
@@ -469,7 +473,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Filial</label>
-                    <select id="valFilterFilial" onchange="applyValidadeFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-500">
+                    <select id="valFilterFilial" onchange="onFilialFilterChangeValidade()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-500">
                         <option value="ALL">Todas as Filiais</option>
                     </select>
                 </div>
@@ -1254,12 +1258,77 @@
             };
         }
 
+        function isFilialMatch(itemFilial, filterFilial) {
+            if (!filterFilial || filterFilial === 'ALL' || filterFilial === '00' || filterFilial === 'TODAS') return true;
+            const fPad = String(itemFilial || '01').trim().padStart(2, '0');
+            const fRaw = fPad.replace(/^0+/, '') || '0';
+            const targetPad = String(filterFilial).trim().padStart(2, '0');
+            const targetRaw = targetPad.replace(/^0+/, '') || '0';
+            return fPad === targetPad || fRaw === targetRaw;
+        }
+
+        function isArmMatch(itemArm, filterArm) {
+            if (!filterArm || filterArm === 'ALL') return true;
+            const aPad = String(itemArm || '01').trim().padStart(2, '0');
+            const aRaw = aPad.replace(/^0+/, '') || '0';
+            const targetPad = String(filterArm).trim().padStart(2, '0');
+            const targetRaw = targetPad.replace(/^0+/, '') || '0';
+            return aPad === targetPad || aRaw === targetRaw;
+        }
+
+        function filterByStatusCard(targetStatus) {
+            const sel = document.getElementById('valFilterStatus');
+            if (!sel) return;
+            if (sel.value === targetStatus) {
+                sel.value = 'ALL';
+            } else {
+                sel.value = targetStatus;
+            }
+            applyValidadeFilters();
+        }
+
+        function filterResetAll() {
+            const selS = document.getElementById('valFilterStatus');
+            const selC = document.getElementById('valFilterSaldoConferencia');
+            if (selS) selS.value = 'ALL';
+            if (selC) selC.value = 'ALL';
+            applyValidadeFilters();
+        }
+
         function filterByDivergenceOnly() {
             const sel = document.getElementById('valFilterSaldoConferencia');
             if (sel) {
                 sel.value = (sel.value === 'DIVERGENCIA') ? 'ALL' : 'DIVERGENCIA';
                 applyValidadeFilters();
             }
+        }
+
+        function onFilialFilterChangeValidade() {
+            updateKnownWarehousesForFilial();
+            applyValidadeFilters();
+        }
+
+        function updateKnownWarehousesForFilial() {
+            const filial = document.getElementById('valFilterFilial') ? document.getElementById('valFilterFilial').value : 'ALL';
+            
+            const saldoArmazens = rawSaldoDataset
+                .filter(s => isFilialMatch(s.filial, filial))
+                .map(s => String(s.armazem || '').trim().padStart(2, '0'))
+                .filter(Boolean);
+
+            const valArmazens = (rawValidadeDataset || [])
+                .filter(v => isFilialMatch(v.filial, filial))
+                .map(v => String(v.armazem || '').trim().padStart(2, '0'))
+                .filter(Boolean);
+
+            rawKnownWarehouses = [...new Set([...saldoArmazens, ...valArmazens])]
+                .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+            if (rawKnownWarehouses.length === 0) {
+                rawKnownWarehouses = ['01', '24', '50'];
+            }
+
+            populateWarehouseSelects();
         }
 
         function populateValidadeFiltersDropdowns() {
@@ -1307,6 +1376,8 @@
                 selFilter.innerHTML = html;
                 if (currentVal && (currentVal === 'ALL' || rawKnownWarehouses.includes(currentVal))) {
                     selFilter.value = currentVal;
+                } else {
+                    selFilter.value = 'ALL';
                 }
             }
 
@@ -1447,18 +1518,10 @@
                 if (c) sb1Map[c] = p['Descr.Espec.'] || '-';
             });
 
-            const unSorted = rawValidadeDataset.filter(v => {
-                if (filial !== 'ALL' && v.filial !== filial) return false;
-                if (armazem !== 'ALL' && v.armazem !== armazem) return false;
-                
-                const status = getValidadeStatus(v.data_validade);
-                if (statusFilter !== 'ALL' && status !== statusFilter) return false;
-
-                const comp = getBalanceComparison(v.filial, v.armazem, v.produto);
-                if (confFilter === 'DIVERGENCIA' && comp.status === 'ALINHADO') return false;
-                if (confFilter === 'FALTA_LOTE' && comp.status !== 'FALTA_LOTE') return false;
-                if (confFilter === 'EXCEDENTE' && comp.status !== 'EXCEDENTE') return false;
-                if (confFilter === 'ALINHADO' && comp.status !== 'ALINHADO') return false;
+            // 1. Escopo Base (Filial + Armazém + Busca) para cálculo dos cards e KPIs
+            const baseScopeDataset = rawValidadeDataset.filter(v => {
+                if (!isFilialMatch(v.filial, filial)) return false;
+                if (!isArmMatch(v.armazem, armazem)) return false;
 
                 if (search) {
                     const desc = (sb1Map[v.produto] || '').toLowerCase();
@@ -1472,19 +1535,38 @@
                 return true;
             });
 
+            // 2. Filtro Completo para Tabela (incluindo Status e Conferência de Saldos)
+            const unSorted = baseScopeDataset.filter(v => {
+                const status = getValidadeStatus(v.data_validade);
+                if (statusFilter !== 'ALL' && status !== statusFilter) return false;
+
+                const comp = getBalanceComparison(v.filial, v.armazem, v.produto);
+                if (confFilter === 'DIVERGENCIA' && comp.status === 'ALINHADO') return false;
+                if (confFilter === 'FALTA_LOTE' && comp.status !== 'FALTA_LOTE') return false;
+                if (confFilter === 'EXCEDENTE' && comp.status !== 'EXCEDENTE') return false;
+                if (confFilter === 'ALINHADO' && comp.status !== 'ALINHADO') return false;
+
+                return true;
+            });
+
             filteredValidadeDataset = sortValidadeDataset(unSorted);
 
-            renderValidadeDashboard();
+            renderValidadeDashboard(baseScopeDataset, unSorted, statusFilter, confFilter);
             renderValidadeTable();
         }
 
-        function renderValidadeDashboard() {
+        function renderValidadeDashboard(baseScopeDataset, filteredList, activeStatus, activeConf) {
+            const list = Array.isArray(baseScopeDataset) ? baseScopeDataset : rawValidadeDataset;
+            const fullFiltered = Array.isArray(filteredList) ? filteredList : filteredValidadeDataset;
+            const status = activeStatus || (document.getElementById('valFilterStatus') ? document.getElementById('valFilterStatus').value : 'ALL');
+            const conf = activeConf || (document.getElementById('valFilterSaldoConferencia') ? document.getElementById('valFilterSaldoConferencia').value : 'ALL');
+
             let vencidosCount = 0;
             let aVencerCount = 0;
             let okCount = 0;
             let totalQtd = 0;
 
-            rawValidadeDataset.forEach(v => {
+            list.forEach(v => {
                 const st = getValidadeStatus(v.data_validade);
                 if (st === 'VENCIDO') vencidosCount++;
                 else if (st === 'AVENCER') aVencerCount++;
@@ -1493,13 +1575,34 @@
                 totalQtd += parseFloat(v.quantidade || 0);
             });
 
-            // Contagem de divergências únicas por material + armazém + filial
+            let filteredQtd = 0;
+            fullFiltered.forEach(v => {
+                filteredQtd += parseFloat(v.quantidade || 0);
+            });
+
+            const filial = document.getElementById('valFilterFilial') ? document.getElementById('valFilterFilial').value : 'ALL';
+            const armazem = document.getElementById('valFilterArmazem') ? document.getElementById('valFilterArmazem').value : 'ALL';
+
+            // Contagem de divergências únicas por material + armazém + filial dentro do escopo selecionado
             const uniqueMaterialsMap = new Map();
-            rawValidadeDataset.forEach(v => {
+
+            list.forEach(v => {
                 const key = `${v.filial}__${v.armazem}__${v.produto.toUpperCase()}`;
                 if (!uniqueMaterialsMap.has(key)) {
                     const comp = getBalanceComparison(v.filial, v.armazem, v.produto);
                     uniqueMaterialsMap.set(key, comp);
+                }
+            });
+
+            rawSaldoDataset.forEach(s => {
+                if (!isFilialMatch(s.filial, filial)) return;
+                if (!isArmMatch(s.armazem, armazem)) return;
+                if (s.quantidade > 0) {
+                    const key = `${s.filial}__${s.armazem}__${s.produto.toUpperCase()}`;
+                    if (!uniqueMaterialsMap.has(key)) {
+                        const comp = getBalanceComparison(s.filial, s.armazem, s.produto);
+                        uniqueMaterialsMap.set(key, comp);
+                    }
                 }
             });
 
@@ -1518,13 +1621,24 @@
             const kpiA = document.getElementById('kpiValidadeAVencer');
             const kpiOK = document.getElementById('kpiValidadeOK');
             const kpiTotal = document.getElementById('kpiValidadeTotalQtd');
+            const kpiTotalSub = document.getElementById('kpiValidadeTotalQtdSub');
             const kpiDiv = document.getElementById('kpiValidadeDivergencias');
             const kpiDivSub = document.getElementById('kpiValidadeDivergenciasSub');
 
             if (kpiV) kpiV.innerText = vencidosCount.toLocaleString('pt-BR');
             if (kpiA) kpiA.innerText = aVencerCount.toLocaleString('pt-BR');
             if (kpiOK) kpiOK.innerText = okCount.toLocaleString('pt-BR');
-            if (kpiTotal) kpiTotal.innerText = totalQtd.toLocaleString('pt-BR');
+
+            if (kpiTotal) {
+                if (status !== 'ALL' || conf !== 'ALL') {
+                    kpiTotal.innerText = filteredQtd.toLocaleString('pt-BR');
+                    if (kpiTotalSub) kpiTotalSub.innerText = `Filtrado (${totalQtd.toLocaleString('pt-BR')} no escopo)`;
+                } else {
+                    kpiTotal.innerText = totalQtd.toLocaleString('pt-BR');
+                    if (kpiTotalSub) kpiTotalSub.innerText = "Qtd. total monitorada";
+                }
+            }
+
             if (kpiDiv) {
                 kpiDiv.innerText = divergenciasCount.toLocaleString('pt-BR');
                 if (divergenciasCount === 0) {
@@ -1534,6 +1648,39 @@
                     kpiDiv.className = "text-2xl font-black text-purple-700 mt-1";
                     if (kpiDivSub) kpiDivSub.innerText = `${faltaCount} falta(m) | ${excessoCount} sobra(m)`;
                 }
+            }
+
+            updateKpiCardsVisualState(status, conf);
+        }
+
+        function updateKpiCardsVisualState(activeStatus, activeConf) {
+            const cardV = document.getElementById('cardKpiVencidos');
+            const cardA = document.getElementById('cardKpiAVencer');
+            const cardOK = document.getElementById('cardKpiOK');
+            const cardTotal = document.getElementById('cardKpiTotal');
+            const cardDiv = document.getElementById('cardKpiDivergencias');
+
+            const resetCard = (card) => {
+                if (!card) return;
+                card.classList.remove('ring-2', 'ring-offset-2', 'ring-rose-500', 'ring-amber-500', 'ring-emerald-500', 'ring-blue-500', 'ring-purple-500', 'bg-rose-50/70', 'bg-amber-50/70', 'bg-emerald-50/70', 'bg-blue-50/70', 'bg-purple-50/70');
+            };
+
+            resetCard(cardV);
+            resetCard(cardA);
+            resetCard(cardOK);
+            resetCard(cardTotal);
+            resetCard(cardDiv);
+
+            if (activeStatus === 'VENCIDO' && cardV) {
+                cardV.classList.add('ring-2', 'ring-offset-2', 'ring-rose-500', 'bg-rose-50/70');
+            } else if (activeStatus === 'AVENCER' && cardA) {
+                cardA.classList.add('ring-2', 'ring-offset-2', 'ring-amber-500', 'bg-amber-50/70');
+            } else if (activeStatus === 'OK' && cardOK) {
+                cardOK.classList.add('ring-2', 'ring-offset-2', 'ring-emerald-500', 'bg-emerald-50/70');
+            }
+
+            if (activeConf === 'DIVERGENCIA' && cardDiv) {
+                cardDiv.classList.add('ring-2', 'ring-offset-2', 'ring-purple-500', 'bg-purple-50/70');
             }
         }
 
@@ -2044,7 +2191,10 @@
 
             const code = codeInput.value.trim().toUpperCase();
             const armazem = armazemInput.value.trim().padStart(2, '0');
-            const targetFilial = getTargetFilialForSector();
+            const selFilial = document.getElementById('valFilterFilial');
+            const isGlobal = isGlobalFilial(currentUser);
+            const activeFilial = (isGlobal && selFilial && selFilial.value !== 'ALL' && selFilial.value !== '00') ? selFilial.value : getTargetFilialForSector();
+            const targetFilial = (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') ? String(activeFilial).padStart(2, '0') : '01';
 
             if (!code || !armazem) {
                 card.classList.add('hidden');
@@ -2141,7 +2291,10 @@
                 return;
             }
 
-            const targetFilial = getTargetFilialForSector();
+            const selFilial = document.getElementById('valFilterFilial');
+            const isGlobal = isGlobalFilial(currentUser);
+            const activeFilial = (isGlobal && selFilial && selFilial.value !== 'ALL' && selFilial.value !== '00') ? selFilial.value : getTargetFilialForSector();
+            const targetFilial = (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') ? String(activeFilial).padStart(2, '0') : '01';
             const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
 
             const payload = {
@@ -2297,7 +2450,10 @@
                     if (colEmb === -1) colEmb = 4;
 
                     const defaultArm = document.getElementById('importDefaultArmazem').value.padStart(2, '0');
-                    const targetFilial = getTargetFilialForSector();
+                    const selFilial = document.getElementById('valFilterFilial');
+                    const isGlobal = isGlobalFilial(currentUser);
+                    const activeFilial = (isGlobal && selFilial && selFilial.value !== 'ALL' && selFilial.value !== '00') ? selFilial.value : getTargetFilialForSector();
+                    const targetFilial = (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') ? String(activeFilial).padStart(2, '0') : '01';
 
                     const sb1Map = {};
                     rawSb1Dataset.forEach(p => {
