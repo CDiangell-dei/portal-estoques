@@ -466,8 +466,8 @@
         <!-- PAINEL 1: SIMULADOR DE REMANEJAMENTO & SOLICITAÇÃO GERAL DISTRIBUÍDA -->
         <div id="sd2-tab-remanejamento" class="space-y-6">
             
-            <!-- BARRA DE SELEÇÃO DE MODO DE SIMULAÇÃO (REMANEJAMENTO VS SOLICITAÇÃO GERAL DILUÍDA) -->
-            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <!-- BARRA DE SELEÇÃO DE MODO DE SIMULAÇÃO (REMANEJAMENTO VS SOLICITAÇÃO GERAL DILUÍDA) & PERÍODO -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-4 shadow-sm flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <div class="p-2.5 bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-2xl border border-blue-100 dark:border-slate-600">
                         <i data-lucide="git-merge" class="w-5 h-5"></i>
@@ -477,15 +477,34 @@
                         <p class="text-[11px] text-slate-400 font-bold">Alterne entre Remanejamento Único ou Solicitação Geral Distribuída</p>
                     </div>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 font-black text-xs">
-                    <button id="sim-mode-remanejamento-btn" onclick="setSimMode('remanejamento')" class="px-4 py-2 rounded-xl transition-all bg-[#002f6c] text-white shadow-xs flex items-center gap-2 cursor-pointer">
-                        <i data-lucide="truck" class="w-3.5 h-3.5"></i>
-                        <span>Remanejamento Direto</span>
-                    </button>
-                    <button id="sim-mode-dilution-btn" onclick="setSimMode('dilution')" class="px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-500"></i>
-                        <span>Solicitação Geral Distribuída</span>
-                    </button>
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Modos de Simulação -->
+                    <div class="flex items-center gap-2 font-black text-xs">
+                        <button id="sim-mode-remanejamento-btn" onclick="setSimMode('remanejamento')" class="px-4 py-2 rounded-xl transition-all bg-[#002f6c] text-white shadow-xs flex items-center gap-2 cursor-pointer">
+                            <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+                            <span>Remanejamento Direto</span>
+                        </button>
+                        <button id="sim-mode-dilution-btn" onclick="setSimMode('dilution')" class="px-4 py-2 rounded-xl transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-500"></i>
+                            <span>Solicitação Geral Distribuída</span>
+                        </button>
+                    </div>
+
+                    <!-- Seletor do Período de Análise de Demanda (3M / 6M / 12M) -->
+                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/80 p-1 rounded-2xl border border-slate-200 dark:border-slate-600">
+                        <span class="text-[10px] font-black uppercase text-slate-400 dark:text-slate-400 px-2 flex items-center gap-1">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Janela:
+                        </span>
+                        <button type="button" id="sim-period-3m-btn" onclick="setSimAnalysisPeriod(3)" class="px-3 py-1.5 rounded-xl text-xs font-black transition-all text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 cursor-pointer" title="Análise baseada nos últimos 3 meses de saídas">
+                            3 Meses
+                        </button>
+                        <button type="button" id="sim-period-6m-btn" onclick="setSimAnalysisPeriod(6)" class="px-3 py-1.5 rounded-xl text-xs font-black transition-all text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 cursor-pointer" title="Análise baseada nos últimos 6 meses de saídas">
+                            6 Meses
+                        </button>
+                        <button type="button" id="sim-period-12m-btn" onclick="setSimAnalysisPeriod(12)" class="px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-[#002f6c] text-white shadow-xs cursor-pointer" title="Análise baseada nos últimos 12 meses de saídas">
+                            12 Meses
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -607,7 +626,7 @@
             <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm space-y-4">
                 <div class="flex justify-between items-center">
                     <h3 class="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Análise Mensal Fatiada de Saídas (Qtde)</h3>
-                    <span class="text-[10px] text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-black border border-emerald-200 dark:border-emerald-800">Histórico de Demanda (12 Meses)</span>
+                    <span id="fatiada-badge-label" class="text-[10px] text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-black border border-emerald-200 dark:border-emerald-800">Histórico de Demanda (12 Meses)</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
@@ -922,6 +941,24 @@
         let chartSalesBranch = null;
         let chartStockDistribution = null;
         let MONTHS_ANALYSIS = [];
+        let simAnalysisPeriodMonths = 12; // Janela do simulador: 3, 6 ou 12 meses
+
+        function setSimAnalysisPeriod(months) {
+            simAnalysisPeriodMonths = parseInt(months, 10) || 12;
+            [3, 6, 12].forEach(m => {
+                const btn = document.getElementById(`sim-period-${m}m-btn`);
+                if (btn) {
+                    if (m === simAnalysisPeriodMonths) {
+                        btn.className = "px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-[#002f6c] text-white shadow-xs cursor-pointer";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-xl text-xs font-black transition-all text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 cursor-pointer";
+                    }
+                }
+            });
+            buildDynamicMonths();
+            recalculateSimulation();
+            saveFiltersToLocalStorage();
+        }
 
         let sd2ProgressTotalCount = 0;
 
@@ -1166,6 +1203,7 @@
                     salesPeriodType: currentPeriodType,
                     salesFromPeriod: salesFromPeriod,
                     salesToPeriod: salesToPeriod,
+                    simAnalysisPeriodMonths: simAnalysisPeriodMonths,
                     simQty: document.getElementById("sim-qty") ? document.getElementById("sim-qty").value : "0",
                     simMultiplier: document.getElementById("sim-multiplier") ? document.getElementById("sim-multiplier").value : "1",
                     simTargetBranch: document.getElementById("sim-target-branch") ? document.getElementById("sim-target-branch").value : "1",
@@ -1197,6 +1235,20 @@
 
                 if (state.simMode) {
                     simMode = state.simMode;
+                }
+
+                if (state.simAnalysisPeriodMonths) {
+                    simAnalysisPeriodMonths = parseInt(state.simAnalysisPeriodMonths, 10) || 12;
+                    [3, 6, 12].forEach(m => {
+                        const btn = document.getElementById(`sim-period-${m}m-btn`);
+                        if (btn) {
+                            if (m === simAnalysisPeriodMonths) {
+                                btn.className = "px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-[#002f6c] text-white shadow-xs cursor-pointer";
+                            } else {
+                                btn.className = "px-3 py-1.5 rounded-xl text-xs font-black transition-all text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 cursor-pointer";
+                            }
+                        }
+                    });
                 }
 
                 if (Array.isArray(state.selectedBranches) && state.selectedBranches.length > 0) {
@@ -1807,7 +1859,7 @@
                 if (!supabaseClient) initSupabase();
 
                 const twelveMonthsAgo = new Date();
-                twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+                twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 13);
                 const dateFilterStr = twelveMonthsAgo.toISOString().split('T')[0];
 
                 const sb1Table = currentSd2Sector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
@@ -1828,8 +1880,8 @@
                 });
 
                 updateUIProgress(55, `Baixando saídas do SD2 (${sd2Table})...`);
-                const dbSd2 = await fetchSupabaseRestFast(sd2Table, 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 70000, 'emissao=gte.' + dateFilterStr, () => {
-                    const pct = 55 + Math.min(40, (sd2ProgressTotalCount / 90000) * 40);
+                const dbSd2 = await fetchSupabaseRestFast(sd2Table, 'filial,produto,quantidade,vlr_unitario,vlr_total,tipo_saida,armazem,emissao,num_documento', 160000, 'emissao=gte.' + dateFilterStr + '&order=emissao.desc', () => {
+                    const pct = 55 + Math.min(40, (sd2ProgressTotalCount / 130000) * 40);
                     updateUIProgress(pct, "Baixando saídas do SD2...");
                 });
 
@@ -2007,7 +2059,7 @@
             let baseDate = new Date();
             if (maxDateStr) {
                 const parts = maxDateStr.split('-');
-                if (parts.length >= 2) baseDate = new Date(parts[0], parts[1] - 1, 15);
+                if (parts.length >= 2) baseDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 15);
             }
 
             MONTHS_ANALYSIS = [];
@@ -2026,11 +2078,18 @@
                 });
             }
 
+            const displayedMonths = MONTHS_ANALYSIS.slice(0, simAnalysisPeriodMonths);
+
             const theadFat = document.getElementById("sim-fatiada-thead");
             if (theadFat) {
                 theadFat.innerHTML = `<th class="py-3 px-4">Filiais</th>` +
-                    MONTHS_ANALYSIS.map(m => `<th class="py-3 px-3 text-right">${m.label}</th>`).join('') +
-                    `<th class="py-3 px-4 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Total 12M</th>`;
+                    displayedMonths.map(m => `<th class="py-3 px-3 text-right">${m.label}</th>`).join('') +
+                    `<th class="py-3 px-4 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Total ${simAnalysisPeriodMonths}M</th>`;
+            }
+
+            const badgeFat = document.getElementById("fatiada-badge-label");
+            if (badgeFat) {
+                badgeFat.innerText = `Histórico de Demanda (${simAnalysisPeriodMonths} Meses)`;
             }
         }
 
@@ -2814,7 +2873,8 @@
             const pInfo = rawDicionario.find(d => d.Codigo === sampleCode) || rawSaldos.find(s => s.Produto === sampleCode) || rawVendas.find(v => v.Produto === sampleCode);
             const activeUnit = pInfo ? (pInfo.Unidade || 'PC') : 'PC';
 
-            const analysisKeys = MONTHS_ANALYSIS.map(m => m.key);
+            const displayedMonths = MONTHS_ANALYSIS.slice(0, simAnalysisPeriodMonths);
+            const analysisKeys = displayedMonths.map(m => m.key);
             const salesMap = {};
             prodVendas.forEach(v => {
                 const yrMo = v.Emissao ? v.Emissao.substring(0, 7) : '';
@@ -2862,35 +2922,51 @@
                 });
 
                 // Filtrar os meses que de fato tiveram vendas (qty > 0)
-                // A lista analysisKeys já está ordenada em ordem cronológica decrescente (do mais recente para o mais antigo)
                 const activeMonthKeys = analysisKeys.filter(k => monthlySales[k].qty > 0);
-
-                // Pegar os últimos 7 meses ativos (com vendas) dentro do período de 1 ano
-                const top7ActiveKeys = activeMonthKeys.slice(0, 7);
 
                 let activeQtdSum = 0;
                 let activeValSum = 0;
-                top7ActiveKeys.forEach(k => {
-                    activeQtdSum += monthlySales[k].qty;
-                    activeValSum += monthlySales[k].val;
-                });
+                let mediaMesQtd = 0;
+                let mediaMesFat = 0;
 
-                // A média mensal é calculada dividindo a soma dos 7 meses ativos por 7 para manter o baseline correto.
-                // Se houver menos de 7 meses ativos (ex: 3), dividimos por 7 para refletir a menor frequência.
-                const mediaMesQtd = parseFloat((activeQtdSum / 7).toFixed(1));
-                const mediaMesFat = parseFloat((activeValSum / 7).toFixed(2));
-
-                // Para exibição na coluna "Total Saídas (12M)", somamos todo o período de 12 meses
-                let total12MQtd = 0;
+                let totalPeriodQtd = 0;
                 analysisKeys.forEach(k => {
-                    total12MQtd += monthlySales[k].qty;
+                    totalPeriodQtd += monthlySales[k].qty;
                 });
+
+                if (simAnalysisPeriodMonths === 12) {
+                    // Pegar os últimos 7 meses ativos (com vendas) dentro do período de 1 ano
+                    const top7ActiveKeys = activeMonthKeys.slice(0, 7);
+                    top7ActiveKeys.forEach(k => {
+                        activeQtdSum += monthlySales[k].qty;
+                        activeValSum += monthlySales[k].val;
+                    });
+                    // Divisão por 7 para baseline correto
+                    mediaMesQtd = parseFloat((activeQtdSum / 7).toFixed(1));
+                    mediaMesFat = parseFloat((activeValSum / 7).toFixed(2));
+                } else if (simAnalysisPeriodMonths === 6) {
+                    // Para 6 meses, média direta pelos 6 meses
+                    analysisKeys.forEach(k => {
+                        activeQtdSum += monthlySales[k].qty;
+                        activeValSum += monthlySales[k].val;
+                    });
+                    mediaMesQtd = parseFloat((activeQtdSum / 6).toFixed(1));
+                    mediaMesFat = parseFloat((activeValSum / 6).toFixed(2));
+                } else {
+                    // Para 3 meses, média direta pelos 3 meses
+                    analysisKeys.forEach(k => {
+                        activeQtdSum += monthlySales[k].qty;
+                        activeValSum += monthlySales[k].val;
+                    });
+                    mediaMesQtd = parseFloat((activeQtdSum / 3).toFixed(1));
+                    mediaMesFat = parseFloat((activeValSum / 3).toFixed(2));
+                }
 
                 branchBaseStats.push({ 
                     filialId, 
                     filialNome, 
                     saldoAtual, 
-                    totalQtdVendas: total12MQtd, 
+                    totalQtdVendas: totalPeriodQtd, 
                     mediaMesQtd, 
                     mediaMesFat 
                 });
@@ -2905,6 +2981,18 @@
             }
             const dilutionAllocations = globalDilutionAllocations; // alias local para compat
             globalActiveUnit = activeUnit;
+
+            // ATUALIZAR NOTA DE RODAPÉ CONFORME O PERÍODO
+            const footerNote = document.getElementById("sim-footer-note");
+            if (footerNote) {
+                if (simAnalysisPeriodMonths === 12) {
+                    footerNote.innerText = "* A cobertura de estoque baseia-se no Saldo Pós-Envio dividido pela Média Mensal de Saídas (calculada sobre até 7 meses ativos com saídas no período de 1 ano).";
+                } else if (simAnalysisPeriodMonths === 6) {
+                    footerNote.innerText = "* A cobertura de estoque baseia-se no Saldo Pós-Envio dividido pela Média Mensal de Saídas (calculada sobre a média dos 6 meses de demanda analisados).";
+                } else {
+                    footerNote.innerText = "* A cobertura de estoque baseia-se no Saldo Pós-Envio dividido pela Média Mensal de Saídas (calculada sobre a média dos 3 meses de demanda mais recentes).";
+                }
+            }
 
             // ATUALIZAR CABEÇALHOS DA TABELA DE ACORDO COM O MODO
             if (simTableHeader && simTableTitle) {
@@ -2927,7 +3015,7 @@
                         <th class="py-3 px-3 text-right">Saldo Atual</th>
                         <th class="py-3 px-3 text-right bg-emerald-50 dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 font-black">Qtd. Alocada (+ q)</th>
                         <th class="py-3 px-3 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Saldo Pós-Entrada</th>
-                        <th class="py-3 px-3 text-right">Saídas (12M)</th>
+                        <th class="py-3 px-3 text-right">Saídas (${simAnalysisPeriodMonths}M)</th>
                         <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
                         <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
                     `;
@@ -2945,7 +3033,7 @@
                         <th class="py-3 px-3 text-center">Cobertura (Mês)</th>
                         <th class="py-3 px-3 text-right">Saldo Atual</th>
                         <th class="py-3 px-3 text-right bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 font-black">Saldo Pós-Envio</th>
-                        <th class="py-3 px-3 text-right">Saídas (12M)</th>
+                        <th class="py-3 px-3 text-right">Saídas (${simAnalysisPeriodMonths}M)</th>
                         <th class="py-3 px-3 text-right">Média/Mês Qtd</th>
                         <th class="py-3 px-3 text-right">Fat. Médio/Mês</th>
                         <th class="py-3 px-4 text-right">DIF (Atual - Vendido)</th>
@@ -3132,7 +3220,7 @@
                     const isTarget = simMode === 'remanejamento' && b.filialId === targetBranch;
                     tr.className = isTarget || (simMode === 'dilution' && b.allocatedQty > 0) ? "bg-emerald-50/40 dark:bg-slate-700/40 font-black" : "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition text-xs font-bold";
                     let monthCells = "";
-                    MONTHS_ANALYSIS.forEach(m => {
+                    displayedMonths.forEach(m => {
                         const mQty = (salesMap[b.filialId] && salesMap[b.filialId][m.key]) ? salesMap[b.filialId][m.key].qty : 0;
                         monthCells += `<td class="py-3 px-3 text-right ${mQty > 0 ? 'font-black text-slate-900 dark:text-slate-100' : 'text-slate-400'}">${mQty.toLocaleString('pt-BR')}</td>`;
                     });
