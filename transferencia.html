@@ -389,6 +389,21 @@
 
                 <!-- CARD DE DIAGNÓSTICO DO MATERIAL SELECIONADO / BIPADO -->
                 <div id="productDiagnosisCard" class="hidden bg-slate-50 dark:bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                    
+                    <!-- ALERTA DE MATERIAL JÁ PRESENTE NA TRANSFERÊNCIA (MÚLTIPLOS LOTES / RETIRADAS) -->
+                    <div id="diagAlreadyInBatchNotice" class="hidden p-3 rounded-xl bg-blue-50/80 dark:bg-slate-800/80 border border-blue-200 dark:border-slate-700 text-xs space-y-1.5">
+                        <div class="flex items-center justify-between font-black text-[#002f6c] dark:text-blue-300">
+                            <span class="flex items-center gap-1.5">
+                                <i data-lucide="layers" class="w-4 h-4 text-blue-600"></i>
+                                <span>Material já presente nesta transferência:</span>
+                            </span>
+                            <span id="diagAlreadyInBatchSummaryBadge" class="bg-blue-200/60 dark:bg-blue-900/60 text-blue-900 dark:text-blue-100 px-2 py-0.5 rounded-full text-[10px] font-black">0 itens</span>
+                        </div>
+                        <div id="diagAlreadyInBatchItemsList" class="flex flex-wrap gap-1.5 pt-1">
+                            <!-- Inserido dinamicamente via JS -->
+                        </div>
+                    </div>
+
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700/80 pb-3">
                         <div>
                             <div class="flex items-center gap-2">
@@ -1610,15 +1625,17 @@
             const padFilial = String(currentFilialId).padStart(2, '0');
             const rawFilial = String(currentFilialId).replace(/^0+/, '');
 
+            const pad8 = /^\d+$/.test(cleanCode) ? cleanCode.padStart(8, '0') : cleanCode;
+            const unpad = /^\d+$/.test(cleanCode) ? cleanCode.replace(/^0+/, '') : cleanCode;
+            const codesToSearch = Array.from(new Set([cleanCode, pad8, unpad]));
+            const filialIdsToSearch = Array.from(new Set([padFilial, rawFilial]));
+
             // 1. Busca dados do produto no SB1 diretamente no Supabase
             let prod = null;
             try {
-                const pad8 = /^\d+$/.test(cleanCode) ? cleanCode.padStart(8, '0') : cleanCode;
-                const unpad = /^\d+$/.test(cleanCode) ? cleanCode.replace(/^0+/, '') : cleanCode;
-
                 const { data: prodData } = await supabaseClient.from(sb1Table)
                     .select('codigo, descricao, unidade')
-                    .or(`codigo.eq.${cleanCode},codigo.eq.${pad8},codigo.eq.${unpad}`)
+                    .in('codigo', codesToSearch)
                     .limit(1);
 
                 if (prodData && prodData.length > 0) {
@@ -1649,17 +1666,14 @@
             // 2. Busca saldos reais do produto no Supabase
             let prodSaldos = [];
             try {
-                const pad8 = /^\d+$/.test(prod.codigo) ? prod.codigo.padStart(8, '0') : prod.codigo;
-                const unpad = /^\d+$/.test(prod.codigo) ? prod.codigo.replace(/^0+/, '') : prod.codigo;
-
                 const { data: sData } = await supabaseClient.from(saldoTable)
                     .select('*')
-                    .or(`produto.eq.${prod.codigo},produto.eq.${pad8},produto.eq.${unpad}`)
-                    .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`);
+                    .in('produto', codesToSearch)
+                    .in('filial', filialIdsToSearch);
                 prodSaldos = sData || [];
             } catch(e) {
                 console.warn("Erro ao obter saldos:", e);
-                prodSaldos = balancesMaster.filter(s => String(s.produto).trim() === prod.codigo);
+                prodSaldos = balancesMaster.filter(s => codesToSearch.includes(String(s.produto || s.Produto || '').trim()));
             }
 
             // 3. Atualiza a lista de armazéns dinamicamente
@@ -1686,10 +1700,37 @@
             document.getElementById('diagSaldoOrigem').innerText = saldoOrig.toLocaleString('pt-BR');
             document.getElementById('diagOrigemLabel').innerText = `Origem (${armOrigem})`;
 
-            // 5. Busca situação de inventário física em tempo real
+            // 5. Verifica se este produto já possui itens coletados no lote atual
+            const existingItems = (activeBatch.itens || []).filter(it => codesToSearch.includes(String(it.produto || '').trim()));
+            const alreadyInBatchBox = document.getElementById('diagAlreadyInBatchNotice');
+            const alreadyInBatchBadge = document.getElementById('diagAlreadyInBatchSummaryBadge');
+            const alreadyInBatchList = document.getElementById('diagAlreadyInBatchItemsList');
+            if (alreadyInBatchBox && existingItems.length > 0) {
+                alreadyInBatchBox.classList.remove('hidden');
+                const totalAlready = existingItems.reduce((acc, it) => acc + Number(it.quantidade || 0), 0);
+                alreadyInBatchBadge.innerText = `${existingItems.length} ${existingItems.length === 1 ? 'retirada adicionada' : 'retiradas adicionadas'} (Total: ${totalAlready.toLocaleString('pt-BR')} ${prod.unidade || 'PC'})`;
+                
+                let chipsHtml = '';
+                existingItems.forEach((it, idx) => {
+                    const lName = it.lote ? `Lote: ${it.lote}` : `Arm. ${it.armazem_origem || '02'}`;
+                    const vInfo = it.data_validade ? ` (${formatAnoMesDisplay(it.data_validade)})` : '';
+                    chipsHtml += `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white dark:bg-slate-700 border border-blue-200 dark:border-slate-600 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-2xs">
+                            <span class="font-mono text-blue-700 dark:text-blue-400 font-black">${lName}${vInfo}</span>
+                            <span class="text-emerald-600 dark:text-emerald-400 font-black font-mono bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">+${Number(it.quantidade).toLocaleString('pt-BR')} ${it.unidade || 'PC'}</span>
+                        </span>
+                    `;
+                });
+                alreadyInBatchList.innerHTML = chipsHtml;
+            } else if (alreadyInBatchBox) {
+                alreadyInBatchBox.classList.add('hidden');
+                alreadyInBatchList.innerHTML = '';
+            }
+
+            // 6. Busca situação de inventário física em tempo real
             await evaluateInventoryReliability(prod.codigo, saldoOrig);
 
-            // 6. Busca lotes disponíveis no Controle de Validade para este Armazém de Origem
+            // 7. Busca lotes disponíveis no Controle de Validade para este Armazém de Origem
             await loadProductLotsForOriginWarehouse(prod.codigo, armOrigem);
 
             // Abre o card de diagnóstico
@@ -1760,13 +1801,16 @@
 
             const pad8 = /^\d+$/.test(prodCode) ? prodCode.padStart(8, '0') : prodCode;
             const unpad = /^\d+$/.test(prodCode) ? prodCode.replace(/^0+/, '') : prodCode;
+            const codesToSearch = Array.from(new Set([prodCode, pad8, unpad]));
+            const filialIdsToSearch = Array.from(new Set([padFilial, rawFilial]));
+            const armIdsToSearch = Array.from(new Set([cleanArm, rawArm]));
 
             try {
                 const { data, error } = await supabaseClient.from(validadeTable)
                     .select('*')
-                    .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`)
-                    .or(`armazem.eq.${cleanArm},armazem.eq.${rawArm}`)
-                    .or(`produto.eq.${prodCode},produto.eq.${pad8},produto.eq.${unpad}`)
+                    .in('filial', filialIdsToSearch)
+                    .in('armazem', armIdsToSearch)
+                    .in('produto', codesToSearch)
                     .gt('quantidade', 0);
 
                 if (error) throw error;
@@ -1902,21 +1946,23 @@
             const padFilial = String(currentFilialId).padStart(2, '0');
             const rawFilial = String(currentFilialId).replace(/^0+/, '');
 
+            const pad8 = /^\d+$/.test(prodCode) ? prodCode.padStart(8, '0') : prodCode;
+            const unpad = /^\d+$/.test(prodCode) ? prodCode.replace(/^0+/, '') : prodCode;
+            const codesToSearch = Array.from(new Set([prodCode, pad8, unpad]));
+            const filialIdsToSearch = Array.from(new Set([padFilial, rawFilial]));
+
             let counts = [];
             try {
-                const pad8 = /^\d+$/.test(prodCode) ? prodCode.padStart(8, '0') : prodCode;
-                const unpad = /^\d+$/.test(prodCode) ? prodCode.replace(/^0+/, '') : prodCode;
-
                 const { data } = await supabaseClient.from(contagemTable)
                     .select('*')
-                    .or(`produto.eq.${prodCode},produto.eq.${pad8},produto.eq.${unpad}`)
-                    .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`)
+                    .in('produto', codesToSearch)
+                    .in('filial', filialIdsToSearch)
                     .order('created_at', { ascending: false })
                     .limit(5);
                 counts = data || [];
             } catch(e) {
                 console.warn("Erro ao buscar contagem:", e);
-                counts = physicalCountsMaster.filter(c => String(c.produto || '').trim() === prodCode);
+                counts = physicalCountsMaster.filter(c => codesToSearch.includes(String(c.produto || '').trim()));
             }
 
             if (counts.length === 0) {
@@ -2098,10 +2144,12 @@
         }
 
         async function deleteItemFromBatch(itemId) {
-            const itemToDelete = activeBatch.itens.find((it, idx) => (it.id ? it.id === itemId : idx === parseInt(itemId)));
+            const itemToDelete = activeBatch.itens.find((it, idx) => (it.id !== undefined && it.id !== null ? String(it.id) === String(itemId) : idx === parseInt(itemId, 10)));
             if (!itemToDelete) return;
 
-            if (!confirm(`Remover ${itemToDelete.produto} (${itemToDelete.quantidade} ${itemToDelete.unidade}) da transferência?`)) return;
+            const descName = itemToDelete.descricao || itemToDelete.produto || 'Item';
+            const loteInfo = itemToDelete.lote ? ` (Lote: ${itemToDelete.lote})` : '';
+            if (!confirm(`Remover ${itemToDelete.produto} - ${descName}${loteInfo} (${itemToDelete.quantidade} ${itemToDelete.unidade}) da transferência?`)) return;
 
             // Se o item estava associado a um lote de validade, devolve a quantidade
             if (itemToDelete.validade_id && supabaseClient) {
@@ -2131,7 +2179,7 @@
                     .eq('id', itemToDelete.id);
             }
 
-            activeBatch.itens = activeBatch.itens.filter((it, idx) => (it.id ? it.id !== itemId : idx !== parseInt(itemId)));
+            activeBatch.itens = activeBatch.itens.filter((it, idx) => (it.id !== undefined && it.id !== null ? String(it.id) !== String(itemId) : idx !== parseInt(itemId, 10)));
             renderActiveBatchUI();
         }
 

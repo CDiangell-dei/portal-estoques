@@ -3991,7 +3991,7 @@
             if (input) input.value = num;
         }
 
-        function printArgoxLabels() {
+        async function printArgoxLabels() {
             if (!currentLabelItemData) return;
             const input = document.getElementById('argoxLabelCopiesInput');
             const copies = input ? (parseInt(input.value, 10) || 1) : 1;
@@ -4031,6 +4031,17 @@
             }
 
             printContainer.innerHTML = labelsHtml;
+
+            // Aguarda o download do QR code antes de abrir a impressão
+            const imgs = Array.from(printContainer.querySelectorAll('img'));
+            await Promise.all(imgs.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    setTimeout(resolve, 1500);
+                });
+            }));
 
             let pageStyle = document.getElementById('dynamicPrintPageStyle');
             if (!pageStyle) {

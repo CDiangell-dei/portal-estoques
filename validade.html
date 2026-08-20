@@ -620,7 +620,7 @@
     </main>
 
     <!-- MODAL NOVO REGISTRO / EDIÇÃO DE VALIDADE -->
-    <div id="newValidadeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+    <div id="newValidadeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
         <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center space-x-2">
@@ -788,7 +788,7 @@
     </div>
 
     <!-- MODAL IMPORTAR PLANILHA EXCEL -->
-    <div id="importValidadeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+    <div id="importValidadeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
         <div class="bg-white w-full max-w-2xl rounded-3xl border border-slate-200 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh]">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center space-x-2">
@@ -857,7 +857,7 @@
     </div>
 
     <!-- MODAL TRANSFERIR DATAS PARA ARMAZÉM DE VENCIDOS -->
-    <div id="transferValidadeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+    <div id="transferValidadeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
         <div class="bg-white w-full max-w-md rounded-3xl border border-slate-200 p-6 shadow-2xl space-y-4 flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center space-x-2">
@@ -907,7 +907,7 @@
     <!-- ========================================== -->
     <!-- MODAL GERENCIADOR DE LOTES DO MATERIAL      -->
     <!-- ========================================== -->
-    <div id="productLotsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+    <div id="productLotsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
         <div class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh]">
             
             <!-- CABEÇALHO DO PRODUTO -->
@@ -992,7 +992,7 @@
     <!-- ========================================== -->
     <!-- MODAL IMPRESSÃO FICHA A4 (PALETE / ESTOQUE)-->
     <!-- ========================================== -->
-    <div id="a4PrintModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+    <div id="a4PrintModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
         <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh]">
             
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
@@ -1053,7 +1053,7 @@
     <!-- ========================================== -->
     <!-- MODAL IMPRESSÃO DE ETIQUETA (PADRÃO ARGOX) -->
     <!-- ========================================== -->
-    <div id="argoxLabelModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 no-print">
+    <div id="argoxLabelModal" class="hidden fixed inset-0 z-[160] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 no-print">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col space-y-4 max-h-[90vh] overflow-y-auto">
             <!-- CABEÇALHO -->
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
@@ -2419,7 +2419,7 @@
             input.value = val;
         }
 
-        function printA4PalletSheet() {
+        async function printA4PalletSheet() {
             if (!currentA4PalletData) return;
             const { filial, armazem, produto, lotes } = currentA4PalletData;
 
@@ -2539,6 +2539,17 @@
             }
 
             printContainer.innerHTML = fullHtml;
+
+            // Aguarda o download do QR code antes de abrir a impressão
+            const imgs = Array.from(printContainer.querySelectorAll('img'));
+            await Promise.all(imgs.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    setTimeout(resolve, 1500);
+                });
+            }));
 
             let pageStyle = document.getElementById('dynamicPrintPageStyle');
             if (!pageStyle) {
@@ -3510,7 +3521,7 @@
             input.value = num;
         }
 
-        function printArgoxLabels() {
+        async function printArgoxLabels() {
             if (!currentLabelItemData) return;
             const input = document.getElementById('argoxLabelCopiesInput');
             const copies = input ? (parseInt(input.value, 10) || 1) : 1;
@@ -3550,6 +3561,17 @@
             }
 
             printContainer.innerHTML = labelsHtml;
+
+            // Aguarda o download do QR code antes de abrir a impressão
+            const imgs = Array.from(printContainer.querySelectorAll('img'));
+            await Promise.all(imgs.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    setTimeout(resolve, 1500);
+                });
+            }));
 
             let pageStyle = document.getElementById('dynamicPrintPageStyle');
             if (!pageStyle) {
