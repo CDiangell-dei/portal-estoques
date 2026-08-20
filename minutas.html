@@ -308,7 +308,7 @@
                         <span>Orçamento / Pedido</span>
                     </label>
                     <div class="flex items-center gap-2">
-                        <select id="minutaOrcamentoFilial" class="w-2/5 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                        <select id="minutaOrcamentoFilial" onchange="if(isGlobalFilial(currentUser)) populateConferentesDropdown(this.value)" class="w-2/5 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
                             <option value="" disabled selected>Filial...</option>
                         </select>
                         <input type="text" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="minutaOrcamentoNumero" placeholder="Nº Pedido" class="w-3/5 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
@@ -584,7 +584,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Orçamento (Filial)</label>
-                        <select id="editMinutaOrcFilial" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                        <select id="editMinutaOrcFilial" onchange="if(isGlobalFilial(currentUser)) populateConferentesDropdown(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
                             <option value="" disabled selected>Filial...</option>
                         </select>
                     </div>
@@ -790,6 +790,7 @@
     <script>
         let rawMinutasDataset = [];
         let filteredMinutasDataset = [];
+        let rawConferentesList = [];
         let knownConferentes = [];
         let knownFiliais = [];
         let currentMinutaMode = 'MINUTA';
@@ -905,11 +906,30 @@
             const loader = document.getElementById('globalLoader');
             if (showLoader && loader) loader.classList.remove('hidden');
             try {
-                // Carrega conferentes
-                const { data: cData } = await supabaseClient.rpc('get_conferentes');
-                if (cData) knownConferentes = cData.map(u => u.nome ? String(u.nome).toUpperCase().trim() : '').filter(Boolean);
-                populateConferentesDropdown();
+                // Carrega conferentes com respectivas filiais
+                try {
+                    const { data: uData } = await supabaseClient
+                        .from('usuarios')
+                        .select('id, matricula, nome, filial_atual, filial_comercio, eh_conferente')
+                        .or('eh_conferente.eq.true,eh_almoxarife.eq.true')
+                        .eq('status', true);
+                    
+                    if (uData && uData.length > 0) {
+                        rawConferentesList = uData;
+                        knownConferentes = uData.map(u => u.nome ? String(u.nome).toUpperCase().trim() : '').filter(Boolean);
+                    } else {
+                        const { data: cData } = await supabaseClient.rpc('get_conferentes');
+                        if (cData) {
+                            knownConferentes = cData.map(u => u.nome ? String(u.nome).toUpperCase().trim() : '').filter(Boolean);
+                            rawConferentesList = knownConferentes.map(n => ({ nome: n, filial_comercio: '01', filial_atual: '01' }));
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Erro ao buscar conferentes da filial:", e);
+                }
+
                 populateFiliaisDropdowns();
+                populateConferentesDropdown();
 
                 let minutasList = [];
                 let fromM = 0, stepM = 1000, fetchMoreM = true;
@@ -998,18 +1018,61 @@
             }
         }
 
-        function populateConferentesDropdown() {
+        function populateConferentesDropdown(targetFilial = null) {
             const sel = document.getElementById('minutaConferenteSelect');
             const selEdit = document.getElementById('editMinutaConferente');
+            
+            const isGlobal = isGlobalFilial(currentUser);
+            const userFil = getUserAssignedFilial(currentUser, 'COMERCIO');
+            
+            // Define a filial a filtrar: se o usuário tiver filial de comércio definida (ex: 01, 04, 05, 06, 12), filtra estritamente pela sua filial
+            let filToFilter = userFil;
+            if (targetFilial) {
+                filToFilter = String(targetFilial).trim().padStart(2, '0');
+            } else if (isGlobal) {
+                filToFilter = 'Todos';
+            }
+
+            let filteredConferentes = [];
+
+            if (rawConferentesList && rawConferentesList.length > 0) {
+                filteredConferentes = rawConferentesList.filter(u => {
+                    if (!u.nome) return false;
+                    if (filToFilter === 'Todos' || filToFilter === '00') {
+                        return true; // Admin global vê todos
+                    }
+                    const cFilComercio = u.filial_comercio ? String(u.filial_comercio).trim().padStart(2, '0') : null;
+                    const cFilAtual = u.filial_atual ? String(u.filial_atual).trim().padStart(2, '0') : null;
+                    const cFil = cFilComercio || cFilAtual || '01';
+                    
+                    return cFil === filToFilter || cFil === '00';
+                });
+            }
+
             let opts = `<option value="" disabled selected>Selecione o conferente...</option>`;
-            if (knownConferentes.length > 0) {
-                const conferentesUnicos = [...new Set(knownConferentes)].sort();
-                conferentesUnicos.forEach(c => { opts += `<option value="${c}">${c}</option>`; });
+
+            if (filteredConferentes.length > 0) {
+                const uniqueNames = [...new Set(filteredConferentes.map(u => String(u.nome).toUpperCase().trim()))].sort();
+                uniqueNames.forEach(c => {
+                    opts += `<option value="${c}">${c}</option>`;
+                });
+            } else if (knownConferentes.length > 0) {
+                const uniqueNames = [...new Set(knownConferentes)].sort();
+                uniqueNames.forEach(c => { opts += `<option value="${c}">${c}</option>`; });
             } else {
                 opts += `<option value="CHRISTIANO">CHRISTIANO</option><option value="ADELSON">ADELSON</option>`;
             }
-            if (sel) sel.innerHTML = opts;
-            if (selEdit) selEdit.innerHTML = opts;
+
+            if (sel) {
+                const cur = sel.value;
+                sel.innerHTML = opts;
+                if (cur && opts.includes(`value="${cur}"`)) sel.value = cur;
+            }
+            if (selEdit) {
+                const curEdit = selEdit.value;
+                selEdit.innerHTML = opts;
+                if (curEdit && opts.includes(`value="${curEdit}"`)) selEdit.value = curEdit;
+            }
         }
 
         function extractMinutasSeries() {
@@ -1756,7 +1819,8 @@
             const matNum = parseInt(mat, 10);
 
             try {
-                const filial = currentUser ? currentUser.filial_atual : '01';
+                const userFil = getUserAssignedFilial(currentUser, 'COMERCIO');
+                const filial = userFil || (currentUser ? (currentUser.filial_comercio || currentUser.filial_atual) : '01');
                 const { data, error } = await supabaseClient.rpc('add_conferente_rapido', {
                     p_matricula: matNum,
                     p_nome: nome,
@@ -1766,6 +1830,13 @@
                 if (error) {
                     showAlert(`Erro: ${error.message}`, 'error');
                 } else {
+                    // Garante que filial_comercio seja gravada na tabela usuarios
+                    try {
+                        await supabaseClient.from('usuarios')
+                            .update({ filial_comercio: filial, filial_atual: filial })
+                            .eq('matricula', matNum);
+                    } catch(e) {}
+
                     showAlert(data && data.action === 'updated' ? 'Cadastro de conferente atualizado!' : 'Conferente cadastrado!', 'success');
                     closeQuickAddConferenteModal();
                     await fetchMinutasRecords(false);
