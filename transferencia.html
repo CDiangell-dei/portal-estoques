@@ -284,8 +284,15 @@
                                 🟡 Em Aberto (Rascunho)
                             </span>
                         </div>
-                        <p id="activeLoteInfo" class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-                            Destino: <strong id="activeLoteDestinoBadge" class="text-emerald-700 dark:text-emerald-300 font-black bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Armazém 01</strong> | Criado por: <span id="activeLoteCriador">Você</span>
+                        <p id="activeLoteInfo" class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5 flex flex-wrap items-center gap-1.5">
+                            <span>Filial:</span>
+                            <span id="activeLoteFilialBadge" class="text-blue-700 dark:text-blue-300 font-black bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">Filial 01 - Alvorada</span>
+                            <span class="text-slate-300 dark:text-slate-600">|</span>
+                            <span>Destino:</span>
+                            <strong id="activeLoteDestinoBadge" class="text-emerald-700 dark:text-emerald-300 font-black bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Armazém 01</strong>
+                            <span class="text-slate-300 dark:text-slate-600">|</span>
+                            <span>Criado por:</span>
+                            <span id="activeLoteCriador" class="font-bold text-slate-700 dark:text-slate-200">Você</span>
                         </p>
                     </div>
                 </div>
@@ -602,9 +609,17 @@
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status da Transferência</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Filial</label>
+                        <select id="histFilterFilial" onchange="applyHistoryFilters()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 font-bold text-slate-800 dark:text-white">
+                            <option value="ALL">Todas as Filiais</option>
+                            <!-- Inserido dinamicamente via JS -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status</label>
                         <select id="histFilterStatus" onchange="applyHistoryFilters()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 font-bold text-slate-800 dark:text-white">
                             <option value="ALL">Todos os Status</option>
                             <option value="EM_ABERTO">🟡 Em Aberto (Rascunho)</option>
@@ -623,14 +638,14 @@
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buscar por Código / Lote</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buscar Código / Lote / Item</label>
                         <input type="text" id="histFilterSearch" placeholder="Ex: TMA-COM ou 57000354..."
                                class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 font-bold text-slate-800 dark:text-white"
                                oninput="applyHistoryFilters()">
                     </div>
 
                     <div class="flex items-end">
-                        <button onclick="clearHistoryFilters()" class="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 transition flex items-center justify-center gap-1.5">
+                        <button onclick="clearHistoryFilters()" class="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 transition flex items-center justify-center gap-1.5 cursor-pointer">
                             <i data-lucide="filter-x" class="w-3.5 h-3.5 text-rose-500"></i>
                             <span>Limpar Filtros</span>
                         </button>
@@ -644,7 +659,8 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                                <th class="px-3 py-2.5">Lote / ID</th>
+                                <th class="px-3 py-2.5">Lote / Destino</th>
+                                <th class="px-3 py-2.5">Filial</th>
                                 <th class="px-3 py-2.5 text-center">Setor</th>
                                 <th class="px-3 py-2.5 text-center">Status</th>
                                 <th class="px-3 py-2.5 text-center">Itens (SKUs)</th>
@@ -656,7 +672,7 @@
                         </thead>
                         <tbody id="historyTableBody">
                             <tr>
-                                <td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">
+                                <td colspan="9" class="px-4 py-8 text-center text-xs font-bold text-slate-400">
                                     Carregando histórico de transferências...
                                 </td>
                             </tr>
@@ -761,6 +777,21 @@
             </div>
 
             <div class="space-y-4 text-xs">
+                <!-- Seleção / Exibição da Filial -->
+                <div class="bg-blue-50/70 dark:bg-slate-700/60 p-3.5 rounded-2xl border border-blue-100 dark:border-slate-600 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                            Filial da Movimentação
+                        </label>
+                        <span id="modalNewTransferSectorBadge" class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-[#002f6c] text-white">
+                            Comércio
+                        </span>
+                    </div>
+                    <div id="modalFilialContainer">
+                        <!-- Inserido dinamicamente via JS -->
+                    </div>
+                </div>
+
                 <!-- Armazém de Destino (Para onde vai levar) -->
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
@@ -768,7 +799,7 @@
                         <span class="text-emerald-600 dark:text-emerald-400 font-black">Destino Fixo do Lote</span>
                     </label>
                     <select id="modalNewTransferDestino" onchange="onModalDestinoChange()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3.5 py-3 text-xs font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer">
-                        <!-- Inserido dinamicamente via JS -->
+                        <!-- Inserido dinamicamente com os armazéns reais da filial -->
                     </select>
                     <p class="text-[10px] text-slate-400 mt-1 font-semibold">Este será o armazém que receberá todos os materiais movimentados neste lote.</p>
                 </div>
@@ -780,7 +811,7 @@
                         <span class="text-blue-600 dark:text-blue-400 font-black">Pode alterar por item</span>
                     </label>
                     <select id="modalNewTransferOrigem" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-2xl px-3.5 py-3 text-xs font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer">
-                        <!-- Inserido dinamicamente via JS -->
+                        <!-- Inserido dinamicamente com os armazéns reais da filial -->
                     </select>
                     <p class="text-[10px] text-slate-400 mt-1 font-semibold">Sugestão padrão de saída. Você ainda poderá selecionar o armazém de origem para cada material individualmente.</p>
                 </div>
@@ -1223,8 +1254,89 @@
             };
         }
 
-        // --- MODAL DE NOVA TRANSFERÊNCIA (SETUP DE DESTINO E ORIGEM) ---
-        function openModalNovaTransferencia() {
+        // --- DESCRIÇÕES E ARMAZÉNS REAIS POR FILIAL E SETOR (AMAZON AÇO) ---
+        function getWarehouseDescription(armCode, sector = 'COMERCIO', filialId = '01') {
+            const arm = String(armCode).trim().padStart(2, '0');
+            const descriptions = {
+                '01': sector === 'INDUSTRIA' ? 'Frente Loja / Venda' : 'Frente de Loja / Principal',
+                '02': sector === 'INDUSTRIA' ? 'Almoxarifado Geral' : 'Almoxarifado CD / Pulmão',
+                '03': 'Perfis / Depósito',
+                '04': sector === 'INDUSTRIA' ? 'Telhas' : 'Almoxarifado Secundário',
+                '05': 'Sucata / Acessórios',
+                '06': sector === 'INDUSTRIA' ? 'Jorge Teixeira' : 'Depósito Externo',
+                '09': 'Matéria Prima Especial',
+                '11': 'Área Técnica / Trânsito',
+                '12': 'Área de Corte / Bobinas',
+                '24': 'Consignado / Terceiros',
+                '26': 'Crossdocking / Reserva',
+                '30': 'Depósito Fechado',
+                '41': 'Showroom / Loja',
+                '42': 'Galpão Principal',
+                '46': 'Produção / Laminação',
+                '50': 'Validade / Quarentena / Avarias'
+            };
+            const desc = descriptions[arm];
+            return desc ? `Armazém ${arm} (${desc})` : `Armazém ${arm}`;
+        }
+
+        async function fetchWarehousesForFilial(filialId, sector) {
+            if (!supabaseClient) initSupabase();
+            const table = sector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
+            const padFilial = String(filialId).padStart(2, '0');
+            const rawFilial = String(filialId).replace(/^0+/, '');
+
+            // Se for a filial ativa e balancesMaster já estiver carregado para este setor:
+            if (String(currentFilialId).padStart(2, '0') === padFilial && currentSector === sector && balancesMaster && balancesMaster.length > 0) {
+                const setArm = new Set();
+                balancesMaster.forEach(s => {
+                    const a = String(s.armazem || s.Armazem || '').trim().padStart(2, '0');
+                    if (a && a !== '00') setArm.add(a);
+                });
+                setArm.add('50');
+                return Array.from(setArm).sort((a, b) => a.localeCompare(b));
+            }
+
+            try {
+                const { data, error } = await supabaseClient.from(table)
+                    .select('armazem')
+                    .or(`filial.eq.${padFilial},filial.eq.${rawFilial}`);
+
+                if (!error && data && data.length > 0) {
+                    const setArm = new Set();
+                    data.forEach(r => {
+                        const a = String(r.armazem || '').trim().padStart(2, '0');
+                        if (a && a !== '00') setArm.add(a);
+                    });
+                    setArm.add('50');
+                    return Array.from(setArm).sort((a, b) => a.localeCompare(b));
+                }
+            } catch(e) {
+                console.warn("Erro ao buscar armazéns da filial no Supabase:", e);
+            }
+
+            // Fallbacks baseados na base de dados real da Amazon Aço
+            if (sector === 'INDUSTRIA') {
+                return ['01', '02', '04', '09', '24', '46', '50'];
+            }
+            if (padFilial === '02') {
+                return ['01', '12', '24', '41', '42', '50'];
+            }
+            if (padFilial === '04') {
+                return ['01', '02', '11', '24', '26', '30', '50'];
+            }
+            if (padFilial === '05') {
+                return ['01', '02', '11', '24', '26', '50'];
+            }
+            if (padFilial === '06') {
+                return ['01', '02', '11', '12', '24', '50'];
+            }
+            return ['01', '02', '04', '05', '11', '12', '24', '26', '50'];
+        }
+
+        // --- MODAL DE NOVA TRANSFERÊNCIA (SETUP DE FILIAL, DESTINO E ORIGEM) ---
+        let modalCurrentWarehouses = [];
+
+        async function openModalNovaTransferencia() {
             const modal = document.getElementById('modalNovaTransferencia');
             if (!modal) return;
 
@@ -1234,23 +1346,45 @@
                 }
             }
 
-            const selDest = document.getElementById('modalNewTransferDestino');
-            const warehouses = availableWarehousesInBranch && availableWarehousesInBranch.length > 0
-                ? availableWarehousesInBranch
-                : ['01', '02', '03', '04', '05', '06', '50'];
+            // 1. Configurar Badge do Setor
+            const sectorBadge = document.getElementById('modalNewTransferSectorBadge');
+            if (sectorBadge) {
+                sectorBadge.innerText = currentSector === 'INDUSTRIA' ? 'Indústria' : 'Comércio';
+            }
 
-            let destOpts = '';
-            warehouses.forEach(arm => {
-                let desc = `Armazém ${arm}`;
-                if (arm === '01') desc += ' (Frente de Loja / Principal)';
-                else if (arm === '02') desc += ' (Almoxarifado CD / Pulmão)';
-                else if (arm === '50') desc += ' (Validade / Quarentena / Avarias)';
-                destOpts += `<option value="${arm}">${desc}</option>`;
-            });
-            selDest.innerHTML = destOpts;
-            selDest.value = '01'; // Default
+            // 2. Renderizar Seletor / Badge de Filial
+            const filialContainer = document.getElementById('modalFilialContainer');
+            const isGlobal = isGlobalFilial(currentUser);
 
-            onModalDestinoChange();
+            if (isGlobal) {
+                const list = currentSector === 'INDUSTRIA'
+                    ? [ { num: '01', name: '01 - Telhas' }, { num: '02', name: '02 - Tubos' }, { num: '03', name: '03 - Perfis' }, { num: '04', name: '04 - Matéria Prima' }, { num: '05', name: '05 - Sucata' }, { num: '06', name: '06 - Jorge Teixeira' } ]
+                    : getCachedFiliaisList().filter(f => f.num_filial !== '00').map(f => ({ num: String(f.num_filial).padStart(2, '0'), name: `${String(f.num_filial).padStart(2, '0')} - ${f.nome_filial}` }));
+
+                let opts = '';
+                list.forEach(f => {
+                    const isSel = String(currentFilialId).padStart(2, '0') === f.num;
+                    opts += `<option value="${f.num}" ${isSel ? 'selected' : ''}>${f.name}</option>`;
+                });
+
+                filialContainer.innerHTML = `
+                    <select id="modalNewTransferFilial" onchange="onModalFilialChange(this.value)" class="w-full bg-white dark:bg-slate-800 border border-blue-300 dark:border-slate-600 rounded-xl px-3 py-2.5 text-xs font-black text-[#002f6c] dark:text-blue-300 focus:outline-none focus:ring-2 focus:ring-[#002f6c] cursor-pointer shadow-xs">
+                        ${opts}
+                    </select>
+                `;
+            } else {
+                const userFil = getUserAssignedFilial(currentUser, currentSector);
+                const name = getFilialDisplayName(userFil, currentSector === 'INDUSTRIA' ? 'industria' : 'comercio');
+                filialContainer.innerHTML = `
+                    <div class="flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-slate-600">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-red-500"></i>
+                        <span class="text-xs font-black text-[#002f6c] dark:text-blue-300">${name}</span>
+                    </div>
+                `;
+            }
+
+            const selectedFilial = isGlobal ? (document.getElementById('modalNewTransferFilial')?.value || currentFilialId) : currentFilialId;
+            await onModalFilialChange(selectedFilial);
 
             document.getElementById('modalNewTransferObs').value = '';
             modal.classList.remove('hidden');
@@ -1262,20 +1396,46 @@
             if (modal) modal.classList.add('hidden');
         }
 
+        async function onModalFilialChange(filialId) {
+            const selDest = document.getElementById('modalNewTransferDestino');
+            if (!selDest) return;
+            selDest.innerHTML = `<option value="">Carregando armazéns da filial...</option>`;
+
+            modalCurrentWarehouses = await fetchWarehousesForFilial(filialId, currentSector);
+
+            let destOpts = '';
+            modalCurrentWarehouses.forEach(arm => {
+                const desc = getWarehouseDescription(arm, currentSector, filialId);
+                destOpts += `<option value="${arm}">${desc}</option>`;
+            });
+            selDest.innerHTML = destOpts;
+
+            // Seleciona 01 por padrão se existir, senão o primeiro armazém da lista
+            if (modalCurrentWarehouses.includes('01')) {
+                selDest.value = '01';
+            } else if (modalCurrentWarehouses.length > 0) {
+                selDest.value = modalCurrentWarehouses[0];
+            }
+
+            onModalDestinoChange();
+        }
+
         function onModalDestinoChange() {
-            const destVal = document.getElementById('modalNewTransferDestino').value;
+            const destVal = document.getElementById('modalNewTransferDestino')?.value;
             const selOrig = document.getElementById('modalNewTransferOrigem');
-            const warehouses = availableWarehousesInBranch && availableWarehousesInBranch.length > 0
-                ? availableWarehousesInBranch
-                : ['01', '02', '03', '04', '05', '06', '50'];
+            if (!selOrig) return;
+
+            const filialEl = document.getElementById('modalNewTransferFilial');
+            const currentFil = filialEl ? filialEl.value : currentFilialId;
+
+            const warehouses = modalCurrentWarehouses && modalCurrentWarehouses.length > 0
+                ? modalCurrentWarehouses
+                : availableWarehousesInBranch;
 
             let origOpts = '';
             warehouses.forEach(arm => {
                 if (arm === destVal) return; // Não permite origem idêntica ao destino
-                let desc = `Armazém ${arm}`;
-                if (arm === '02') desc += ' (Padrão Almoxarifado)';
-                else if (arm === '01') desc += ' (Frente de Loja)';
-                else if (arm === '50') desc += ' (Validade / Quarentena)';
+                const desc = getWarehouseDescription(arm, currentSector, currentFil);
                 origOpts += `<option value="${arm}">${desc}</option>`;
             });
             selOrig.innerHTML = origOpts;
@@ -1284,13 +1444,24 @@
                 selOrig.value = '02';
             } else if (warehouses.includes('01') && destVal !== '01') {
                 selOrig.value = '01';
+            } else if (selOrig.options.length > 0) {
+                selOrig.value = selOrig.options[0].value;
             }
         }
 
-        function executeStartNewTransfer() {
+        async function executeStartNewTransfer() {
+            const filialEl = document.getElementById('modalNewTransferFilial');
+            const chosenFilial = filialEl ? filialEl.value : currentFilialId;
             const dest = document.getElementById('modalNewTransferDestino').value || '01';
             const orig = document.getElementById('modalNewTransferOrigem').value || '02';
             const obs = document.getElementById('modalNewTransferObs').value.trim();
+
+            // Se o usuário selecionou uma filial diferente no modal, atualiza o contexto global
+            if (String(chosenFilial).padStart(2, '0') !== String(currentFilialId).padStart(2, '0')) {
+                currentFilialId = chosenFilial;
+                setupTransferFilialUI();
+                await loadMasterDataForSector();
+            }
 
             clearSelectedProduct();
             initInMemoryDraftBatch(dest, orig, obs);
@@ -1301,7 +1472,7 @@
             closeModalNovaTransferencia();
             switchTransferTab('active');
             renderActiveBatchUI();
-            showAlert(`Nova transferência iniciada! Destino: Armazém ${dest}.`, "success");
+            showAlert(`Nova transferência iniciada na ${getFilialDisplayName(currentFilialId)}! Destino: Armazém ${dest}.`, "success");
 
             setTimeout(() => {
                 const inp = document.getElementById('inputProductSearch');
@@ -1400,6 +1571,11 @@
             document.getElementById('activeLoteCodigo').innerText = activeBatch.codigo_lote || 'TMA-NOVO';
             document.getElementById('activeLoteCriador').innerText = activeBatch.criado_por || getFormattedLoggedUserName();
             document.getElementById('activeBatchObservacao').value = activeBatch.observacao || '';
+
+            const filBadge = document.getElementById('activeLoteFilialBadge');
+            if (filBadge) {
+                filBadge.innerText = getFilialDisplayName(activeBatch.filial_id || currentFilialId, activeBatch.setor === 'INDUSTRIA' ? 'industria' : 'comercio');
+            }
 
             const destBadge = document.getElementById('activeLoteDestinoBadge');
             if (destBadge) {
@@ -2568,10 +2744,33 @@
         }
 
         // --- ABA DE HISTÓRICO ---
+        function populateHistoryFilialFilter() {
+            const sel = document.getElementById('histFilterFilial');
+            if (!sel) return;
+
+            const isGlobal = isGlobalFilial(currentUser);
+            const list = currentSector === 'INDUSTRIA'
+                ? [ { num: '01', name: '01 - Telhas' }, { num: '02', name: '02 - Tubos' }, { num: '03', name: '03 - Perfis' }, { num: '04', name: '04 - Matéria Prima' }, { num: '05', name: '05 - Sucata' }, { num: '06', name: '06 - Jorge Teixeira' } ]
+                : getCachedFiliaisList().filter(f => f.num_filial !== '00').map(f => ({ num: String(f.num_filial).padStart(2, '0'), name: `${String(f.num_filial).padStart(2, '0')} - ${f.nome_filial}` }));
+
+            let html = `<option value="ALL">Todas as Filiais</option>`;
+            list.forEach(f => {
+                html += `<option value="${f.num}">${f.name}</option>`;
+            });
+            sel.innerHTML = html;
+
+            if (!isGlobal) {
+                sel.value = String(currentFilialId).padStart(2, '0');
+                sel.disabled = true;
+            }
+        }
+
         async function loadTransferHistory() {
             if (!supabaseClient) initSupabase();
+            populateHistoryFilialFilter();
+
             const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Carregando histórico...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Carregando histórico...</td></tr>`;
 
             try {
                 const isGlobal = isGlobalFilial(currentUser);
@@ -2590,34 +2789,37 @@
                 applyHistoryFilters();
             } catch(e) {
                 console.error("Erro no histórico:", e);
-                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-rose-500">Erro ao carregar histórico de transferências.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-xs font-bold text-rose-500">Erro ao carregar histórico de transferências.</td></tr>`;
             }
         }
 
         function applyHistoryFilters() {
-            const statusFilter = document.getElementById('histFilterStatus').value;
-            const setorFilter = document.getElementById('histFilterSetor').value;
-            const query = document.getElementById('histFilterSearch').value.toLowerCase().trim();
+            const filialFilter = document.getElementById('histFilterFilial')?.value || 'ALL';
+            const statusFilter = document.getElementById('histFilterStatus')?.value || 'ALL';
+            const setorFilter = document.getElementById('histFilterSetor')?.value || 'ALL';
+            const query = document.getElementById('histFilterSearch')?.value.toLowerCase().trim() || '';
 
             const filtered = allHistoryBatches.filter(b => {
+                if (filialFilter !== 'ALL' && String(b.filial_id || '').padStart(2, '0') !== String(filialFilter).padStart(2, '0')) return false;
                 if (statusFilter !== 'ALL' && b.status !== statusFilter) return false;
                 if (setorFilter !== 'ALL' && b.setor !== setorFilter) return false;
                 if (query) {
                     const matchCode = String(b.codigo_lote).toLowerCase().includes(query);
                     const matchCreator = String(b.criado_por).toLowerCase().includes(query);
                     const matchDest = String(b.armazem_destino || '').toLowerCase().includes(query);
+                    const matchFilial = String(b.filial_id || '').includes(query);
                     const matchItem = (b.transferencias_armazem_itens || []).some(it => 
                         String(it.produto).toLowerCase().includes(query) || 
                         String(it.descricao).toLowerCase().includes(query)
                     );
-                    return matchCode || matchCreator || matchDest || matchItem;
+                    return matchCode || matchCreator || matchDest || matchFilial || matchItem;
                 }
                 return true;
             });
 
             const tbody = document.getElementById('historyTableBody');
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhuma transferência encontrada com os filtros selecionados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhuma transferência encontrada com os filtros selecionados.</td></tr>`;
                 return;
             }
 
@@ -2627,6 +2829,7 @@
                 const dtFormatted = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 const skus = (b.transferencias_armazem_itens || []).length;
                 const destArm = b.armazem_destino || '01';
+                const filName = getFilialDisplayName(b.filial_id, b.setor === 'INDUSTRIA' ? 'industria' : 'comercio');
 
                 let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-100 text-amber-800 border border-amber-200">🟡 Rascunho</span>`;
                 if (b.status === 'FINALIZADO_FISICO') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-100 text-blue-800 border border-blue-200">🔵 Físico OK</span>`;
@@ -2657,6 +2860,12 @@
                                 <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 font-mono">➜ Destino: Arm. ${destArm}</span>
                             </div>
                         </td>
+                        <td class="px-3 py-2.5 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                                <i data-lucide="map-pin" class="w-3 h-3 text-red-500"></i>
+                                <span>${filName}</span>
+                            </span>
+                        </td>
                         <td class="px-3 py-2.5 text-center font-bold">${b.setor === 'INDUSTRIA' ? 'Indústria' : 'Comércio'}</td>
                         <td class="px-3 py-2.5 text-center">${statusBadge}</td>
                         <td class="px-3 py-2.5 text-center font-black text-slate-700 dark:text-slate-300">${skus}</td>
@@ -2675,6 +2884,11 @@
         }
 
         function clearHistoryFilters() {
+            const isGlobal = isGlobalFilial(currentUser);
+            if (isGlobal) {
+                const filSel = document.getElementById('histFilterFilial');
+                if (filSel) filSel.value = 'ALL';
+            }
             document.getElementById('histFilterStatus').value = 'ALL';
             document.getElementById('histFilterSetor').value = 'ALL';
             document.getElementById('histFilterSearch').value = '';
