@@ -518,6 +518,96 @@
                 </div>
             </div>
 
+            <!-- PAINEL EXECUTIVO: AGING DE VALIDADES & RISCO DE ESTOQUE -->
+            <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                            <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-black text-slate-900 leading-tight">Aging & Riscos de Validade</h3>
+                                <span class="bg-amber-100 text-amber-900 text-[9px] px-2 py-0.5 rounded-full font-black">FEFO</span>
+                            </div>
+                            <p class="text-[10px] font-bold text-slate-400">Visão preventiva dos lotes e prazos de validade da filial</p>
+                        </div>
+                    </div>
+                    <a href="validade.html" class="text-xs font-bold text-[#002f6c] hover:underline flex items-center space-x-1 self-start sm:self-auto">
+                        <span>Gerenciar Validades</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+
+                <!-- 5 CARDS CLICÁVEIS DE AGING -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <!-- VENCIDOS -->
+                    <a href="validade.html?filtro=vencidos" class="bg-rose-50/70 hover:bg-rose-100/80 border border-rose-200 p-3.5 rounded-2xl transition-all block group touch-active">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase tracking-wider text-rose-600">Vencidos</span>
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="homeValVencidos" class="text-xl sm:text-2xl font-black text-rose-900">0</span>
+                            <span class="text-[10px] font-bold text-rose-600 group-hover:underline">Arm. 50 &rarr;</span>
+                        </div>
+                        <p class="text-[9px] font-bold text-rose-500 mt-0.5">Lotes expirados</p>
+                    </a>
+
+                    <!-- VENCENDO EM 30 DIAS -->
+                    <a href="validade.html?filtro=vencendo30" class="bg-orange-50/70 hover:bg-orange-100/80 border border-orange-200 p-3.5 rounded-2xl transition-all block group touch-active">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase tracking-wider text-orange-600">Até 30 Dias</span>
+                            <span class="w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="homeValVencendo30" class="text-xl sm:text-2xl font-black text-orange-900">0</span>
+                            <span class="text-[10px] font-bold text-orange-600 group-hover:underline">Urgente &rarr;</span>
+                        </div>
+                        <p class="text-[9px] font-bold text-orange-500 mt-0.5">Consumo imediato</p>
+                    </a>
+
+                    <!-- VENCENDO EM 60 DIAS -->
+                    <a href="validade.html?filtro=vencendo60" class="bg-amber-50/70 hover:bg-amber-100/80 border border-amber-200 p-3.5 rounded-2xl transition-all block group touch-active">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase tracking-wider text-amber-700">31 a 60 Dias</span>
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="homeValVencendo60" class="text-xl sm:text-2xl font-black text-amber-900">0</span>
+                            <span class="text-[10px] font-bold text-amber-700 group-hover:underline">Atenção &rarr;</span>
+                        </div>
+                        <p class="text-[9px] font-bold text-amber-600 mt-0.5">Priorizar separação</p>
+                    </a>
+
+                    <!-- NO PRAZO -->
+                    <a href="validade.html?filtro=noPrazo" class="bg-emerald-50/70 hover:bg-emerald-100/80 border border-emerald-200 p-3.5 rounded-2xl transition-all block group touch-active">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase tracking-wider text-emerald-700">No Prazo</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="homeValNoPrazo" class="text-xl sm:text-2xl font-black text-emerald-900">0</span>
+                            <span class="text-[10px] font-bold text-emerald-700 group-hover:underline">Ver lotes &rarr;</span>
+                        </div>
+                        <p class="text-[9px] font-bold text-emerald-600 mt-0.5">&gt; 60 dias seguro</p>
+                    </a>
+
+                    <!-- DIVERGÊNCIAS SALDO X LOTES -->
+                    <a href="validade.html?filtro=divergencias" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 p-3.5 rounded-2xl transition-all block group touch-active col-span-2 sm:col-span-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase tracking-wider text-slate-600">Divergências</span>
+                            <span id="homeValDivDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="homeValDivergencias" class="text-xl sm:text-2xl font-black text-slate-800">0</span>
+                            <span class="text-[10px] font-bold text-slate-600 group-hover:underline">Conferir &rarr;</span>
+                        </div>
+                        <p class="text-[9px] font-bold text-slate-400 mt-0.5">Físico x ERP</p>
+                    </a>
+                </div>
+            </div>
+
             <!-- FEED DE ÚLTIMAS ATIVIDADES REALIZADAS NA FILIAL -->
             <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -920,6 +1010,124 @@
 
                 const kpiAcc = document.getElementById('homeKpiAccuracy');
                 if (kpiAcc) kpiAcc.innerText = "98.5%";
+
+                // 4. Carrega dados de Validade e Aging
+                const sector = currentUser && currentUser.setor_principal === 'INDUSTRIA' ? 'INDUSTRIA' : 'COMERCIO';
+                const valTable = sector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
+                const saldoTable = sector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
+
+                let valQuery = supabaseClient.from(valTable).select('id, filial, armazem, produto, lote, quantidade, data_validade');
+                if (!isGlobal) {
+                    valQuery = valQuery.or(`filial.eq.${userFilialPad},filial.eq.${userFilialRaw}`);
+                }
+                const { data: valDataRaw } = await valQuery;
+                const valData = valDataRaw || [];
+
+                let vencidos = 0;
+                let vencendo30 = 0;
+                let vencendo60 = 0;
+                let noPrazo = 0;
+
+                const today = new Date();
+                const curYear = today.getFullYear();
+                const curMonth = today.getMonth() + 1;
+                const curMonthsTotal = curYear * 12 + curMonth;
+
+                valData.forEach(item => {
+                    const arm = String(item.armazem || '01').trim();
+                    const valStr = String(item.data_validade || '').trim();
+                    if (!valStr) return;
+
+                    let vYear = 0, vMonth = 0;
+                    if (valStr.includes('-')) {
+                        const parts = valStr.split('-');
+                        vYear = parseInt(parts[0], 10);
+                        vMonth = parseInt(parts[1], 10);
+                    } else if (valStr.includes('/')) {
+                        const parts = valStr.split('/');
+                        if (parts.length === 2) {
+                            vMonth = parseInt(parts[0], 10);
+                            vYear = parseInt(parts[1], 10);
+                        }
+                    }
+
+                    if (!vYear || !vMonth) return;
+
+                    const valMonthsTotal = vYear * 12 + vMonth;
+                    const diffMonths = valMonthsTotal - curMonthsTotal;
+
+                    if (arm === '50' || diffMonths < 0) {
+                        vencidos++;
+                    } else if (diffMonths === 0) {
+                        vencendo30++;
+                    } else if (diffMonths === 1) {
+                        vencendo60++;
+                    } else {
+                        noPrazo++;
+                    }
+                });
+
+                const elVencidos = document.getElementById('homeValVencidos');
+                const elVencendo30 = document.getElementById('homeValVencendo30');
+                const elVencendo60 = document.getElementById('homeValVencendo60');
+                const elNoPrazo = document.getElementById('homeValNoPrazo');
+
+                if (elVencidos) elVencidos.innerText = vencidos.toLocaleString('pt-BR');
+                if (elVencendo30) elVencendo30.innerText = vencendo30.toLocaleString('pt-BR');
+                if (elVencendo60) elVencendo60.innerText = vencendo60.toLocaleString('pt-BR');
+                if (elNoPrazo) elNoPrazo.innerText = noPrazo.toLocaleString('pt-BR');
+
+                // 5. Calcula divergências de saldo (Lotes x ERP)
+                try {
+                    let saldoQuery = supabaseClient.from(saldoTable).select('filial, armazem, produto, quantidade');
+                    if (!isGlobal) {
+                        saldoQuery = saldoQuery.or(`filial.eq.${userFilialPad},filial.eq.${userFilialRaw}`);
+                    }
+                    const { data: saldoDataRaw } = await saldoQuery;
+                    const saldoData = saldoDataRaw || [];
+
+                    const keySet = new Set();
+                    const sysMap = {};
+                    const lotMap = {};
+
+                    saldoData.forEach(s => {
+                        const fil = String(s.filial || '01').trim().padStart(2, '0');
+                        const arm = String(s.armazem || '01').trim().padStart(2, '0');
+                        const prod = String(s.produto || '').trim();
+                        if (arm === '50' || !prod) return;
+                        const k = `${fil}_${arm}_${prod}`;
+                        keySet.add(k);
+                        sysMap[k] = (sysMap[k] || 0) + (Number(s.quantidade) || 0);
+                    });
+
+                    valData.forEach(v => {
+                        const fil = String(v.filial || '01').trim().padStart(2, '0');
+                        const arm = String(v.armazem || '01').trim().padStart(2, '0');
+                        const prod = String(v.produto || '').trim();
+                        if (arm === '50' || !prod) return;
+                        const k = `${fil}_${arm}_${prod}`;
+                        keySet.add(k);
+                        lotMap[k] = (lotMap[k] || 0) + (Number(v.quantidade) || 0);
+                    });
+
+                    let divCount = 0;
+                    keySet.forEach(k => {
+                        const sys = sysMap[k] || 0;
+                        const lot = lotMap[k] || 0;
+                        if (Math.abs(lot - sys) > 0.0001) {
+                            divCount++;
+                        }
+                    });
+
+                    const elDiv = document.getElementById('homeValDivergencias');
+                    const elDivDot = document.getElementById('homeValDivDot');
+                    if (elDiv) elDiv.innerText = divCount.toLocaleString('pt-BR');
+                    if (elDivDot) {
+                        elDivDot.className = divCount > 0 ? "w-2 h-2 rounded-full bg-amber-500 animate-ping" : "w-2 h-2 rounded-full bg-emerald-500";
+                    }
+                } catch(eDiv) {
+                    console.warn("Erro ao calcular divergências na home:", eDiv);
+                }
 
             } catch(e) {
                 console.error("Erro ao carregar dados da home:", e);
