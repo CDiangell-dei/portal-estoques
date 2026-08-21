@@ -2479,15 +2479,11 @@
                                     <i data-lucide="clipboard" class="w-3.5 h-3.5"></i>
                                     <span>Contar</span>
                                 </button>
-                                <button type="button" onclick="openA4PalletPrintModalFromInventario('${item.codigo}', '${escapedDesc}', '${item.unidade}', ${item.hasCount ? item.qtd_contada : item.quantidade})" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active cursor-pointer" title="Imprimir Ficha de Palete A4">
-                                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                                    <span>Ficha A4</span>
-                                </button>
-                                <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Tags">
+                                <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Tags">
                                     <i data-lucide="tag" class="w-3.5 h-3.5"></i>
                                     <span>Tags</span>
                                 </button>
-                                <button type="button" onclick="openFornecedoresModal('${item.codigo}', '${escapedDesc}', '${(item.fornecedores || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Fornecedores">
+                                <button type="button" onclick="openFornecedoresModal('${item.codigo}', '${escapedDesc}', '${(item.fornecedores || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Fornecedores">
                                     <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                                     <span>Forn.</span>
                                 </button>
@@ -2536,9 +2532,6 @@
                             <button type="button" onclick="openCountModal('${item.codigo}', '${escapedDesc}')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1 touch-active">
                                 <i data-lucide="clipboard" class="w-3.5 h-3.5"></i>
                                 <span>Contar</span>
-                            </button>
-                            <button type="button" onclick="openA4PalletPrintModalFromInventario('${item.codigo}', '${escapedDesc}', '${item.unidade}', ${item.hasCount ? item.qtd_contada : item.quantidade})" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2.5 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active cursor-pointer" title="Imprimir Ficha de Palete A4">
-                                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                             </button>
                             <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2.5 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active">
                                 <i data-lucide="tag" class="w-3.5 h-3.5"></i>
