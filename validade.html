@@ -355,7 +355,7 @@
                 </div>
 
                 <div class="flex items-center flex-wrap gap-2 w-full sm:w-auto">
-                    <button type="button" onclick="scanBarcodeForValidade()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center space-x-1.5 touch-active cursor-pointer" title="Bipar Ficha A4 ou Código de Barras com a câmera">
+                    <button type="button" onclick="scanBarcodeForValidade()" class="md:hidden bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center space-x-1.5 touch-active cursor-pointer" title="Bipar Ficha A4 ou Código de Barras com a câmera">
                         <i data-lucide="scan-barcode" class="w-4 h-4 text-white"></i>
                         <span>📷 Bipar</span>
                     </button>
@@ -534,14 +534,14 @@
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase">Código / Material</label>
-                        <button type="button" onclick="scanBarcodeIntoModalField()" class="text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1 cursor-pointer">
+                        <button type="button" onclick="scanBarcodeIntoModalField()" class="md:hidden text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1 cursor-pointer">
                             <i data-lucide="scan-barcode" class="w-3 h-3"></i>
                             <span>📷 Bipar Código</span>
                         </button>
                     </div>
                     <div class="relative flex items-center">
-                        <input type="text" id="valInputCodigo" list="valProductsDatalist" required oninput="onValidadeCodeOrLoteChange()" placeholder="Digite o código do material ou busque na lista..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-3 pr-10 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <button type="button" onclick="scanBarcodeIntoModalField()" class="absolute right-2 p-1 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer" title="Bipar código com a câmera">
+                        <input type="text" id="valInputCodigo" list="valProductsDatalist" required oninput="onValidadeCodeOrLoteChange()" placeholder="Digite o código do material ou busque na lista..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-3 md:pr-3 pr-10 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <button type="button" onclick="scanBarcodeIntoModalField()" class="md:hidden absolute right-2 p-1 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer" title="Bipar código com a câmera">
                             <i data-lucide="scan-barcode" class="w-4 h-4"></i>
                         </button>
                         <datalist id="valProductsDatalist"></datalist>
