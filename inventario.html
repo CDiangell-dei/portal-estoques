@@ -539,6 +539,44 @@
             </div>
         </div>
 
+        <!-- BANNER DE META DE CONTAGEM DO DIA & ORDENAÇÃO POR ROTA -->
+        <div id="dailyCountGoalCard" class="bg-gradient-to-r from-slate-900 via-[#002f6c] to-indigo-950 text-white p-5 rounded-3xl border border-blue-800/60 shadow-lg flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 print-card">
+            <div class="space-y-1.5 flex-1">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 flex items-center gap-1 shadow-sm">
+                        <i data-lucide="target" class="w-3 h-3 text-slate-950"></i> Sugestão de Contagem
+                    </span>
+                    <span id="dailyGoalDateLabel" class="text-xs text-blue-200 font-bold">Hoje</span>
+                </div>
+                <h3 class="text-sm font-black text-white flex items-center gap-2">
+                    <span>Meta Cíclica do Dia:</span>
+                    <span id="dailyGoalCountLabel" class="text-amber-300 font-black">0 itens prioritários</span>
+                </h3>
+                <p class="text-xs text-slate-300 font-medium leading-relaxed">
+                    Priorizando materiais com saldo sem contagem, itens pendentes há mais de 14 dias e divergências ativas.
+                </p>
+                <!-- PROGRESSO DA META -->
+                <div class="pt-2 flex items-center gap-3 max-w-md">
+                    <div class="flex-1 bg-slate-950/80 rounded-full h-2.5 overflow-hidden border border-slate-700/80">
+                        <div id="dailyGoalProgressBar" class="bg-gradient-to-r from-emerald-400 to-teal-300 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                    <span id="dailyGoalProgressText" class="text-[11px] font-black text-emerald-400 whitespace-nowrap">0% concluído</span>
+                </div>
+            </div>
+
+            <!-- AÇÕES DA META & ORDENAÇÃO POR ROTA -->
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 pt-2 md:pt-0">
+                <button type="button" id="btnFilterDailyGoal" onclick="toggleDailyGoalFilter()" class="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                    <i data-lucide="filter" class="w-4 h-4 text-slate-950"></i>
+                    <span id="btnFilterDailyGoalText">🎯 Focar na Meta do Dia</span>
+                </button>
+                <button type="button" id="btnToggleRouteSort" onclick="toggleRouteSortOrder()" class="w-full sm:w-auto px-3.5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer" title="Alternar entre ordenação por Código ou por Rota Física (Corredores/Prateleiras)">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-amber-400"></i>
+                    <span id="btnToggleRouteSortText">Rota Física (Galpão)</span>
+                </button>
+            </div>
+        </div>
+
         <!-- KPIS INVENTÁRIO -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm print-card">
@@ -662,7 +700,19 @@
                 <input type="hidden" id="countProductCode">
 
                 <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Produto</p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Produto</p>
+                        <div class="flex items-center gap-1.5">
+                            <span id="countProductAddressBadge" class="text-[10px] font-black px-2 py-0.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-3 h-3 text-amber-700"></i>
+                                <span id="countProductAddressText">Sem endereço</span>
+                            </span>
+                            <button type="button" onclick="openItemAuditHistoryModal(document.getElementById('countProductCode').value, document.getElementById('countProductName').innerText)" class="text-[10px] font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-lg border border-indigo-200 flex items-center gap-1 transition-all cursor-pointer shadow-2xs" title="Ver trilha de auditoria e histórico de alterações">
+                                <i data-lucide="history" class="w-3 h-3 text-indigo-600"></i>
+                                <span>Histórico</span>
+                            </button>
+                        </div>
+                    </div>
                     <p id="countProductName" class="text-xs font-black text-slate-800">---</p>
                 </div>
 
@@ -877,7 +927,14 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tags (Separadas por vírgula)</label>
-                        <input type="text" id="prodTags" placeholder="Ex: tubos, galvanizado, estrutural..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                        <input type="text" id="prodTags" placeholder="Ex: tubos, galvanizado..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Endereçamento no Galpão (Rua / Prateleira / Nível)</label>
+                    <div class="relative">
+                        <i data-lucide="map-pin" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+                        <input type="text" id="prodEndereco" placeholder="Ex: RUA 02 - PRAT 04 - NIVEL 01" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002f6c] uppercase">
                     </div>
                 </div>
                 <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
@@ -1895,6 +1952,51 @@
             }, { title: "Bipar Material / Inventário" });
         }
 
+        let isDailyGoalFilterActive = false;
+        let isRouteSortActive = false;
+
+        function toggleDailyGoalFilter() {
+            isDailyGoalFilterActive = !isDailyGoalFilterActive;
+            const btn = document.getElementById('btnFilterDailyGoal');
+            const textEl = document.getElementById('btnFilterDailyGoalText');
+            if (isDailyGoalFilterActive) {
+                if (btn) {
+                    btn.classList.remove('bg-amber-400', 'text-slate-950');
+                    btn.classList.add('bg-emerald-400', 'text-slate-950');
+                }
+                if (textEl) textEl.innerText = "✓ Exibindo Sugestões (Clique p/ Todos)";
+                showAlert("Filtrando apenas itens sugeridos para a meta de hoje.", "info");
+            } else {
+                if (btn) {
+                    btn.classList.remove('bg-emerald-400');
+                    btn.classList.add('bg-amber-400', 'text-slate-950');
+                }
+                if (textEl) textEl.innerText = "🎯 Focar na Meta do Dia";
+            }
+            applyInventoryFilters(true);
+        }
+
+        function toggleRouteSortOrder() {
+            isRouteSortActive = !isRouteSortActive;
+            const btn = document.getElementById('btnToggleRouteSort');
+            const textEl = document.getElementById('btnToggleRouteSortText');
+            if (isRouteSortActive) {
+                if (btn) {
+                    btn.classList.remove('bg-white/10', 'text-white');
+                    btn.classList.add('bg-amber-400', 'text-slate-950', 'font-black');
+                }
+                if (textEl) textEl.innerText = "📍 Rota Ativa (Corredor)";
+                showAlert("Lista ordenada pela rota física de corredores/endereços do armazém.", "success");
+            } else {
+                if (btn) {
+                    btn.classList.remove('bg-amber-400', 'text-slate-950', 'font-black');
+                    btn.classList.add('bg-white/10', 'text-white');
+                }
+                if (textEl) textEl.innerText = "Rota Física (Galpão)";
+            }
+            applyInventoryFilters(true);
+        }
+
         function applyInventoryFilters(resetPage = false) {
             const rawSearchVal = document.getElementById('invSearch') ? document.getElementById('invSearch').value : '';
             const term = rawSearchVal.toLowerCase().trim();
@@ -2078,7 +2180,7 @@
                 productLastDateMap[cod] = new Date();
             });
 
-            filteredInventoryDataset = rawSb1Dataset.map(prod => {
+            const allMapped = rawSb1Dataset.map(prod => {
                 const cod = prod.codigo || prod.Codigo ? String(prod.codigo || prod.Codigo).trim() : '';
                 const sysQty = saldoMap[cod] || 0;
                 
@@ -2112,6 +2214,8 @@
                     }
                 }
 
+                const isDailyGoalItem = (sysQty > 0 && !hasCount) || isOutdated || (status === 'GANHO' || status === 'PERDA');
+
                 return {
                     codigo: cod,
                     descricao: prod.descricao || prod['Descr.Espec.'] || '-',
@@ -2121,15 +2225,36 @@
                     hasCount: hasCount,
                     divergencia: diff,
                     status: status,
+                    endereco: prod.endereco || prod.Endereco || '',
                     fatorConv: prod.fator_conv || prod['Fator Conv.'] || 1,
                     tags: prod.tags || '',
                     fornecedores: prod.fornecedores || '',
                     observacao: productLastObsMap[cod] || '',
                     lastCountDate: lastDate,
                     daysSinceCount: daysSinceCount,
-                    isOutdated: isOutdated
+                    isOutdated: isOutdated,
+                    isDailyGoalItem: isDailyGoalItem
                 };
-            }).filter(item => {
+            });
+
+            // Atualiza Card de Meta do Dia
+            const pendingGoalItems = allMapped.filter(i => i.isDailyGoalItem && (!i.hasCount || i.isOutdated));
+            const goalDoneCount = allMapped.filter(i => i.hasCount && (i.daysSinceCount === 0 || i.daysSinceCount === null)).length;
+            const totalGoalPool = pendingGoalItems.length + goalDoneCount;
+            const goalPct = totalGoalPool > 0 ? Math.min(100, Math.round((goalDoneCount / totalGoalPool) * 100)) : 100;
+
+            const goalCountEl = document.getElementById('dailyGoalCountLabel');
+            const goalDateEl = document.getElementById('dailyGoalDateLabel');
+            const goalProgressEl = document.getElementById('dailyGoalProgressBar');
+            const goalTextEl = document.getElementById('dailyGoalProgressText');
+
+            if (goalCountEl) goalCountEl.innerText = `${pendingGoalItems.length} itens prioritários pendentes`;
+            if (goalDateEl) goalDateEl.innerText = `Hoje, ${new Date().toLocaleDateString('pt-BR')}`;
+            if (goalProgressEl) goalProgressEl.style.width = `${goalPct}%`;
+            if (goalTextEl) goalTextEl.innerText = `${goalPct}% concluído (${goalDoneCount} contados hoje)`;
+
+            filteredInventoryDataset = allMapped.filter(item => {
+                if (isDailyGoalFilterActive && !item.isDailyGoalItem) return false;
                 if (!selectedStatuses.includes(item.status)) return false;
                 if (!showZeroSaldo) {
                     if (Math.abs(item.quantidade) < 0.0001 && item.status !== 'GANHO' && item.status !== 'PERDA') {
@@ -2172,15 +2297,29 @@
                     const inDesc = item.descricao.toLowerCase().includes(term);
                     const inTags = item.tags.toLowerCase().includes(term);
                     const inForn = item.fornecedores.toLowerCase().includes(term);
-                    if (!inCode && !inDesc && !inTags && !inForn) return false;
+                    const inEnd = item.endereco ? item.endereco.toLowerCase().includes(term) : false;
+                    if (!inCode && !inDesc && !inTags && !inForn && !inEnd) return false;
                 }
 
                 return true;
             });
 
-            filteredInventoryDataset.sort((a, b) => {
-                return String(a.codigo || '').trim().localeCompare(String(b.codigo || '').trim(), undefined, { numeric: true, sensitivity: 'base' });
-            });
+            if (isRouteSortActive) {
+                filteredInventoryDataset.sort((a, b) => {
+                    const endA = String(a.endereco || '').trim().toUpperCase();
+                    const endB = String(b.endereco || '').trim().toUpperCase();
+                    if (!endA && endB) return 1;
+                    if (endA && !endB) return -1;
+                    if (endA && endB && endA !== endB) {
+                        return endA.localeCompare(endB, undefined, { numeric: true, sensitivity: 'base' });
+                    }
+                    return String(a.codigo || '').trim().localeCompare(String(b.codigo || '').trim(), undefined, { numeric: true, sensitivity: 'base' });
+                });
+            } else {
+                filteredInventoryDataset.sort((a, b) => {
+                    return String(a.codigo || '').trim().localeCompare(String(b.codigo || '').trim(), undefined, { numeric: true, sensitivity: 'base' });
+                });
+            }
 
             if (resetPage) currentPage = 1;
             renderInventoryDashboard();
@@ -2489,13 +2628,19 @@
                     factorBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200" title="Fator de Conversão Peso/Unidade">Fator: ${item.fatorConv}</span>`;
                 }
 
+                let enderecoBadge = '';
+                if (item.endereco) {
+                    enderecoBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-900 border border-amber-200/80 flex items-center gap-0.5" title="Endereço no Galpão: ${item.endereco}"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-amber-700"></i> ${item.endereco}</span>`;
+                }
+
                 let tagsBadges = '';
-                if (item.tags || factorBadge || item.fornecedores) {
+                if (item.tags || factorBadge || item.fornecedores || enderecoBadge) {
                     const tList = item.tags ? item.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
                     const fornBadge = item.fornecedores 
                         ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-0.5" title="Fornecedor: ${item.fornecedores}"><i data-lucide="truck" class="w-2.5 h-2.5"></i> ${item.fornecedores}</span>` 
                         : '';
                     tagsBadges = `<div class="flex flex-wrap gap-1 mt-1">` +
+                        (enderecoBadge ? enderecoBadge : '') +
                         (factorBadge ? factorBadge : '') +
                         (fornBadge ? fornBadge : '') +
                         tList.map(t => `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-100">${t}</span>`).join('') +
@@ -2532,6 +2677,9 @@
                                 <button type="button" onclick="openFornecedoresModal('${item.codigo}', '${escapedDesc}', '${(item.fornecedores || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" class="bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Fornecedores">
                                     <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                                     <span>Forn.</span>
+                                </button>
+                                <button type="button" onclick="openItemAuditHistoryModal('${item.codigo}', '${escapedDesc}')" class="bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-2xs flex items-center space-x-1 touch-active cursor-pointer" title="Ver Histórico de Auditoria">
+                                    <i data-lucide="history" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </td>
@@ -2587,6 +2735,9 @@
                                 <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                                 <span>Forn.</span>
                             </button>
+                            <button type="button" onclick="openItemAuditHistoryModal('${item.codigo}', '${escapedDesc}')" class="bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white p-2 rounded-xl text-xs font-bold transition-all shadow-sm touch-active cursor-pointer" title="Ver Histórico">
+                                <i data-lucide="history" class="w-4 h-4"></i>
+                            </button>
                         </div>
                     `;
                     mobileList.appendChild(card);
@@ -2619,6 +2770,11 @@
             
             const prodItem = filteredInventoryDataset.find(p => p.codigo === codigo);
             const factor = (prodItem && prodItem.fatorConv) ? Number(prodItem.fatorConv) : 1;
+
+            const addrEl = document.getElementById('countProductAddressText');
+            if (addrEl) {
+                addrEl.innerText = (prodItem && prodItem.endereco) ? prodItem.endereco : 'Sem endereço cadastrado';
+            }
 
             const selFilial = document.getElementById('invFilterFilial');
             const isGlobal = isGlobalFilial(currentUser);
@@ -3086,6 +3242,18 @@
                 saveOfflineAction('insert', countTable, insertsContagem);
             }
 
+            // Registra na Trilha de Auditoria
+            insertsContagem.forEach(c => {
+                logAuditAction({
+                    filial: c.filial || '01',
+                    armazem: c.armazem_contagem || '01',
+                    produto: c.produto,
+                    acao: 'CONTAGEM_INVENTARIO',
+                    detalhes: `Contagem lançada: ${Number(c.quantidade_contada).toLocaleString('pt-BR')} (Sistema: ${Number(c.quantidade_sistema).toLocaleString('pt-BR')}) por ${c.quem_contou}. ${c.observacao ? `Obs: ${c.observacao}` : ''}`,
+                    modulo: 'INVENTARIO'
+                });
+            });
+
             if (savedOnline) {
                 showAlert("Contagem salva com sucesso!", "success");
             }
@@ -3336,6 +3504,7 @@
             }
 
             const unidade = (selUn === 'CUSTOM' ? customUn : selUn) || 'UN';
+            const enderecoStr = document.getElementById('prodEndereco') ? document.getElementById('prodEndereco').value.trim().toUpperCase() : '';
 
             let tagsStr = '';
             if (rawTags) {
@@ -3354,7 +3523,8 @@
                     'descricao': desc,
                     'unidade': unidade,
                     'fator_conv': fatorConv,
-                    'tags': tagsStr || null
+                    'tags': tagsStr || null,
+                    'endereco': enderecoStr || null
                 };
 
                 if (supabaseClient && navigator.onLine) {
@@ -3365,7 +3535,8 @@
                             'Descr.Espec.': desc,
                             'Unidade': unidade,
                             'Fator Conv.': fatorConv,
-                            'tags': tagsStr || null
+                            'tags': tagsStr || null,
+                            'endereco': enderecoStr || null
                         };
                         const res2 = await supabaseClient.from(sb1Table).insert([legacyPayload]);
                         error = res2.error;
@@ -3378,6 +3549,13 @@
                 } else {
                     saveOfflineAction('insert', sb1Table, [supabasePayload]);
                 }
+
+                logAuditAction({
+                    produto: rawCode,
+                    acao: 'CADASTRO_PRODUTO',
+                    detalhes: `Novo produto cadastrado: ${desc} (Unidade: ${unidade}, Endereço: ${enderecoStr || 'Sem endereço'})`,
+                    modulo: 'INVENTARIO'
+                });
 
                 showAlert(`Produto ${rawCode} cadastrado com sucesso!`, "success");
                 closeProductModal();

@@ -831,6 +831,224 @@ async function toggleScannerTorch() {
     }
 }
 
+// ==========================================
+// TRILHA DE AUDITORIA & HISTÓRICO GLOBAL
+// ==========================================
+
+async function logAuditAction({ filial = '01', armazem = '01', produto = '', lote = '', acao = '', detalhes = '', modulo = 'ESTOQUE', meta = {} }) {
+    try {
+        if (!supabaseClient) initSupabase();
+        if (!supabaseClient) return;
+
+        const userName = currentUser ? (currentUser.nome || currentUser.username || 'USUARIO') : 'SISTEMA';
+        const userMat = currentUser ? (currentUser.matricula || currentUser.id || '0000') : '0000';
+
+        const payload = {
+            filial: String(filial || '01').trim().padStart(2, '0'),
+            armazem: String(armazem || '01').trim().padStart(2, '0'),
+            produto: String(produto || '').trim().toUpperCase(),
+            lote: String(lote || '').trim().toUpperCase(),
+            modulo: modulo,
+            acao: acao,
+            detalhes: detalhes,
+            usuario_nome: userName,
+            usuario_matricula: String(userMat),
+            meta: meta
+        };
+
+        if (navigator.onLine) {
+            await supabaseClient.from('auditoria_estoque').insert(payload);
+        } else {
+            saveOfflineAction('insert', 'auditoria_estoque', payload, {});
+        }
+    } catch (e) {
+        console.warn("Erro ao registrar auditoria:", e);
+    }
+}
+
+function ensureAuditModalInDOM() {
+    let modal = document.getElementById('globalItemAuditHistoryModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'globalItemAuditHistoryModal';
+    modal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-3 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print";
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-700 p-5 sm:p-6 shadow-2xl space-y-4 flex flex-col max-h-[90vh]">
+            <!-- HEADER -->
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 flex items-center justify-center">
+                        <i data-lucide="history" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>Trilha de Auditoria & Histórico</span>
+                            <span id="auditModalItemCode" class="text-xs px-2 py-0.5 rounded-lg font-mono bg-blue-100 dark:bg-blue-900 text-[#002f6c] dark:text-blue-300"></span>
+                        </h3>
+                        <p id="auditModalItemDesc" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-sm sm:max-w-md"></p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeItemAuditHistoryModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- FILTRO RÁPIDO DO HISTÓRICO -->
+            <div class="flex items-center justify-between gap-2 text-xs bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <span id="auditModalTotalEvents" class="text-[11px] font-bold text-slate-500 dark:text-slate-400">Carregando eventos...</span>
+                <button type="button" onclick="reloadCurrentItemAuditHistory()" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1 hover:bg-slate-100 cursor-pointer shadow-xs">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <span>Atualizar</span>
+                </button>
+            </div>
+
+            <!-- LISTA DE TIMELINE -->
+            <div id="auditTimelineContainer" class="flex-1 overflow-y-auto space-y-3 pr-1 min-h-[220px]">
+                <!-- Preenchido dinamicamente -->
+            </div>
+
+            <!-- FOOTER -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span class="text-[10px] font-bold text-slate-400">Registrado com carimbo de data, hora e matrícula</span>
+                <button type="button" onclick="closeItemAuditHistoryModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-black uppercase cursor-pointer">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return modal;
+}
+
+let currentAuditedProduct = null;
+let currentAuditedDesc = '';
+
+async function openItemAuditHistoryModal(produto, descricao = '', filial = null, armazem = null) {
+    if (!produto) return;
+    currentAuditedProduct = String(produto).trim().toUpperCase();
+    currentAuditedDesc = descricao || produto;
+
+    const modal = ensureAuditModalInDOM();
+    const codeEl = document.getElementById('auditModalItemCode');
+    const descEl = document.getElementById('auditModalItemDesc');
+    const container = document.getElementById('auditTimelineContainer');
+    const totalEl = document.getElementById('auditModalTotalEvents');
+
+    if (codeEl) codeEl.innerText = currentAuditedProduct;
+    if (descEl) descEl.innerText = currentAuditedDesc;
+    if (container) container.innerHTML = `<div class="p-8 text-center text-xs font-bold text-slate-400 animate-pulse">Carregando histórico de auditoria...</div>`;
+
+    modal.classList.remove('pointer-events-none', 'opacity-0');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    await reloadCurrentItemAuditHistory();
+}
+
+async function reloadCurrentItemAuditHistory() {
+    if (!currentAuditedProduct) return;
+    const container = document.getElementById('auditTimelineContainer');
+    const totalEl = document.getElementById('auditModalTotalEvents');
+    if (!container) return;
+
+    try {
+        if (!supabaseClient) initSupabase();
+        const { data, error } = await supabaseClient
+            .from('auditoria_estoque')
+            .select('*')
+            .eq('produto', currentAuditedProduct)
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error) {
+            container.innerHTML = `<div class="p-6 text-center text-xs font-bold text-rose-500">Erro ao carregar histórico: ${error.message}</div>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="p-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/80 dark:border-slate-700 text-slate-400 space-y-1">
+                    <i data-lucide="shield-check" class="w-8 h-8 mx-auto text-slate-300"></i>
+                    <p class="text-xs font-bold text-slate-500 dark:text-slate-300">Nenhum evento registrado ainda para este material.</p>
+                    <p class="text-[11px]">As novas contagens, alterações de paletes e transferências serão gravadas automaticamente aqui.</p>
+                </div>
+            `;
+            if (totalEl) totalEl.innerText = "0 eventos registrados";
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            return;
+        }
+
+        if (totalEl) totalEl.innerText = `${data.length} evento(s) registrado(s)`;
+
+        let html = '';
+        data.forEach(item => {
+            const dt = new Date(item.created_at);
+            const dateFormatted = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeFormatted = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            let badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
+            let iconName = 'activity';
+
+            if (item.acao.includes('INCLUSAO') || item.acao.includes('CRIACAO')) {
+                badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                iconName = 'plus-circle';
+            } else if (item.acao.includes('EXCLUSAO') || item.acao.includes('DELET')) {
+                badgeColor = 'bg-rose-100 text-rose-800 border-rose-200';
+                iconName = 'trash-2';
+            } else if (item.acao.includes('CONTAGEM')) {
+                badgeColor = 'bg-teal-100 text-teal-800 border-teal-200';
+                iconName = 'clipboard-check';
+            } else if (item.acao.includes('TRANSFERENCIA')) {
+                badgeColor = 'bg-amber-100 text-amber-800 border-amber-200';
+                iconName = 'truck';
+            } else if (item.acao.includes('EDICAO') || item.acao.includes('ALTERACAO')) {
+                badgeColor = 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                iconName = 'edit-3';
+            }
+
+            const loteChip = item.lote ? `<span class="px-2 py-0.5 rounded-lg text-[10px] font-black font-mono bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600">Lote: ${item.lote}</span>` : '';
+            const armChip = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">ARM ${item.armazem || '01'} • FIL ${item.filial || '01'}</span>`;
+
+            html += `
+                <div class="flex items-start gap-3 p-3 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 border ${badgeColor}">
+                        <i data-lucide="${iconName}" class="w-4 h-4"></i>
+                    </div>
+                    <div class="flex-1 min-w-0 space-y-1">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <span class="text-xs font-black text-slate-800 dark:text-slate-100">${item.acao.replace(/_/g, ' ')}</span>
+                            <span class="text-[10px] font-bold text-slate-400">${dateFormatted} às ${timeFormatted}</span>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-600 dark:text-slate-300 leading-snug">${item.detalhes || '-'}</p>
+                        <div class="flex items-center gap-2 pt-1 flex-wrap text-[10px]">
+                            <span class="font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                <i data-lucide="user" class="w-3 h-3 text-slate-400"></i>
+                                <span>${item.usuario_nome || 'Usuário'}</span>
+                                <span class="text-slate-400 font-mono">(${item.usuario_matricula || '---'})</span>
+                            </span>
+                            ${armChip}
+                            ${loteChip}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error("Erro no reload auditoria:", e);
+        container.innerHTML = `<div class="p-6 text-center text-xs font-bold text-rose-500">Erro ao carregar auditoria.</div>`;
+    }
+}
+
+function closeItemAuditHistoryModal() {
+    const modal = document.getElementById('globalItemAuditHistoryModal');
+    if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
+    currentAuditedProduct = null;
+}
+
 window.addEventListener('online', () => {
     updateStatusIndicators(true);
     processOfflineQueue();

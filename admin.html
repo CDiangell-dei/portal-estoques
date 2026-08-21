@@ -230,83 +230,236 @@
     <!-- CONTEÚDO PRINCIPAL: ADMIN -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-grow space-y-6 w-full flex flex-col">
 
-        <div class="bg-slate-900 text-white p-5 rounded-3xl border border-slate-800 shadow-md flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="p-3 bg-amber-500 rounded-2xl shadow-lg">
-                    <i data-lucide="shield-check" class="w-6 h-6 text-slate-900"></i>
+        <!-- CABEÇALHO DO PAINEL ADMIN COM ABAS -->
+        <div class="bg-slate-900 text-white p-5 rounded-3xl border border-slate-800 shadow-md space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-amber-500 rounded-2xl shadow-lg">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-slate-900"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-black leading-tight tracking-wide">Painel do Administrador</h2>
+                        <p class="text-xs text-slate-400 font-semibold mt-0.5">Gestão de usuários, autorizações e trilha de auditoria do sistema</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="text-base font-black leading-tight tracking-wide">Painel do Administrador</h2>
-                    <p class="text-xs text-slate-400 font-semibold mt-0.5">Gestão de usuários, autorizações e permissões do sistema</p>
-                </div>
+                <button onclick="refreshActiveAdminTab()" class="text-slate-400 hover:text-white p-2 transition-colors cursor-pointer" title="Atualizar Dados">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
             </div>
-            <button onclick="loadAdminUsers()" class="text-slate-400 hover:text-white p-2 transition-colors" title="Atualizar Lista">
-                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-            </button>
-        </div>
 
-        <!-- KPIS ADMIN -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <i data-lucide="users" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Usuários</p>
-                    <p id="kpiAdminTotal" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
-                    <i data-lucide="clock" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Pendentes</p>
-                    <p id="kpiAdminPendentes" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                    <i data-lucide="shield" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Almoxarifes</p>
-                    <p id="kpiAdminAlmoxarifes" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                    <i data-lucide="clipboard-check" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Conferentes</p>
-                    <p id="kpiAdminConferentes" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
-                </div>
+            <!-- BOTÕES DAS ABAS -->
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+                <button type="button" id="tabBtnUsers" onclick="switchAdminTab('users')" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-amber-400 text-slate-950 shadow-md flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Gestão de Usuários</span>
+                </button>
+                <button type="button" id="tabBtnAudit" onclick="switchAdminTab('audit')" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="history" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Trilha de Auditoria Geral</span>
+                </button>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden space-y-3 p-5">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Contas Cadastradas</h3>
-                <input type="text" id="adminSearch" onkeyup="renderAdminUsers()" placeholder="Buscar por nome ou matrícula..." class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 w-full sm:w-64">
+        <!-- ============================================== -->
+        <!-- SEÇÃO 1: GESTÃO DE USUÁRIOS                    -->
+        <!-- ============================================== -->
+        <div id="adminUsersSection" class="space-y-6">
+            <!-- KPIS ADMIN -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Usuários</p>
+                        <p id="kpiAdminTotal" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                        <i data-lucide="clock" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Pendentes</p>
+                        <p id="kpiAdminPendentes" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <i data-lucide="shield" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Almoxarifes</p>
+                        <p id="kpiAdminAlmoxarifes" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Conferentes</p>
+                        <p id="kpiAdminConferentes" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                            <th class="px-4 py-3">Matrícula</th>
-                            <th class="px-4 py-3">Nome do Usuário</th>
-                            <th class="px-4 py-3">Filial Comércio</th>
-                            <th class="px-4 py-3">Filial Indústria</th>
-                            <th class="px-4 py-3 text-center">Senha</th>
-                            <th class="px-4 py-3 text-center">Status</th>
-                            <th class="px-4 py-3 text-center">Papéis</th>
-                            <th class="px-4 py-3 text-right">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminUsersTableBody"></tbody>
-                </table>
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden space-y-3 p-5">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Contas Cadastradas</h3>
+                    <input type="text" id="adminSearch" onkeyup="renderAdminUsers()" placeholder="Buscar por nome ou matrícula..." class="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 w-full sm:w-64">
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                                <th class="px-4 py-3">Matrícula</th>
+                                <th class="px-4 py-3">Nome do Usuário</th>
+                                <th class="px-4 py-3">Filial Comércio</th>
+                                <th class="px-4 py-3">Filial Indústria</th>
+                                <th class="px-4 py-3 text-center">Senha</th>
+                                <th class="px-4 py-3 text-center">Status</th>
+                                <th class="px-4 py-3 text-center">Papéis</th>
+                                <th class="px-4 py-3 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SEÇÃO 2: TRILHA DE AUDITORIA GERAL             -->
+        <!-- ============================================== -->
+        <div id="adminAuditSection" class="hidden space-y-6">
+            <!-- KPIS DA AUDITORIA -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                        <i data-lucide="activity" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total de Eventos</p>
+                        <p id="kpiAuditTotal" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center">
+                        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Contagens Físicas</p>
+                        <p id="kpiAuditContagens" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
+                        <i data-lucide="boxes" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Lotes & Paletes</p>
+                        <p id="kpiAuditLotes" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
+                        <i data-lucide="truck" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Transferências</p>
+                        <p id="kpiAuditTransferencias" class="text-xl font-black text-slate-800 leading-none mt-1">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTROS DA TRILHA DE AUDITORIA -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="filter" class="w-4 h-4 text-indigo-600"></i>
+                        <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Filtros de Auditoria</h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="exportAdminAuditToCSV()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-xs flex items-center gap-1.5 cursor-pointer">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Exportar CSV</span>
+                        </button>
+                        <button type="button" onclick="loadAdminAuditLogs()" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            <span>Recarregar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buscar (Material / Lote / Detalhe)</label>
+                        <input type="text" id="auditFilterSearch" onkeyup="renderAdminAuditLogs()" placeholder="Ex: 39000016, VENCIDO, João..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tipo de Ação</label>
+                        <select id="auditFilterAcao" onchange="renderAdminAuditLogs()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
+                            <option value="ALL">Todas as Ações</option>
+                            <option value="CONTAGEM_INVENTARIO">📊 Contagem Física (Inventário)</option>
+                            <option value="INCLUSAO_PALETE">📦 Inclusão de Palete / Lote</option>
+                            <option value="EDICAO_LOTE">✏️ Edição de Lote / Quantidade</option>
+                            <option value="EXCLUSAO_PALETE">🗑️ Exclusão de Palete / Lote</option>
+                            <option value="TRANSFERENCIA_ARMAZEM">🚚 Transferência de Armazém</option>
+                            <option value="CADASTRO_PRODUTO">✨ Cadastro de Novo Produto</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Módulo do Sistema</label>
+                        <select id="auditFilterModulo" onchange="renderAdminAuditLogs()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
+                            <option value="ALL">Todos os Módulos</option>
+                            <option value="INVENTARIO">Inventário Rotativo</option>
+                            <option value="VALIDADE">Controle de Validade</option>
+                            <option value="SISTEMA">Geral / Sistema</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Filial</label>
+                        <select id="auditFilterFilial" onchange="renderAdminAuditLogs()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
+                            <option value="ALL">Todas as Filiais</option>
+                            <option value="01">Filial 01 - Matriz</option>
+                            <option value="02">Filial 02 - Eletrodo</option>
+                            <option value="03">Filial 03 - Telhas</option>
+                            <option value="04">Filial 04 - Tubos</option>
+                            <option value="05">Filial 05 - Perfis</option>
+                            <option value="06">Filial 06 - Jorge Teixeira</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA DE LOGS DE AUDITORIA -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-5 space-y-3">
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Histórico de Alterações em Tempo Real</h3>
+                    <span id="auditCounterLabel" class="text-[11px] font-bold text-slate-400">Exibindo 0 eventos</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                                <th class="px-3.5 py-3">Data/Hora</th>
+                                <th class="px-3.5 py-3">Filial / Arm</th>
+                                <th class="px-3.5 py-3">Material / Lote</th>
+                                <th class="px-3.5 py-3">Ação Realizada</th>
+                                <th class="px-3.5 py-3">Detalhes do Evento</th>
+                                <th class="px-3.5 py-3">Operador / Matrícula</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminAuditTableBody" class="divide-y divide-slate-100 font-bold text-slate-700">
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-xs font-bold text-slate-400">Carregando trilha de auditoria...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -678,6 +831,207 @@
             } catch (err) {
                 showAlert("Erro de rede ao alterar status.", "error");
             }
+        }
+
+        // ==========================================
+        // TRILHA DE AUDITORIA & GESTÃO DE ABAS
+        // ==========================================
+        let activeAdminTab = 'users';
+        let adminAuditLogsList = [];
+
+        function switchAdminTab(tabName) {
+            activeAdminTab = tabName;
+            const btnUsers = document.getElementById('tabBtnUsers');
+            const btnAudit = document.getElementById('tabBtnAudit');
+            const secUsers = document.getElementById('adminUsersSection');
+            const secAudit = document.getElementById('adminAuditSection');
+
+            if (tabName === 'users') {
+                if (btnUsers) {
+                    btnUsers.className = "px-4 py-2 rounded-xl text-xs font-black transition-all bg-amber-400 text-slate-950 shadow-md flex items-center gap-2 cursor-pointer";
+                }
+                if (btnAudit) {
+                    btnAudit.className = "px-4 py-2 rounded-xl text-xs font-black transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-2 cursor-pointer";
+                }
+                if (secUsers) secUsers.classList.remove('hidden');
+                if (secAudit) secAudit.classList.add('hidden');
+            } else {
+                if (btnUsers) {
+                    btnUsers.className = "px-4 py-2 rounded-xl text-xs font-black transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-2 cursor-pointer";
+                }
+                if (btnAudit) {
+                    btnAudit.className = "px-4 py-2 rounded-xl text-xs font-black transition-all bg-amber-400 text-slate-950 shadow-md flex items-center gap-2 cursor-pointer";
+                }
+                if (secUsers) secUsers.classList.add('hidden');
+                if (secAudit) secAudit.classList.remove('hidden');
+                
+                if (adminAuditLogsList.length === 0) {
+                    loadAdminAuditLogs();
+                }
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function refreshActiveAdminTab() {
+            if (activeAdminTab === 'users') {
+                loadAdminUsers();
+            } else {
+                loadAdminAuditLogs();
+            }
+        }
+
+        async function loadAdminAuditLogs() {
+            const tbody = document.getElementById('adminAuditTableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-xs font-bold text-slate-400"><div class="flex items-center justify-center gap-2"><svg class="animate-spin h-4 w-4 text-indigo-600" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Carregando trilha de auditoria...</span></div></td></tr>`;
+            }
+
+            try {
+                if (!supabaseClient) throw new Error("Cliente Supabase não inicializado.");
+
+                const { data, error } = await supabaseClient
+                    .from('auditoria_estoque')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(500);
+
+                if (error) throw error;
+                adminAuditLogsList = data || [];
+                renderAdminAuditLogs();
+            } catch (err) {
+                console.error("Erro ao carregar auditoria:", err);
+                showAlert("Erro ao carregar trilha de auditoria: " + err.message, "error");
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-xs font-bold text-rose-500">Erro ao carregar trilha de auditoria.</td></tr>`;
+                }
+            }
+        }
+
+        function renderAdminAuditLogs() {
+            const tbody = document.getElementById('adminAuditTableBody');
+            if (!tbody) return;
+
+            const searchVal = document.getElementById('auditFilterSearch') ? document.getElementById('auditFilterSearch').value.toLowerCase().trim() : '';
+            const acaoVal = document.getElementById('auditFilterAcao') ? document.getElementById('auditFilterAcao').value : 'ALL';
+            const modVal = document.getElementById('auditFilterModulo') ? document.getElementById('auditFilterModulo').value : 'ALL';
+            const filVal = document.getElementById('auditFilterFilial') ? document.getElementById('auditFilterFilial').value : 'ALL';
+
+            // Atualiza KPIs gerais
+            const total = adminAuditLogsList.length;
+            const contagens = adminAuditLogsList.filter(l => l.acao === 'CONTAGEM_INVENTARIO').length;
+            const lotes = adminAuditLogsList.filter(l => l.acao === 'INCLUSAO_PALETE' || l.acao === 'EDICAO_LOTE' || l.acao === 'EXCLUSAO_PALETE').length;
+            const transfs = adminAuditLogsList.filter(l => l.acao === 'TRANSFERENCIA_ARMAZEM').length;
+
+            if (document.getElementById('kpiAuditTotal')) document.getElementById('kpiAuditTotal').innerText = total.toLocaleString('pt-BR');
+            if (document.getElementById('kpiAuditContagens')) document.getElementById('kpiAuditContagens').innerText = contagens.toLocaleString('pt-BR');
+            if (document.getElementById('kpiAuditLotes')) document.getElementById('kpiAuditLotes').innerText = lotes.toLocaleString('pt-BR');
+            if (document.getElementById('kpiAuditTransferencias')) document.getElementById('kpiAuditTransferencias').innerText = transfs.toLocaleString('pt-BR');
+
+            let filtered = adminAuditLogsList.filter(log => {
+                if (acaoVal !== 'ALL' && log.acao !== acaoVal) return false;
+                if (modVal !== 'ALL' && log.modulo !== modVal) return false;
+                if (filVal !== 'ALL') {
+                    const lFil = String(log.filial || '01').padStart(2, '0');
+                    if (lFil !== filVal && lFil.replace(/^0+/, '') !== filVal.replace(/^0+/, '')) return false;
+                }
+                if (searchVal) {
+                    const p = String(log.produto || '').toLowerCase();
+                    const d = String(log.detalhes || '').toLowerCase();
+                    const l = String(log.lote || '').toLowerCase();
+                    const u = String(log.usuario_nome || '').toLowerCase();
+                    const m = String(log.usuario_matricula || '').toLowerCase();
+                    if (!p.includes(searchVal) && !d.includes(searchVal) && !l.includes(searchVal) && !u.includes(searchVal) && !m.includes(searchVal)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            const counterEl = document.getElementById('auditCounterLabel');
+            if (counterEl) {
+                counterEl.innerText = `Exibindo ${filtered.length} de ${total} eventos`;
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-xs font-bold text-slate-400">Nenhum evento de auditoria encontrado com os filtros aplicados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            filtered.forEach(item => {
+                const dt = item.created_at ? new Date(item.created_at) : new Date();
+                const dtStr = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                let acaoBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-700">${item.acao}</span>`;
+                if (item.acao === 'CONTAGEM_INVENTARIO') {
+                    acaoBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-100 text-teal-800 flex items-center gap-1 w-fit"><i data-lucide="clipboard-check" class="w-3 h-3"></i> Contagem Física</span>`;
+                } else if (item.acao === 'INCLUSAO_PALETE') {
+                    acaoBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 flex items-center gap-1 w-fit"><i data-lucide="plus-circle" class="w-3 h-3"></i> Inclusão Palete</span>`;
+                } else if (item.acao === 'EDICAO_LOTE') {
+                    acaoBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 flex items-center gap-1 w-fit"><i data-lucide="edit-3" class="w-3 h-3"></i> Edição Lote</span>`;
+                } else if (item.acao === 'EXCLUSAO_PALETE') {
+                    acaoBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 flex items-center gap-1 w-fit"><i data-lucide="trash-2" class="w-3 h-3"></i> Exclusão Palete</span>`;
+                } else if (item.acao === 'TRANSFERENCIA_ARMAZEM') {
+                    acaoBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-800 flex items-center gap-1 w-fit"><i data-lucide="truck" class="w-3 h-3"></i> Transferência</span>`;
+                } else if (item.acao === 'CADASTRO_PRODUTO') {
+                    acaoBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-800 flex items-center gap-1 w-fit"><i data-lucide="sparkles" class="w-3 h-3"></i> Novo Produto</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 text-xs text-slate-700";
+                tr.innerHTML = `
+                    <td class="px-3.5 py-3 whitespace-nowrap text-slate-500 font-mono text-[11px]">${dtStr}</td>
+                    <td class="px-3.5 py-3 whitespace-nowrap font-bold text-slate-800">
+                        <span>Filial ${item.filial || '01'}</span>
+                        <span class="text-slate-400 font-normal">|</span>
+                        <span class="text-slate-600">Arm ${item.armazem || '01'}</span>
+                    </td>
+                    <td class="px-3.5 py-3">
+                        <div class="font-black font-mono text-[#002f6c] dark:text-blue-400">${item.produto || '-'}</div>
+                        ${item.lote && item.lote !== 'SEM_LOTE' ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">Lote: ${item.lote}</span>` : ''}
+                    </td>
+                    <td class="px-3.5 py-3">${acaoBadge}</td>
+                    <td class="px-3.5 py-3 font-semibold text-slate-800 max-w-xs break-words">${item.detalhes || '-'}</td>
+                    <td class="px-3.5 py-3 whitespace-nowrap">
+                        <div class="font-black text-slate-900">${item.usuario_nome || 'SISTEMA'}</div>
+                        <div class="text-[10px] text-slate-400 font-mono font-bold">${item.usuario_matricula ? `Mat: ${item.usuario_matricula}` : ''}</div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function exportAdminAuditToCSV() {
+            if (!adminAuditLogsList || adminAuditLogsList.length === 0) {
+                showAlert("Nenhum registro para exportar.", "warning");
+                return;
+            }
+
+            const header = ["Data/Hora", "Filial", "Armazem", "Produto", "Lote", "Acao", "Modulo", "Detalhes", "Usuario Nome", "Usuario Matricula"];
+            const rows = adminAuditLogsList.map(l => [
+                l.created_at || '',
+                l.filial || '',
+                l.armazem || '',
+                l.produto || '',
+                l.lote || '',
+                l.acao || '',
+                l.modulo || '',
+                `"${(l.detalhes || '').replace(/"/g, '""')}"`,
+                `"${(l.usuario_nome || '').replace(/"/g, '""')}"`,
+                l.usuario_matricula || ''
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [header.join(';'), ...rows.map(e => e.join(';'))].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `auditoria_estoque_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showAlert("Exportação CSV concluída com sucesso!", "success");
         }
 
         window.onload = async function() {

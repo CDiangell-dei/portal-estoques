@@ -811,6 +811,10 @@
                 </div>
 
                 <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
+                    <button type="button" onclick="openItemAuditHistoryModal(currentProductLotsData.produto, currentProductLotsData.descricao, currentProductLotsData.filial, currentProductLotsData.armazem)" class="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-3 py-2.5 rounded-xl text-xs font-black shadow-xs transition-all flex items-center space-x-1.5 touch-active cursor-pointer" title="Ver Trilha de Auditoria e Histórico do Material">
+                        <i data-lucide="history" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
+                        <span>Histórico</span>
+                    </button>
                     <button type="button" onclick="openA4PalletPrintModalFromProductLots()" class="bg-[#002f6c] hover:bg-blue-900 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-1.5 touch-active cursor-pointer" title="Imprimir Ficha A4 para identificar o Palete / Material">
                         <i data-lucide="printer" class="w-4 h-4"></i>
                         <span>Imprimir Ficha A4</span>
@@ -1983,6 +1987,9 @@
                                 <button type="button" onclick="openA4PalletPrintModal('${item.filial}', '${item.armazem}', '${item.produto}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-sm touch-active" title="Imprimir Ficha A4 para Identificação de Palete">
                                     <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
                                 </button>
+                                <button type="button" onclick="openItemAuditHistoryModal('${item.produto}', '${desc.replace(/'/g, "\\'")}', '${item.filial}', '${item.armazem}')" class="bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white p-1.5 rounded-xl text-xs transition-all shadow-2xs touch-active cursor-pointer" title="Ver Histórico de Auditoria">
+                                    <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                                </button>
                             </div>
                         </td>
                     `;
@@ -2035,6 +2042,9 @@
                             <button type="button" onclick="openA4PalletPrintModal('${item.filial}', '${item.armazem}', '${item.produto}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-3 py-2 rounded-xl text-xs font-black shadow-sm flex items-center gap-1.5 touch-active" title="Imprimir Ficha A4 para Palete">
                                 <i data-lucide="file-text" class="w-4 h-4"></i>
                                 <span>Ficha A4</span>
+                            </button>
+                            <button type="button" onclick="openItemAuditHistoryModal('${item.produto}', '${desc.replace(/'/g, "\\'")}', '${item.filial}', '${item.armazem}')" class="bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white p-2 rounded-xl text-xs font-bold transition-all shadow-sm touch-active cursor-pointer" title="Ver Histórico">
+                                <i data-lucide="history" class="w-4 h-4"></i>
                             </button>
                             <button type="button" onclick="openProductLotsModal('${item.filial}', '${item.armazem}', '${item.produto}')" class="flex-1 bg-[#002f6c] hover:bg-[#00204a] text-white py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm flex items-center justify-center space-x-1.5 touch-active">
                                 <i data-lucide="layers" class="w-3.5 h-3.5"></i>
@@ -2672,6 +2682,7 @@
             const sbMatch = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === produto) : null;
             const desc = sbMatch ? (sbMatch['Descr.Espec.'] || produto) : produto;
             const unidade = sbMatch && sbMatch.Unidade ? String(sbMatch.Unidade).trim().toUpperCase() : (currentA4PalletData.unidade || 'UN');
+            const endereco = (sbMatch ? (sbMatch.endereco || sbMatch.Endereco) : '') || '';
 
             let totalSelectedQtd = 0;
             selectedLots.forEach(l => totalSelectedQtd += parseFloat(l.quantidade || 0));
@@ -2712,7 +2723,7 @@
                                                 <span style="font-size: 13pt; font-weight: 900; color: #1e293b;">FICHA DE IDENTIFICAÇÃO DE PALETE</span>
                                                 <span style="font-size: 13pt; font-weight: 900; color: #ffffff; background: #002f6c; padding: 2px 10px; border-radius: 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${lot.embalagem || palletHeader || 'PALETE'}</span>
                                             </div>
-                                            <p style="margin: 5px 0 0 0; font-size: 11.5pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                                            <p style="margin: 5px 0 0 0; font-size: 11.5pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem} ${endereco ? `&nbsp;|&nbsp; 📍 ENDEREÇO: <b style="color: #002f6c;">${endereco}</b>` : ''}</p>
                                         </div>
                                         <div style="text-align: right; flex-shrink: 0;">
                                             <img src="${qrUrl}" alt="QR Code" style="width: 110px; height: 110px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
@@ -2795,7 +2806,7 @@
                                             <span style="font-size: 13pt; font-weight: 900; color: #1e293b;">FICHA DE PALETE / PRATELEIRA</span>
                                             ${palletHeader ? `<span style="font-size: 12pt; font-weight: 900; color: #ffffff; background: #002f6c; padding: 2px 8px; border-radius: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${palletHeader}</span>` : ''}
                                         </div>
-                                        <p style="margin: 5px 0 0 0; font-size: 11.5pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                                        <p style="margin: 5px 0 0 0; font-size: 11.5pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem} ${endereco ? `&nbsp;|&nbsp; 📍 ENDEREÇO: <b style="color: #002f6c;">${endereco}</b>` : ''}</p>
                                     </div>
                                     <div style="text-align: right; flex-shrink: 0;">
                                         <img src="${qrUrl}" alt="QR Code" style="width: 105px; height: 105px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
@@ -3481,6 +3492,18 @@
                     if (error) throw error;
                 }
 
+                // Registra na Trilha de Auditoria
+                const totalQtdSaved = validRows.reduce((acc, r) => acc + (parseFloat(r.qtd) || 0), 0);
+                logAuditAction({
+                    filial: targetFilial,
+                    armazem: armazem,
+                    produto: produto,
+                    lote: lote || 'SEM_LOTE',
+                    acao: updates.length > 0 ? 'EDICAO_LOTE' : 'INCLUSAO_PALETE',
+                    detalhes: `Salvo ${validRows.length} palete(s) (Total: ${totalQtdSaved.toLocaleString('pt-BR')}) com validade ${validade}. ${obs ? `Obs: ${obs}` : ''}`,
+                    modulo: 'VALIDADE'
+                });
+
                 showAlert(`${validRows.length} palete(s) salvos com sucesso!`, "success");
                 closeNewValidadeModal();
                 await loadValidadeData();
@@ -3804,6 +3827,16 @@
 
                 if (error) throw error;
 
+                logAuditAction({
+                    filial: item.filial || '01',
+                    armazem: item.armazem,
+                    produto: item.produto,
+                    lote: item.lote || 'SEM_LOTE',
+                    acao: 'TRANSFERENCIA_ARMAZEM',
+                    detalhes: `Lote ${item.lote || 'S/ Lote'} (${item.quantidade} un.) transferido do Armazém ${item.armazem} para Armazém ${destinoArm}. ${obsMov ? `Obs: ${obsMov}` : ''}`,
+                    modulo: 'VALIDADE'
+                });
+
                 showAlert(`Datas de validade transferidas com sucesso para o Armazém ${destinoArm}!`, "success");
                 closeTransferValidadeModal();
                 await loadValidadeData();
@@ -3816,12 +3849,26 @@
         }
 
         async function deleteValidadeEntry(id) {
+            const item = rawValidadeDataset.find(v => String(v.id) === String(id) || Number(v.id) === Number(id));
             if (!confirm("Tem certeza que deseja excluir este lote de validade?")) return;
 
             const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
             try {
                 const { error } = await supabaseClient.from(valTable).delete().eq('id', id);
                 if (error) throw error;
+
+                if (item) {
+                    logAuditAction({
+                        filial: item.filial || '01',
+                        armazem: item.armazem,
+                        produto: item.produto,
+                        lote: item.lote || 'SEM_LOTE',
+                        acao: 'EXCLUSAO_PALETE',
+                        detalhes: `Exclusão do palete/lote: ${item.embalagem || 'PALETE'} (${item.quantidade} un., validade ${item.data_validade || '-'})`,
+                        modulo: 'VALIDADE'
+                    });
+                }
+
                 showAlert("Lote de validade excluído com sucesso!", "success");
                 await loadValidadeData();
             } catch(err) {
