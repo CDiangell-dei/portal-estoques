@@ -69,15 +69,21 @@
             .print-card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; page-break-inside: avoid; background-color: #ffffff !important; color: #000000 !important; margin-bottom: 1.25rem !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-            /* ESTILOS ESPECÍFICOS PARA A IMPRESSORA TÉRMICA ARGOX */
-            body.printing-argox * {
+
+
+            /* ESTILOS ESPECÍFICOS PARA A FICHA DE PALETE EM FOLHA A4 */
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
+            body.printing-a4 * {
                 visibility: hidden !important;
             }
-            body.printing-argox #argoxPrintContainer,
-            body.printing-argox #argoxPrintContainer * {
+            body.printing-a4 #a4PrintContainer,
+            body.printing-a4 #a4PrintContainer * {
                 visibility: visible !important;
             }
-            body.printing-argox #argoxPrintContainer {
+            body.printing-a4 #a4PrintContainer {
                 display: block !important;
                 position: absolute !important;
                 left: 0 !important;
@@ -85,104 +91,65 @@
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                box-sizing: border-box !important;
                 background: #ffffff !important;
             }
-            .argox-label-page {
+            .a4-pallet-page {
                 page-break-after: always !important;
                 break-after: page !important;
-                width: 100mm !important;
-                height: 50mm !important;
-                box-sizing: border-box !important;
-                padding: 2mm 3mm !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-between !important;
-                background: #ffffff !important;
-                color: #000000 !important;
-                font-family: Arial, Helvetica, sans-serif !important;
-            }
-            .argox-label-card {
                 width: 100% !important;
-                height: 100% !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-between !important;
-                border: 2px solid #000000 !important;
-                padding: 2mm !important;
+                box-sizing: border-box !important;
+                padding: 0 !important;
+                margin: 0 0 20px 0 !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+            }
+            .a4-pallet-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                border: 3.5px solid #000000 !important;
+                border-radius: 12px !important;
+                padding: 16px !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
+                overflow: hidden !important;
             }
-            .argox-label-header {
-                text-align: center !important;
-                border-bottom: 2px solid #000000 !important;
-                padding-bottom: 1.5mm !important;
+            .a4-table {
+                width: 100% !important;
+                table-layout: fixed !important;
+                border-collapse: collapse !important;
+                margin-top: 14px !important;
+                box-sizing: border-box !important;
             }
-            .argox-label-code {
-                font-size: 26pt !important;
-                font-weight: 900 !important;
-                font-family: monospace, Arial, sans-serif !important;
-                line-height: 1 !important;
-                display: block !important;
-                color: #000000 !important;
-                letter-spacing: -0.5px !important;
-            }
-            .argox-label-lote-strip {
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                gap: 4px !important;
-                font-size: 8.5pt !important;
-                font-weight: 900 !important;
-                margin-top: 1mm !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
-            }
-            .argox-label-body {
-                display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                gap: 2mm !important;
-                flex-grow: 1 !important;
-                padding-top: 1.5mm !important;
-            }
-            .argox-label-desc-col {
-                flex: 1 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-            }
-            .argox-label-desc {
+            .a4-table th {
+                background: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                border: 2px solid #000000 !important;
+                padding: 8px 6px !important;
                 font-size: 11pt !important;
                 font-weight: 900 !important;
+                text-align: left !important;
                 text-transform: uppercase !important;
-                line-height: 1.15 !important;
-                margin: 0 !important;
-                word-break: break-word !important;
                 color: #000000 !important;
+                box-sizing: border-box !important;
             }
-            .argox-label-meta {
-                font-size: 7.5pt !important;
-                font-weight: 800 !important;
-                color: #111111 !important;
-                margin-top: 1mm !important;
+            .a4-table td {
+                border: 1.5px solid #000000 !important;
+                padding: 8px 6px !important;
+                font-size: 11pt !important;
+                font-weight: 700 !important;
+                color: #000000 !important;
+                box-sizing: border-box !important;
             }
-            .argox-label-qr-col {
-                width: 22mm !important;
-                height: 22mm !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                flex-shrink: 0 !important;
-            }
-            .argox-label-qr-img {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: contain !important;
-            }
-            @page {
-                size: 100mm 50mm portrait;
-                margin: 0;
+            .a4-table tfoot td {
+                background: #f1f5f9 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                font-weight: 900 !important;
+                font-size: 12pt !important;
+                box-sizing: border-box !important;
             }
         }
 
@@ -992,99 +959,158 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- MODAL IMPRESSÃO DE ETIQUETA (PADRÃO ARGOX) -->
+    <!-- MODAL IMPRESSÃO DE FICHA DE PALETE (FOLHA A4) -->
     <!-- ========================================== -->
-    <div id="argoxLabelModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 no-print">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col space-y-4 max-h-[90vh] overflow-y-auto">
-            <!-- CABEÇALHO -->
+    <div id="a4PrintModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh] overflow-y-auto">
+            
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
                 <div class="flex items-center space-x-2.5">
-                    <div class="w-9 h-9 rounded-2xl bg-teal-500/10 text-teal-600 flex items-center justify-center">
-                        <i data-lucide="printer" class="w-5 h-5"></i>
+                    <div class="w-9 h-9 rounded-2xl bg-[#002f6c]/10 text-[#002f6c] dark:text-blue-400 flex items-center justify-center">
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-black text-slate-900 dark:text-white">Etiqueta Argox Almoxarifado</h3>
-                        <p class="text-[10px] font-bold text-slate-400">Layout padrão A5:F10 em modo retrato</p>
+                        <h3 class="text-base font-black text-slate-900 dark:text-white">Ficha de Identificação de Palete (Folha A4)</h3>
+                        <p class="text-[10px] font-bold text-slate-400">Padrão Oficial Amazon Aço com QR Code e Código em Destaque</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeArgoxLabelModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                <button type="button" onclick="closeA4PrintModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <!-- PREVIEW DA ETIQUETA ARGOX -->
-            <div class="bg-slate-100 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
-                <p class="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-wider">Pré-visualização da Etiqueta (Térmica)</p>
-                
-                <!-- CONTAINER DA ETIQUETA -->
-                <div id="argoxPreviewBox" class="w-full max-w-[340px] bg-white text-black p-4 rounded-xl border-2 border-black shadow-lg flex flex-col justify-between" style="min-height: 240px; font-family: Arial, Helvetica, sans-serif;">
-                    <!-- TOPO: CÓDIGO GIGANTE -->
-                    <div class="text-center border-b-2 border-black pb-2">
-                        <span id="argoxLblCodigo" class="text-4xl sm:text-5xl font-black font-mono tracking-tight block text-black">53000003</span>
-                        <!-- SUB-INFO LOTE (SE APLICÁVEL) -->
-                        <div id="argoxLblLoteSubBadge" class="hidden mt-1 flex items-center justify-center gap-1.5 text-[11px] font-black uppercase bg-slate-100 py-0.5 px-2 rounded border border-slate-300 text-black">
-                            <span id="argoxLblLoteText">LOTE: S/LOTE</span>
-                            <span>•</span>
-                            <span id="argoxLblValText">VAL: 12/2026</span>
-                        </div>
-                    </div>
-
-                    <!-- CORPO: DESCRIÇÃO + QR CODE -->
-                    <div class="grid grid-cols-12 gap-2 pt-2.5 items-center flex-grow">
-                        <div class="col-span-7 flex flex-col justify-center pr-1">
-                            <p id="argoxLblDescricao" class="text-base sm:text-lg font-black uppercase leading-tight text-black break-words">
-                                RODIZIO DUPLO 1POL
-                            </p>
-                            <p id="argoxLblArmazemQtd" class="text-[11px] font-extrabold text-slate-700 mt-1.5">
-                                ARM: <span id="argoxLblArmCode">01</span> | <span id="argoxLblQtd">ESTOQUE</span>
-                            </p>
-                        </div>
-                        <div class="col-span-5 flex items-center justify-center">
-                            <div class="bg-white p-1 border border-black rounded flex items-center justify-center">
-                                <img id="argoxImgQR" src="" alt="QR Code" class="w-24 h-24 max-w-full object-contain" />
-                            </div>
-                        </div>
-                    </div>
+            <!-- DETALHES DO MATERIAL -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                    <span id="a4ModalCodigoDisplay" class="text-lg font-black font-mono text-[#002f6c] dark:text-blue-400 tracking-wider">39000081</span>
+                    <p id="a4ModalDescricaoDisplay" class="text-xs font-black uppercase text-slate-700 dark:text-slate-200 line-clamp-1">ELETRODO WELD WEST ARCO</p>
+                </div>
+                <div class="text-right">
+                    <span id="a4ModalArmazemDisplay" class="text-xs font-black text-slate-500">ARM: 01</span>
+                    <p id="a4ModalUnidadeDisplay" class="text-xs font-black text-indigo-600 dark:text-indigo-400">UN</p>
                 </div>
             </div>
 
-            <!-- OPÇÕES E QUANTIDADE DE CÓPIAS -->
-            <div class="space-y-3 pt-1">
-                <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-600">
+            <!-- IDENTIFICAÇÃO DO PALETE / PRATELEIRA NO TOPO DA FOLHA -->
+            <div class="bg-indigo-50/60 dark:bg-slate-900/50 p-3.5 rounded-2xl border border-indigo-100 dark:border-slate-700 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="block text-xs font-black text-slate-800 dark:text-slate-200">Identificação deste Palete / Local:</label>
+                    <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">Destacado no cabeçalho da Folha A4</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input type="text" id="a4PalletHeaderInput" placeholder="Ex: PALETE 01 / 02, PRATELEIRA A-03..." class="w-full bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-600 rounded-xl py-2 px-3 text-xs font-black text-[#002f6c] dark:text-blue-300 uppercase">
+                    <select id="a4QuickPalletFilterSelect" onchange="onA4QuickPalletFilterChange()" class="w-full bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-600 rounded-xl py-2 px-3 text-xs font-bold text-slate-700 dark:text-slate-200">
+                        <option value="ALL">📋 Imprimir Todos os Lotes / Paletes</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- FRACIONAMENTO RÁPIDO DE QUANTIDADE POR LOTE / PALETE -->
+            <div class="bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <label class="block text-[10px] font-black uppercase text-slate-500 tracking-wider">Divisão de Quantidade em Paletes por Lote</label>
+                    <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">Separação por Lote / Capacidade</span>
+                </div>
+
+                <!-- SELETOR DE QUAL LOTE DIVIDIR -->
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Selecione o Lote a Dividir:</label>
+                    <select id="a4SplitLoteSelect" onchange="onA4SplitLoteSelectChange()" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2 text-xs font-black text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <option value="ALL">📦 Fracionar todos os lotes pela capacidade</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-black text-slate-800 dark:text-slate-100">Quantidade de Etiquetas</label>
-                        <span class="text-[10px] text-slate-400 font-bold">Número de impressões no rolo</span>
+                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Qtd Total do Lote:</label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="a4InputTotalQtd" step="any" oninput="onA4QuantityInputsChange()" placeholder="Ex: 3500" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 text-xs font-black text-[#002f6c] dark:text-blue-300">
+                            <span id="a4UnidadeDisplay1" class="text-xs font-black text-slate-500">UN</span>
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button type="button" onclick="adjustLabelCopies(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">-</button>
-                        <input type="number" id="argoxLabelCopiesInput" value="1" min="1" max="100" class="w-14 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl py-1 text-sm font-black text-slate-900 dark:text-white">
-                        <button type="button" onclick="adjustLabelCopies(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">+</button>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Qtd por Palete/Folha:</label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="a4InputQtdPorPallet" step="any" oninput="onA4QuantityInputsChange()" placeholder="Ex: 1000" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 text-xs font-black text-indigo-700 dark:text-indigo-300">
+                            <span id="a4UnidadeDisplay2" class="text-xs font-black text-slate-500">UN</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="setLabelCopies(1)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">1 cópia</button>
-                    <button type="button" onclick="setLabelCopies(2)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">2 cópias</button>
-                    <button type="button" onclick="setLabelCopies(5)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">5 cópias</button>
-                    <button type="button" onclick="setLabelCopies(10)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">10 cópias</button>
+                <!-- RESUMO DO FRACIONAMENTO -->
+                <div id="a4SplitSummaryCard" class="p-2.5 rounded-xl bg-indigo-50/80 dark:bg-slate-800 border border-indigo-200/80 dark:border-slate-700 text-xs flex items-center justify-between text-indigo-950 dark:text-indigo-200">
+                    <span id="a4SplitSummaryText" class="font-black text-[11px] leading-tight">
+                        📦 1 palete único com o total
+                    </span>
+                    <button type="button" onclick="applyA4AutoSplit()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] shadow-xs cursor-pointer">
+                        Aplicar Divisão no Lote
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODO DE IMPRESSÃO DA FOLHA A4 -->
+            <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
+                <label class="block text-[10px] font-black uppercase text-slate-500 tracking-wider">Formato da Folha A4</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <label class="flex items-center space-x-2 p-2.5 rounded-xl border bg-white dark:bg-slate-800 border-indigo-300 dark:border-slate-600 cursor-pointer shadow-xs">
+                        <input type="radio" name="a4PrintLayoutMode" value="CONSOLIDATED" checked class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="block font-black text-slate-900 dark:text-white">📋 Folha Geral / Tabela</span>
+                            <span class="text-[10px] text-slate-400 block leading-tight">1 folha A4 com todos os lotes/paletes</span>
+                        </div>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2.5 rounded-xl border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 cursor-pointer hover:border-indigo-200">
+                        <input type="radio" name="a4PrintLayoutMode" value="INDIVIDUAL" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="block font-black text-slate-900 dark:text-white">📄 1 Folha por Palete</span>
+                            <span class="text-[10px] text-slate-400 block leading-tight">Folhas individuais com quantidade gigante</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- SELETOR DE LOTES DO PALETE -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-black text-slate-800 dark:text-slate-200">Lotes / Paletes que constarão nesta Folha A4:</label>
+                    <div class="space-x-2">
+                        <button type="button" onclick="toggleAllA4LotCheckboxes(true)" class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">Marcar Todos</button>
+                        <span class="text-slate-300 dark:text-slate-600">|</span>
+                        <button type="button" onclick="toggleAllA4LotCheckboxes(false)" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:underline cursor-pointer">Desmarcar Todos</button>
+                    </div>
+                </div>
+
+                <div id="a4LotCheckboxesContainer" class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 max-h-48 overflow-y-auto space-y-2">
+                    <!-- Checkboxes de lotes gerados dinamicamente -->
+                </div>
+            </div>
+
+            <!-- OPÇÕES E QUANTIDADE DE CÓPIAS DA FOLHA A4 -->
+            <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-600">
+                <div>
+                    <label class="block text-xs font-black text-slate-800 dark:text-slate-100">Quantidade de Cópias</label>
+                    <span class="text-[10px] text-slate-400 font-bold">Número de impressões da folha</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button type="button" onclick="adjustA4Copies(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active cursor-pointer">-</button>
+                    <input type="number" id="a4LabelCopiesInput" value="1" min="1" max="100" class="w-14 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl py-1 text-sm font-black text-slate-900 dark:text-white">
+                    <button type="button" onclick="adjustA4Copies(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active cursor-pointer">+</button>
                 </div>
             </div>
 
             <!-- BOTÕES DE AÇÃO -->
-            <div class="flex gap-3 pt-2">
-                <button type="button" onclick="closeArgoxLabelModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-2xl transition-colors">
-                    Cancelar
-                </button>
-                <button type="button" onclick="printArgoxLabels()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-black py-3 rounded-2xl shadow-md transition-all flex items-center justify-center space-x-2 touch-active">
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeA4PrintModal()" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer">Cancelar</button>
+                <button type="button" onclick="printA4PalletSheet()" class="bg-[#002f6c] hover:bg-blue-900 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 touch-active cursor-pointer">
                     <i data-lucide="printer" class="w-4 h-4"></i>
-                    <span>Imprimir na Argox</span>
+                    <span id="btnA4PrintSheetText">Imprimir Folha(s) A4</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ÁREA DE IMPRESSÃO ESPECÍFICA PARA A IMPRESSORA TÉRMICA ARGOX -->
-    <div id="argoxPrintContainer" class="hidden"></div>
+    <!-- ÁREA DE IMPRESSÃO DA FOLHA DE IDENTIFICAÇÃO DE PALETE (A4) -->
+    <div id="a4PrintContainer" class="hidden"></div>
 
     <!-- MODAL CONFIRMAÇÃO DE LOGOUT -->
     <div id="logoutModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity">
@@ -2453,9 +2479,9 @@
                                     <i data-lucide="clipboard" class="w-3.5 h-3.5"></i>
                                     <span>Contar</span>
                                 </button>
-                                <button type="button" onclick="openArgoxLabelModalFromInventario('${item.codigo}', '${escapedDesc}', '${item.unidade}')" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Imprimir Etiqueta Argox (A5:F10)">
+                                <button type="button" onclick="openA4PalletPrintModalFromInventario('${item.codigo}', '${escapedDesc}', '${item.unidade}', ${item.hasCount ? item.qtd_contada : item.quantidade})" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active cursor-pointer" title="Imprimir Ficha de Palete A4">
                                     <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                                    <span>Etiqueta</span>
+                                    <span>Ficha A4</span>
                                 </button>
                                 <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Gerenciar Tags">
                                     <i data-lucide="tag" class="w-3.5 h-3.5"></i>
@@ -2511,7 +2537,7 @@
                                 <i data-lucide="clipboard" class="w-3.5 h-3.5"></i>
                                 <span>Contar</span>
                             </button>
-                            <button type="button" onclick="openArgoxLabelModalFromInventario('${item.codigo}', '${escapedDesc}', '${item.unidade}')" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white px-2.5 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active" title="Imprimir Etiqueta Argox">
+                            <button type="button" onclick="openA4PalletPrintModalFromInventario('${item.codigo}', '${escapedDesc}', '${item.unidade}', ${item.hasCount ? item.qtd_contada : item.quantidade})" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2.5 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active cursor-pointer" title="Imprimir Ficha de Palete A4">
                                 <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                             </button>
                             <button type="button" onclick="openTagsModal('${item.codigo}', '${escapedDesc}', '${escapedTags}')" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-2.5 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-sm flex items-center space-x-1 touch-active">
@@ -3915,69 +3941,400 @@
             showAlert("Planilha exportada com sucesso!", "success");
         }
 
-        // --- IMPRESSÃO DE ETIQUETAS ARGOX ALMOXARIFADO QR (A5:F10) ---
+        // --- IMPRESSÃO DE FICHA DE PALETE EM FOLHA A4 COM FRACIONAMENTO DE QUANTIDADE ---
 
-        let currentLabelItemData = null;
+        let currentA4PalletData = null;
 
-        function openArgoxLabelModalFromInventario(codigo, descricao, unidade) {
-            const currentArmazem = document.getElementById('invFilterArmazem') ? document.getElementById('invFilterArmazem').value : '01';
-            const armCode = (currentArmazem && currentArmazem !== 'ALL') ? String(currentArmazem).padStart(2, '0') : '01';
+        function openA4PalletPrintModalFromInventario(codigo, descricao, unidade, totalQtd, armazem) {
+            const f = String(typeof currentSelectedFilial !== 'undefined' && currentSelectedFilial ? currentSelectedFilial : '01').padStart(2, '0');
+            const invArmEl = document.getElementById('invFilterArmazem');
+            const a = String(armazem || (invArmEl && invArmEl.value !== 'ALL' ? invArmEl.value : '01')).padStart(2, '0');
+            const p = String(codigo || '').trim().toUpperCase();
+            const desc = String(descricao || p).trim().toUpperCase();
+            const u = String(unidade || 'UN').trim().toUpperCase();
+            const q = parseFloat(totalQtd) || 0;
 
-            openArgoxLabelModal({
-                codigo: String(codigo || '').trim().toUpperCase(),
-                descricao: String(descricao || '').trim().toUpperCase(),
+            const initialLots = [{
+                id: 'inv_1',
+                filial: f,
+                armazem: a,
+                produto: p,
                 lote: '',
-                validade: '',
-                armazem: armCode,
-                quantidade: `ESTOQUE (${unidade || 'UN'})`
-            });
-        }
+                data_fabricacao: '',
+                data_validade: '',
+                quantidade: q,
+                embalagem: 'PALETE 1/1',
+                observacao: ''
+            }];
 
-        function openArgoxLabelModal(data) {
-            currentLabelItemData = data;
-            renderArgoxLabelPreview();
-            const modal = document.getElementById('argoxLabelModal');
-            if (modal) modal.classList.remove('hidden');
+            currentA4PalletData = {
+                filial: f,
+                armazem: a,
+                produto: p,
+                descricao: desc,
+                unidade: u,
+                lotes: initialLots
+            };
+
+            const codEl = document.getElementById('a4ModalCodigoDisplay');
+            const descEl = document.getElementById('a4ModalDescricaoDisplay');
+            const armEl = document.getElementById('a4ModalArmazemDisplay');
+            const unEl = document.getElementById('a4ModalUnidadeDisplay');
+            const u1 = document.getElementById('a4UnidadeDisplay1');
+            const u2 = document.getElementById('a4UnidadeDisplay2');
+
+            if (codEl) codEl.innerText = p;
+            if (descEl) descEl.innerText = desc;
+            if (armEl) armEl.innerText = `FILIAL: ${f} | ARM: ${a}`;
+            if (unEl) unEl.innerText = u;
+            if (u1) u1.innerText = u;
+            if (u2) u2.innerText = u;
+
+            const inputTotal = document.getElementById('a4InputTotalQtd');
+            const inputPerPallet = document.getElementById('a4InputQtdPorPallet');
+            if (inputPerPallet) inputPerPallet.value = '';
+
+            // Popula o seletor de lote a fracionar
+            populateA4SplitLoteSelect();
+
+            // Popula o seletor de paletes para filtro rápido na folha A4
+            refreshA4QuickPalletFilterSelect();
+
+            const headerInput = document.getElementById('a4PalletHeaderInput');
+            if (headerInput) {
+                headerInput.value = 'IDENTIFICAÇÃO DE PALETE / ESTOQUE';
+            }
+
+            renderA4LotCheckboxes();
+
+            const modal = document.getElementById('a4PrintModal');
+            if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        function renderArgoxLabelPreview() {
-            if (!currentLabelItemData) return;
-            const elCod = document.getElementById('argoxLblCodigo');
-            const elDesc = document.getElementById('argoxLblDescricao');
-            const elLoteBadge = document.getElementById('argoxLblLoteSubBadge');
-            const elLoteText = document.getElementById('argoxLblLoteText');
-            const elValText = document.getElementById('argoxLblValText');
-            const elArm = document.getElementById('argoxLblArmCode');
-            const elQtd = document.getElementById('argoxLblQtd');
-            const canvas = document.getElementById('argoxCanvasQR');
+        function populateA4SplitLoteSelect(selectedLotId) {
+            const select = document.getElementById('a4SplitLoteSelect');
+            if (!select || !currentA4PalletData) return;
 
-            if (elCod) elCod.innerText = currentLabelItemData.codigo;
-            if (elDesc) elDesc.innerText = currentLabelItemData.descricao;
-            if (elArm) elArm.innerText = currentLabelItemData.armazem || '01';
-            if (elQtd) elQtd.innerText = currentLabelItemData.quantidade || 'ESTOQUE';
+            const lots = currentA4PalletData.lotes || [];
+            const u = currentA4PalletData.unidade || 'UN';
 
-            if (currentLabelItemData.lote || currentLabelItemData.validade) {
-                if (elLoteBadge) elLoteBadge.classList.remove('hidden');
-                if (elLoteText) elLoteText.innerText = currentLabelItemData.lote ? `LOTE: ${currentLabelItemData.lote}` : 'S/ LOTE';
-                if (elValText) elValText.innerText = currentLabelItemData.validade ? `VAL: ${currentLabelItemData.validade}` : '';
+            let optionsHtml = '';
+            if (lots.length > 1) {
+                optionsHtml += `<option value="ALL">📦 Fracionar todos os lotes pela capacidade</option>`;
+            }
+
+            lots.forEach((lot) => {
+                const loteLabel = lot.lote ? `Lote: ${lot.lote}` : 'ESTOQUE GERAL';
+                const valLabel = lot.data_validade ? ` • Val: ${lot.data_validade}` : '';
+                const embLabel = lot.embalagem ? ` [${lot.embalagem}]` : '';
+                const qtdLabel = `${Number(lot.quantidade || 0).toLocaleString('pt-BR')} ${u}`;
+                optionsHtml += `<option value="${lot.id}">🏷️ ${loteLabel}${embLabel} (${qtdLabel}${valLabel})</option>`;
+            });
+
+            select.innerHTML = optionsHtml;
+
+            if (selectedLotId && lots.some(l => String(l.id) === String(selectedLotId))) {
+                select.value = String(selectedLotId);
+            } else if (lots.length === 1) {
+                select.value = String(lots[0].id);
             } else {
-                if (elLoteBadge) elLoteBadge.classList.add('hidden');
+                select.value = 'ALL';
             }
 
-            const imgQR = document.getElementById('argoxImgQR');
-            if (imgQR && currentLabelItemData.codigo) {
-                imgQR.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentLabelItemData.codigo)}`;
+            onA4SplitLoteSelectChange();
+        }
+
+        function refreshA4QuickPalletFilterSelect() {
+            const palletFilterSelect = document.getElementById('a4QuickPalletFilterSelect');
+            if (!palletFilterSelect || !currentA4PalletData) return;
+
+            const lots = currentA4PalletData.lotes || [];
+            const uniquePallets = [...new Set(lots.map(l => (l.embalagem || 'PALETE').trim()).filter(Boolean))];
+            let opts = `<option value="ALL">📋 Imprimir Todos os Paletes / Volumes (${lots.length})</option>`;
+            uniquePallets.forEach(pal => {
+                opts += `<option value="${pal}">📦 ${pal}</option>`;
+            });
+            palletFilterSelect.innerHTML = opts;
+        }
+
+        function onA4SplitLoteSelectChange() {
+            if (!currentA4PalletData) return;
+            const select = document.getElementById('a4SplitLoteSelect');
+            const totalInput = document.getElementById('a4InputTotalQtd');
+            if (!select || !totalInput) return;
+
+            const val = select.value;
+            const lots = currentA4PalletData.lotes || [];
+
+            if (val === 'ALL') {
+                const totalQtdSum = lots.reduce((acc, l) => acc + (parseFloat(l.quantidade) || 0), 0);
+                totalInput.value = totalQtdSum > 0 ? totalQtdSum : '';
+                const chks = document.querySelectorAll('.a4-lot-chk');
+                chks.forEach(c => c.checked = true);
+            } else {
+                const targetLot = lots.find(l => String(l.id) === String(val));
+                if (targetLot) {
+                    totalInput.value = parseFloat(targetLot.quantidade) || '';
+                    const chks = document.querySelectorAll('.a4-lot-chk');
+                    chks.forEach(c => c.checked = (String(c.value) === String(val)));
+                }
+            }
+
+            onA4QuantityInputsChange();
+        }
+
+        function onA4LotCheckboxChange() {
+            if (!currentA4PalletData) return;
+            const chks = Array.from(document.querySelectorAll('.a4-lot-chk:checked'));
+            const select = document.getElementById('a4SplitLoteSelect');
+            const totalInput = document.getElementById('a4InputTotalQtd');
+            if (!totalInput) return;
+
+            if (chks.length === 1) {
+                const checkedId = chks[0].value;
+                const lot = currentA4PalletData.lotes.find(l => String(l.id) === String(checkedId));
+                if (lot) {
+                    if (select) select.value = String(lot.id);
+                    totalInput.value = parseFloat(lot.quantidade) || '';
+                }
+            } else if (chks.length > 1) {
+                if (select) select.value = 'ALL';
+                const sumQtd = chks.reduce((acc, c) => {
+                    const lot = currentA4PalletData.lotes.find(l => String(l.id) === String(c.value));
+                    return acc + (lot ? (parseFloat(lot.quantidade) || 0) : 0);
+                }, 0);
+                totalInput.value = sumQtd > 0 ? sumQtd : '';
+            } else {
+                totalInput.value = '';
+            }
+
+            onA4QuantityInputsChange();
+        }
+
+        function onA4QuantityInputsChange() {
+            if (!currentA4PalletData) return;
+
+            const select = document.getElementById('a4SplitLoteSelect');
+            const totalInput = document.getElementById('a4InputTotalQtd');
+            const perPalletInput = document.getElementById('a4InputQtdPorPallet');
+            const summaryText = document.getElementById('a4SplitSummaryText');
+
+            const splitMode = select ? select.value : 'ALL';
+            const totalQtd = totalInput ? parseFloat(totalInput.value || 0) : 0;
+            const perPallet = perPalletInput ? parseFloat(perPalletInput.value || 0) : 0;
+            const u = currentA4PalletData.unidade || 'UN';
+
+            if (splitMode === 'ALL') {
+                if (perPallet > 0) {
+                    summaryText.innerHTML = `📦 Cada lote/volume será fracionado em paletes com até <b>${perPallet.toLocaleString('pt-BR')} ${u}</b>`;
+                } else {
+                    summaryText.innerText = `📦 Mantém cada item em 1 palete com suas quantidades atuais`;
+                }
+            } else {
+                const targetLot = currentA4PalletData.lotes.find(l => String(l.id) === String(splitMode));
+                const loteNome = targetLot && targetLot.lote ? `Lote ${targetLot.lote}` : 'Item Selecionado';
+
+                if (totalQtd > 0 && perPallet > 0 && perPallet < totalQtd) {
+                    const fullCount = Math.floor(totalQtd / perPallet);
+                    const remainder = Math.round((totalQtd % perPallet) * 1000) / 1000;
+                    const totalSlices = fullCount + (remainder > 0.0001 ? 1 : 0);
+
+                    if (summaryText) {
+                        summaryText.innerHTML = `📦 <b>${loteNome} em ${totalSlices} paletes:</b> ${fullCount}x de <b>${perPallet.toLocaleString('pt-BR')} ${u}</b>${remainder > 0 ? ` + 1x de <b>${remainder.toLocaleString('pt-BR')} ${u}</b>` : ''} (Total: ${totalQtd.toLocaleString('pt-BR')} ${u})`;
+                    }
+                } else {
+                    if (summaryText) {
+                        summaryText.innerHTML = `📦 <b>${loteNome}:</b> 1 palete com o total de ${totalQtd.toLocaleString('pt-BR')} ${u}`;
+                    }
+                }
             }
         }
 
-        function closeArgoxLabelModal() {
-            const modal = document.getElementById('argoxLabelModal');
-            if (modal) modal.classList.add('hidden');
+        function applyA4AutoSplit() {
+            if (!currentA4PalletData || !currentA4PalletData.lotes || currentA4PalletData.lotes.length === 0) return;
+
+            const select = document.getElementById('a4SplitLoteSelect');
+            const totalInput = document.getElementById('a4InputTotalQtd');
+            const perPalletInput = document.getElementById('a4InputQtdPorPallet');
+
+            const splitMode = select ? select.value : 'ALL';
+            const totalQtd = totalInput ? parseFloat(totalInput.value || 0) : 0;
+            const perPallet = perPalletInput ? parseFloat(perPalletInput.value || 0) : 0;
+
+            if (perPallet <= 0) {
+                showAlert("Informe a Quantidade por Palete/Folha desejada.", "warning");
+                return;
+            }
+
+            if (splitMode === 'ALL') {
+                // Fraciona cada lote da lista pela capacidade
+                const newLots = [];
+
+                currentA4PalletData.lotes.forEach(lot => {
+                    const lotQtd = parseFloat(lot.quantidade || 0);
+                    if (lotQtd > perPallet) {
+                        const fullCount = Math.floor(lotQtd / perPallet);
+                        const remainder = Math.round((lotQtd % perPallet) * 1000) / 1000;
+                        const totalSlices = fullCount + (remainder > 0.0001 ? 1 : 0);
+
+                        for (let i = 1; i <= fullCount; i++) {
+                            newLots.push({
+                                ...lot,
+                                id: `${lot.id}_split_${i}_${Date.now()}`,
+                                quantidade: perPallet,
+                                embalagem: `PALETE ${i}/${totalSlices}`
+                            });
+                        }
+
+                        if (remainder > 0.0001) {
+                            newLots.push({
+                                ...lot,
+                                id: `${lot.id}_split_${totalSlices}_${Date.now()}`,
+                                quantidade: remainder,
+                                embalagem: `PALETE ${totalSlices}/${totalSlices} (RESTO)`
+                            });
+                        }
+                    } else {
+                        newLots.push(lot);
+                    }
+                });
+
+                currentA4PalletData.lotes = newLots;
+                populateA4SplitLoteSelect('ALL');
+                refreshA4QuickPalletFilterSelect();
+                renderA4LotCheckboxes();
+                showAlert(`Divisão por lote aplicada com sucesso!`, "success");
+
+            } else {
+                // Fraciona especificamente o lote selecionado no dropdown
+                const targetIdx = currentA4PalletData.lotes.findIndex(l => String(l.id) === String(splitMode));
+                if (targetIdx === -1) {
+                    showAlert("Lote selecionado não encontrado.", "error");
+                    return;
+                }
+
+                const targetLot = currentA4PalletData.lotes[targetIdx];
+                const finalTotal = totalQtd > 0 ? totalQtd : (parseFloat(targetLot.quantidade) || 0);
+
+                if (finalTotal <= 0) {
+                    showAlert("Informe uma quantidade total válida para este lote.", "warning");
+                    return;
+                }
+
+                const splitLots = [];
+
+                if (perPallet < finalTotal) {
+                    const fullCount = Math.floor(finalTotal / perPallet);
+                    const remainder = Math.round((finalTotal % perPallet) * 1000) / 1000;
+                    const totalSlices = fullCount + (remainder > 0.0001 ? 1 : 0);
+
+                    for (let i = 1; i <= fullCount; i++) {
+                        splitLots.push({
+                            ...targetLot,
+                            id: `${targetLot.id}_split_${i}_${Date.now()}`,
+                            quantidade: perPallet,
+                            embalagem: `PALETE ${i}/${totalSlices}`
+                        });
+                    }
+
+                    if (remainder > 0.0001) {
+                        splitLots.push({
+                            ...targetLot,
+                            id: `${targetLot.id}_split_${totalSlices}_${Date.now()}`,
+                            quantidade: remainder,
+                            embalagem: `PALETE ${totalSlices}/${totalSlices} (RESTO)`
+                        });
+                    }
+                } else {
+                    splitLots.push({
+                        ...targetLot,
+                        quantidade: finalTotal,
+                        embalagem: targetLot.embalagem || 'PALETE 1/1'
+                    });
+                }
+
+                // Substitui o lote fracionado na lista de lotes mantendo os outros lotes intactos
+                currentA4PalletData.lotes.splice(targetIdx, 1, ...splitLots);
+
+                const newSplitIds = splitLots.map(l => l.id);
+                populateA4SplitLoteSelect(splitLots[0].id);
+                refreshA4QuickPalletFilterSelect();
+                renderA4LotCheckboxes(newSplitIds);
+                showAlert(`Lote ${targetLot.lote || ''} dividido com sucesso em ${splitLots.length} paletes!`, "success");
+            }
         }
 
-        function adjustLabelCopies(delta) {
-            const input = document.getElementById('argoxLabelCopiesInput');
+        function onA4QuickPalletFilterChange() {
+            const select = document.getElementById('a4QuickPalletFilterSelect');
+            const headerInput = document.getElementById('a4PalletHeaderInput');
+            if (!select || !currentA4PalletData) return;
+
+            const val = select.value;
+            const chks = document.querySelectorAll('.a4-lot-chk');
+
+            if (val === 'ALL') {
+                chks.forEach(c => c.checked = true);
+                if (headerInput) headerInput.value = 'IDENTIFICAÇÃO DE PALETE / ESTOQUE GERAL';
+            } else {
+                chks.forEach(c => {
+                    const lotId = c.value;
+                    const lot = currentA4PalletData.lotes.find(l => String(l.id) === String(lotId));
+                    c.checked = lot && String(lot.embalagem || 'PALETE').trim() === val;
+                });
+                if (headerInput) headerInput.value = val;
+            }
+
+            onA4LotCheckboxChange();
+        }
+
+        function closeA4PrintModal() {
+            const modal = document.getElementById('a4PrintModal');
+            if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
+        }
+
+        function renderA4LotCheckboxes(checkedIds) {
+            const container = document.getElementById('a4LotCheckboxesContainer');
+            if (!container || !currentA4PalletData) return;
+
+            container.innerHTML = '';
+            if (currentA4PalletData.lotes.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 font-bold p-2">Nenhum lote ou palete listado para este material.</p>`;
+                return;
+            }
+
+            currentA4PalletData.lotes.forEach((lot) => {
+                const itemDiv = document.createElement('label');
+                itemDiv.className = "flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors";
+
+                const palletDisplay = lot.embalagem ? lot.embalagem : 'PALETE';
+                const isChecked = checkedIds ? checkedIds.includes(String(lot.id)) : true;
+
+                itemDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" id="a4_lot_chk_${lot.id}" value="${lot.id}" ${isChecked ? 'checked' : ''} onchange="onA4LotCheckboxChange()" class="a4-lot-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+                        <div>
+                            <span class="font-black text-xs text-slate-900 dark:text-white">${lot.lote ? `Lote: ${lot.lote}` : 'ESTOQUE GERAL'}</span>
+                            <span class="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 ml-1.5">[${palletDisplay}]</span>
+                            <span class="text-[11px] text-slate-500 font-bold ml-1.5">• Qtd: ${Number(lot.quantidade || 0).toLocaleString('pt-BR')} ${currentA4PalletData.unidade || 'UN'}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-black text-slate-800 dark:text-slate-200 font-mono">${lot.data_validade ? `Val: ${lot.data_validade}` : ''}</span>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function toggleAllA4LotCheckboxes(check) {
+            const chks = document.querySelectorAll('.a4-lot-chk');
+            chks.forEach(c => c.checked = check);
+            onA4LotCheckboxChange();
+        }
+
+        function adjustA4Copies(delta) {
+            const input = document.getElementById('a4LabelCopiesInput');
             if (!input) return;
             let val = parseInt(input.value, 10) || 1;
             val += delta;
@@ -3986,51 +4343,186 @@
             input.value = val;
         }
 
-        function setLabelCopies(num) {
-            const input = document.getElementById('argoxLabelCopiesInput');
-            if (input) input.value = num;
-        }
+        async function printA4PalletSheet() {
+            if (!currentA4PalletData) return;
+            const { filial, armazem, produto, lotes } = currentA4PalletData;
 
-        async function printArgoxLabels() {
-            if (!currentLabelItemData) return;
-            const input = document.getElementById('argoxLabelCopiesInput');
-            const copies = input ? (parseInt(input.value, 10) || 1) : 1;
+            const chks = document.querySelectorAll('.a4-lot-chk:checked');
+            const selectedIds = Array.from(chks).map(c => String(c.value));
 
-            const printContainer = document.getElementById('argoxPrintContainer');
+            if (selectedIds.length === 0) {
+                showAlert("Por favor, selecione ao menos um lote/palete para sair na impressão da folha A4.", "warning");
+                return;
+            }
+
+            const selectedLots = lotes.filter(l => selectedIds.includes(String(l.id)));
+            const copiesInput = document.getElementById('a4LabelCopiesInput');
+            const copies = copiesInput ? (parseInt(copiesInput.value, 10) || 1) : 1;
+
+            const headerInput = document.getElementById('a4PalletHeaderInput');
+            const palletHeader = headerInput ? headerInput.value.trim() : 'IDENTIFICAÇÃO DE PALETE';
+
+            const desc = currentA4PalletData.descricao || produto;
+            const unidade = currentA4PalletData.unidade || 'UN';
+
+            let totalSelectedQtd = 0;
+            selectedLots.forEach(l => totalSelectedQtd += parseFloat(l.quantidade || 0));
+
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(produto)}`;
+
+            const printContainer = document.getElementById('a4PrintContainer');
             if (!printContainer) return;
 
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentLabelItemData.codigo)}`;
+            const layoutModeRadio = document.querySelector('input[name="a4PrintLayoutMode"]:checked');
+            const isIndividualMode = layoutModeRadio && layoutModeRadio.value === 'INDIVIDUAL';
 
-            let labelsHtml = '';
-            for (let i = 0; i < copies; i++) {
-                labelsHtml += `
-                    <div class="argox-label-page">
-                        <div class="argox-label-card">
-                            <div class="argox-label-header">
-                                <span class="argox-label-code">${currentLabelItemData.codigo}</span>
-                                ${currentLabelItemData.lote || currentLabelItemData.validade ? `
-                                    <div class="argox-label-lote-strip">
-                                        <span>${currentLabelItemData.lote ? `LOTE: ${currentLabelItemData.lote}` : ''}</span>
-                                        ${currentLabelItemData.lote && currentLabelItemData.validade ? `<span>•</span>` : ''}
-                                        <span>${currentLabelItemData.validade ? `VAL: ${currentLabelItemData.validade}` : ''}</span>
+            let fullHtml = '';
+
+            if (isIndividualMode) {
+                // 1 FOLHA A4 PARA CADA PALETE / VOLUME SELECIONADO (COM DESTAQUE GIGANTE)
+                for (let c = 0; c < copies; c++) {
+                    selectedLots.forEach((lot) => {
+                        fullHtml += `
+                            <div class="a4-pallet-page">
+                                <div class="a4-pallet-card">
+                                    <!-- CABEÇALHO COM LOGO E IDENTIFICAÇÃO DO PALETE -->
+                                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000000; padding-bottom: 10px;">
+                                        <div>
+                                            <h1 style="margin: 0; font-size: 19pt; font-weight: 900; color: #002f6c; text-transform: uppercase; letter-spacing: 0.5px;">AMAZON AÇO • CONTROLE DE ESTOQUE</h1>
+                                            <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                                <span style="font-size: 13pt; font-weight: 900; color: #1e293b;">FICHA DE IDENTIFICAÇÃO DE PALETE</span>
+                                                <span style="font-size: 13pt; font-weight: 900; color: #ffffff; background: #002f6c; padding: 2px 10px; border-radius: 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${lot.embalagem || palletHeader || 'PALETE'}</span>
+                                            </div>
+                                            <p style="margin: 5px 0 0 0; font-size: 11.5pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                                        </div>
+                                        <div style="text-align: right; flex-shrink: 0;">
+                                            <img src="${qrUrl}" alt="QR Code" style="width: 110px; height: 110px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
+                                        </div>
                                     </div>
-                                ` : ''}
-                            </div>
-                            <div class="argox-label-body">
-                                <div class="argox-label-desc-col">
-                                    <p class="argox-label-desc">${currentLabelItemData.descricao}</p>
-                                    <p class="argox-label-meta">ARM: ${currentLabelItemData.armazem} ${currentLabelItemData.quantidade ? `| ${currentLabelItemData.quantidade}` : ''}</p>
+
+                                    <!-- CÓDIGO DO MATERIAL EM DESTAQUE MÁXIMO -->
+                                    <div style="text-align: center; background: #002f6c; color: #ffffff; padding: 14px 8px; margin-top: 14px; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                        <span style="font-family: monospace, Courier, sans-serif; font-size: 44pt; font-weight: 900; letter-spacing: 3px; line-height: 1;">${produto}</span>
+                                    </div>
+
+                                    <!-- DESCRIÇÃO COMPLETA -->
+                                    <div style="margin-top: 14px; border: 2.5px solid #000000; padding: 12px 16px; border-radius: 8px; background: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                        <span style="font-size: 10pt; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Descrição do Material:</span>
+                                        <h2 style="margin: 4px 0 0 0; font-size: 18pt; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1.25;">${desc}</h2>
+                                    </div>
+
+                                    <!-- CARD DE QUANTIDADE GIGANTE DESTE PALETE -->
+                                    <div style="margin-top: 16px; border: 3.5px solid #002f6c; border-radius: 12px; padding: 18px 12px; text-align: center; background: #f0f7ff; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                        <span style="font-size: 13pt; font-weight: 900; color: #002f6c; text-transform: uppercase; letter-spacing: 1px;">QUANTIDADE NESTE PALETE / VOLUME:</span>
+                                        <div style="font-size: 46pt; font-weight: 900; color: #002f6c; line-height: 1.05; margin: 8px 0;">
+                                            ${Number(lot.quantidade || 0).toLocaleString('pt-BR')} <span style="font-size: 26pt;">${unidade}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; font-size: 13pt; font-weight: 900; color: #000000; margin-top: 8px; flex-wrap: wrap;">
+                                            <span>LOTE: <b>${lot.lote || 'S/ LOTE'}</b></span>
+                                            ${lot.data_fabricacao ? `<span>• FAB: <b>${lot.data_fabricacao}</b></span>` : ''}
+                                            ${lot.data_validade ? `<span>• VAL: <b>${lot.data_validade}</b></span>` : ''}
+                                        </div>
+                                    </div>
+
+                                    <!-- RODAPÉ DA FOLHA -->
+                                    <div style="margin-top: 24px; border-top: 2px dashed #64748b; padding-top: 10px; display: flex; justify-content: space-between; font-size: 9.5pt; font-weight: 700; color: #475569;">
+                                        <span>Emitido por: ${currentUser ? currentUser.nome : 'ALMOXARIFADO'}</span>
+                                        <span>Data/Hora: ${new Date().toLocaleString('pt-BR')}</span>
+                                        <span>Portal de Estoques Amazon Aço</span>
+                                    </div>
                                 </div>
-                                <div class="argox-label-qr-col">
-                                    <img src="${qrUrl}" class="argox-label-qr-img" alt="QR Code">
+                            </div>
+                        `;
+                    });
+                }
+            } else {
+                // FOLHA A4 CONSOLIDADA (TABELA COM TODOS OS PALETES/LOTES)
+                for (let c = 0; c < copies; c++) {
+                    let rowsHtml = '';
+                    selectedLots.forEach(l => {
+                        rowsHtml += `
+                            <tr>
+                                <td style="font-family: monospace, Courier, sans-serif; font-size: 12pt; font-weight: 900; word-break: break-word;">${l.lote || 'S/ LOTE'}</td>
+                                <td style="font-size: 11pt; font-weight: 900; color: #002f6c; text-transform: uppercase;">${l.embalagem || 'PALETE'}</td>
+                                <td style="text-align: right; font-size: 13pt; font-weight: 900; white-space: nowrap;">${Number(l.quantidade || 0).toLocaleString('pt-BR')} ${unidade}</td>
+                                <td style="text-align: center; font-size: 11pt; font-weight: 800; white-space: nowrap;">${l.data_fabricacao || '-'}</td>
+                                <td style="text-align: center; font-size: 13pt; font-weight: 900; white-space: nowrap;">${l.data_validade || '-'}</td>
+                                <td style="text-align: center; font-size: 10pt; font-weight: 900; color: #059669;">ESTOQUE</td>
+                                <td style="font-size: 10pt; font-weight: 600; word-break: break-word;">${l.observacao || '-'}</td>
+                            </tr>
+                        `;
+                    });
+
+                    fullHtml += `
+                        <div class="a4-pallet-page">
+                            <div class="a4-pallet-card">
+                                <!-- CABEÇALHO COM LOGO E IDENTIFICAÇÃO DO PALETE -->
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000000; padding-bottom: 10px;">
+                                    <div>
+                                        <h1 style="margin: 0; font-size: 19pt; font-weight: 900; color: #002f6c; text-transform: uppercase; letter-spacing: 0.5px;">AMAZON AÇO • CONTROLE DE ESTOQUE</h1>
+                                        <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                            <span style="font-size: 13pt; font-weight: 900; color: #1e293b;">FICHA DE PALETE / PRATELEIRA</span>
+                                            ${palletHeader ? `<span style="font-size: 12pt; font-weight: 900; color: #ffffff; background: #002f6c; padding: 2px 8px; border-radius: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${palletHeader}</span>` : ''}
+                                        </div>
+                                        <p style="margin: 5px 0 0 0; font-size: 11.5pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                                    </div>
+                                    <div style="text-align: right; flex-shrink: 0;">
+                                        <img src="${qrUrl}" alt="QR Code" style="width: 105px; height: 105px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
+                                    </div>
+                                </div>
+
+                                <!-- CÓDIGO DO MATERIAL EM DESTAQUE MÁXIMO -->
+                                <div style="text-align: center; background: #002f6c; color: #ffffff; padding: 12px 8px; margin-top: 12px; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                    <span style="font-family: monospace, Courier, sans-serif; font-size: 42pt; font-weight: 900; letter-spacing: 3px; line-height: 1;">${produto}</span>
+                                </div>
+
+                                <!-- DESCRIÇÃO COMPLETA -->
+                                <div style="margin-top: 12px; border: 2.5px solid #000000; padding: 10px 14px; border-radius: 8px; background: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                    <span style="font-size: 9.5pt; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Descrição do Material:</span>
+                                    <h2 style="margin: 3px 0 0 0; font-size: 17pt; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1.25;">${desc}</h2>
+                                </div>
+
+                                <!-- TABELA DE LOTES E PALETES -->
+                                <div style="margin-top: 14px; width: 100%;">
+                                    <h3 style="margin: 0 0 6px 0; font-size: 11.5pt; font-weight: 900; text-transform: uppercase; color: #000000;">Lotes e Paletes Presentes nesta Folha:</h3>
+                                    <table class="a4-table" style="width: 100%; table-layout: fixed; border-collapse: collapse; box-sizing: border-box;">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 18%;">Lote</th>
+                                                <th style="width: 18%;">Palete/Vol</th>
+                                                <th style="width: 18%; text-align: right;">Quantidade</th>
+                                                <th style="width: 13%; text-align: center;">Fabricação</th>
+                                                <th style="width: 15%; text-align: center;">Validade</th>
+                                                <th style="width: 11%; text-align: center;">Status</th>
+                                                <th style="width: 7%;">Obs.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${rowsHtml}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align: right; font-weight: 900; font-size: 11pt; text-transform: uppercase;">TOTAL:</td>
+                                                <td style="text-align: right; font-weight: 900; font-size: 14pt; color: #002f6c; -webkit-print-color-adjust: exact; print-color-adjust: exact; white-space: nowrap;">${totalSelectedQtd.toLocaleString('pt-BR')} ${unidade}</td>
+                                                <td colspan="4" style="text-align: right; font-size: 11pt; font-weight: 900; color: #334155;">${selectedLots.length} item(ns) selecionado(s)</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                                <!-- RODAPÉ DA FOLHA -->
+                                <div style="margin-top: 16px; border-top: 2px dashed #64748b; padding-top: 8px; display: flex; justify-content: space-between; font-size: 9pt; font-weight: 700; color: #475569;">
+                                    <span>Emitido por: ${currentUser ? currentUser.nome : 'ALMOXARIFADO'}</span>
+                                    <span>Data/Hora: ${new Date().toLocaleString('pt-BR')}</span>
+                                    <span>Portal de Estoques Amazon Aço</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
 
-            printContainer.innerHTML = labelsHtml;
+            printContainer.innerHTML = fullHtml;
 
             // Aguarda o download do QR code antes de abrir a impressão
             const imgs = Array.from(printContainer.querySelectorAll('img'));
@@ -4049,14 +4541,13 @@
                 pageStyle.id = 'dynamicPrintPageStyle';
                 document.head.appendChild(pageStyle);
             }
-            pageStyle.innerHTML = `@page { size: 100mm 50mm landscape !important; margin: 0 !important; }`;
+            pageStyle.innerHTML = `@page { size: A4 portrait !important; margin: 8mm !important; }`;
 
-            document.body.classList.add('printing-argox');
-
+            document.body.classList.add('printing-a4');
             window.print();
 
             setTimeout(() => {
-                document.body.classList.remove('printing-argox');
+                document.body.classList.remove('printing-a4');
             }, 1000);
         }
 

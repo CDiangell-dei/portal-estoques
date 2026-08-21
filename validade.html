@@ -65,117 +65,7 @@
             .print-card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; page-break-inside: avoid; background-color: #ffffff !important; color: #000000 !important; margin-bottom: 1.25rem !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-            /* ESTILOS ESPECÍFICOS PARA A IMPRESSORA TÉRMICA ARGOX */
-            body.printing-argox * {
-                visibility: hidden !important;
-            }
-            body.printing-argox #argoxPrintContainer,
-            body.printing-argox #argoxPrintContainer * {
-                visibility: visible !important;
-            }
-            body.printing-argox #argoxPrintContainer {
-                display: block !important;
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #ffffff !important;
-            }
-            .argox-label-page {
-                page-break-after: always !important;
-                break-after: page !important;
-                width: 100mm !important;
-                height: 50mm !important;
-                box-sizing: border-box !important;
-                padding: 2mm 3mm !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-between !important;
-                background: #ffffff !important;
-                color: #000000 !important;
-                font-family: Arial, Helvetica, sans-serif !important;
-            }
-            .argox-label-card {
-                width: 100% !important;
-                height: 100% !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-between !important;
-                border: 2px solid #000000 !important;
-                padding: 2mm !important;
-                box-sizing: border-box !important;
-                background: #ffffff !important;
-            }
-            .argox-label-header {
-                text-align: center !important;
-                border-bottom: 2px solid #000000 !important;
-                padding-bottom: 1.5mm !important;
-            }
-            .argox-label-code {
-                font-size: 26pt !important;
-                font-weight: 900 !important;
-                font-family: monospace, Arial, sans-serif !important;
-                line-height: 1 !important;
-                display: block !important;
-                color: #000000 !important;
-                letter-spacing: -0.5px !important;
-            }
-            .argox-label-lote-strip {
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                gap: 4px !important;
-                font-size: 8.5pt !important;
-                font-weight: 900 !important;
-                margin-top: 1mm !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
-            }
-            .argox-label-body {
-                display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                gap: 2mm !important;
-                flex-grow: 1 !important;
-                padding-top: 1.5mm !important;
-            }
-            .argox-label-desc-col {
-                flex: 1 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-            }
-            .argox-label-desc {
-                font-size: 11pt !important;
-                font-weight: 900 !important;
-                text-transform: uppercase !important;
-                line-height: 1.15 !important;
-                margin: 0 !important;
-                word-break: break-word !important;
-                color: #000000 !important;
-            }
-            .argox-label-meta {
-                font-size: 7.5pt !important;
-                font-weight: 800 !important;
-                color: #111111 !important;
-                margin-top: 1mm !important;
-            }
-            .argox-label-qr-col {
-                width: 22mm !important;
-                height: 22mm !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                flex-shrink: 0 !important;
-            }
-            .argox-label-qr-img {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: contain !important;
-            }
+
 
             /* ESTILOS ESPECÍFICOS PARA A FICHA DE PALETE EM FOLHA A4 */
             @page {
@@ -632,13 +522,7 @@
                 </button>
             </div>
 
-            <!-- Banner de Alerta para Lote Existente Encontrado -->
-            <div id="valExistingLotBanner" class="hidden p-3 bg-blue-50 border border-blue-200 rounded-2xl flex items-center gap-2 text-xs font-bold text-blue-900">
-                <i data-lucide="info" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
-                <span>Lote existente localizado! Carregamos os dados para você realizar a alteração.</span>
-            </div>
-
-            <form onsubmit="saveValidadeEntry(event)" class="space-y-3.5">
+            <form id="valForm" onsubmit="saveValidadeEntry(event)" class="space-y-3.5">
                 <input type="hidden" id="valEditId" value="">
                 
                 <div>
@@ -662,6 +546,8 @@
                         <input type="text" id="valInputLote" oninput="this.value = this.value.toUpperCase(); onValidadeCodeOrLoteChange()" placeholder="Identificação do lote" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase">
                     </div>
                 </div>
+
+
 
                 <!-- CARD DE CONFERÊNCIA SALDO X LOTES NO MODAL -->
                 <div id="valSaldoComparisonCard" class="hidden p-3.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-2">
@@ -689,71 +575,59 @@
                     <p id="valModalSaldoExplanation" class="text-[10px] text-slate-500 font-semibold leading-tight pt-0.5"></p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Quantidade do Lote</label>
-                            <button type="button" onclick="toggleValidadeCalculator()" id="btnToggleValCalc" class="text-[10px] font-black text-amber-600 dark:text-amber-400 hover:text-amber-700 flex items-center gap-1 touch-active">
-                                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
-                                <span id="lblToggleValCalc">Calculadora</span>
-                            </button>
+                <!-- CARD DE GESTÃO DE PALETES / VOLUMES DO LOTE -->
+                <div class="border border-indigo-200 dark:border-slate-700 bg-indigo-50/40 dark:bg-slate-900/50 rounded-2xl p-3.5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                                <i data-lucide="boxes" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs font-black text-slate-900 dark:text-white">Separação por Paletes / Volumes</span>
+                                <p class="text-[10px] text-slate-500 font-semibold">Adicione, edite ou exclua paletes deste material/lote</p>
+                            </div>
                         </div>
-                        <div class="relative">
-                            <input type="text" id="valInputQuantidade" required oninput="updateValidadeQtdPreview()" placeholder="Ex: 50 ou 10+15*2" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <div id="valQtdCalcPreview" class="absolute right-3 top-2.5 text-[11px] font-black text-emerald-600 dark:text-emerald-400 pointer-events-none"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Embalagem / Unidade</label>
-                            <button type="button" onclick="promptAddNewEmbalagem()" class="text-[10px] font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1 touch-active" title="Adicionar nova forma de embalagem ou unidade">
-                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                                <span>+ Nova</span>
-                            </button>
-                        </div>
-                        <input type="text" id="valInputEmbalagem" list="valEmbalagemDatalist" oninput="this.value = this.value.toUpperCase()" placeholder="CAIXA, 1 PALETE, UNIDADE, KG..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <datalist id="valEmbalagemDatalist">
-                            <!-- Preenchido dinamicamente via JS com unidades SB1 e registros -->
-                        </datalist>
-                    </div>
-                </div>
-
-                <!-- TECLADO CALCULADORA INTELIGENTE DO MODAL DE VALIDADE -->
-                <div id="valCalculatorKeypad" class="hidden bg-slate-900 dark:bg-slate-950 text-white rounded-2xl p-3 shadow-xl space-y-2 border border-slate-800 transition-all duration-300">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                        <span class="text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1">
-                            <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Calculadora Inteligente
-                        </span>
-                        <button type="button" onclick="toggleValidadeCalculator(false)" class="text-slate-400 hover:text-white p-0.5 rounded-lg text-xs" title="Fechar Calculadora">
-                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        <button type="button" onclick="toggleMultiPalletSplit()" id="btnToggleMultiPallet" class="text-xs font-black text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer">
+                            <span id="lblToggleMultiPallet">⚡ Divisão Rápida</span>
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-4 gap-1.5 font-bold text-xs select-none">
-                        <button type="button" onclick="valCalcKeypadPress('(')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-slate-200 p-2 rounded-xl transition-all shadow-sm font-black">(</button>
-                        <button type="button" onclick="valCalcKeypadPress(')')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-slate-200 p-2 rounded-xl transition-all shadow-sm font-black">)</button>
-                        <button type="button" onclick="valCalcKeypadPress('C')" class="bg-rose-900/80 hover:bg-rose-800 text-rose-200 p-2 rounded-xl transition-all shadow-sm font-black">C</button>
-                        <button type="button" onclick="valCalcKeypadPress('BACKSPACE')" class="bg-amber-900/80 hover:bg-amber-800 text-amber-200 p-2 rounded-xl transition-all shadow-sm font-black">⌫</button>
+                    <!-- BARRA DE DIVISÃO RÁPIDA POR CAPACIDADE -->
+                    <div id="multiPalletSplitBox" class="hidden bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-indigo-200 dark:border-slate-600 space-y-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-1">Qtd Total a Fracionar:</label>
+                                <input type="number" id="valAutoSplitTotalQtd" step="any" placeholder="Ex: 3500" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-black text-slate-800 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-500 mb-1">Qtd por Palete (Capacidade):</label>
+                                <input type="number" id="valAutoSplitQtdPerPallet" step="any" placeholder="Ex: 1000" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-black text-indigo-700 dark:text-indigo-300">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400 font-medium">Gera as frações automáticas na lista abaixo</span>
+                            <button type="button" onclick="autoSplitPalletsByCapacity()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black shadow-xs flex items-center gap-1 cursor-pointer">
+                                <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                                <span>Gerar Paletes</span>
+                            </button>
+                        </div>
+                    </div>
 
-                        <button type="button" onclick="valCalcKeypadPress('7')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">7</button>
-                        <button type="button" onclick="valCalcKeypadPress('8')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">8</button>
-                        <button type="button" onclick="valCalcKeypadPress('9')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">9</button>
-                        <button type="button" onclick="valCalcKeypadPress('/')" class="bg-amber-600/90 hover:bg-amber-500 text-white p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">÷</button>
+                    <!-- LISTA DINÂMICA DE PALETES / LINHAS -->
+                    <div id="multiPalletRowsContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        <!-- Linhas de paletes geradas dinamicamente -->
+                    </div>
 
-                        <button type="button" onclick="valCalcKeypadPress('4')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">4</button>
-                        <button type="button" onclick="valCalcKeypadPress('5')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">5</button>
-                        <button type="button" onclick="valCalcKeypadPress('6')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">6</button>
-                        <button type="button" onclick="valCalcKeypadPress('*')" class="bg-amber-600/90 hover:bg-amber-500 text-white p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">×</button>
-
-                        <button type="button" onclick="valCalcKeypadPress('1')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">1</button>
-                        <button type="button" onclick="valCalcKeypadPress('2')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">2</button>
-                        <button type="button" onclick="valCalcKeypadPress('3')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">3</button>
-                        <button type="button" onclick="valCalcKeypadPress('-')" class="bg-amber-600/90 hover:bg-amber-500 text-white p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">−</button>
-
-                        <button type="button" onclick="valCalcKeypadPress('0')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">0</button>
-                        <button type="button" onclick="valCalcKeypadPress('.')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">.</button>
-                        <button type="button" onclick="valCalcKeypadPress('+')" class="bg-amber-600/90 hover:bg-amber-500 text-white p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">+</button>
-                        <button type="button" onclick="valCalcKeypadPress('=')" class="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 rounded-xl transition-all shadow-md font-black text-sm">=</button>
+                    <!-- RODAPÉ DA LISTA DE PALETES -->
+                    <div class="flex items-center justify-between pt-1 border-t border-indigo-100 dark:border-slate-700 text-xs">
+                        <button type="button" onclick="addMultiPalletRow()" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-600 text-indigo-700 dark:text-indigo-300 font-black text-xs rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-700 flex items-center gap-1.5 shadow-xs cursor-pointer">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                            <span>+ Adicionar Linha / Palete</span>
+                        </button>
+                        <div class="text-right">
+                            <span class="text-[10px] text-slate-500 font-bold uppercase">Soma dos Paletes:</span>
+                            <span id="multiPalletTotalSum" class="font-black text-sm text-indigo-700 dark:text-indigo-300 ml-1">0</span>
+                        </div>
                     </div>
                 </div>
 
@@ -774,13 +648,13 @@
                 </div>
 
                 <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 flex-wrap">
-                    <button type="button" onclick="closeNewValidadeModal()" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs">Cancelar</button>
-                    <button type="submit" id="btnSaveValidade" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md">
-                        Salvar Lote
+                    <button type="button" onclick="closeNewValidadeModal()" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer">Cancelar</button>
+                    <button type="submit" id="btnSaveValidade" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md cursor-pointer">
+                        Salvar Lotes / Paletes
                     </button>
-                    <button type="button" onclick="saveAndPrintArgoxLabel()" id="btnSaveAndPrintValidade" class="bg-[#002f6c] hover:bg-[#00204a] text-white px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5" title="Salva o lote e abre a impressão da etiqueta Argox">
+                    <button type="button" onclick="saveAndPrintValidadeA4()" id="btnSaveAndPrintValidade" class="bg-[#002f6c] hover:bg-[#00204a] text-white px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 cursor-pointer" title="Salva os paletes e abre a Ficha de Identificação de Palete A4">
                         <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                        <span>Salvar &amp; Imprimir</span>
+                        <span>Salvar &amp; Imprimir A4</span>
                     </button>
                 </div>
             </form>
@@ -922,15 +796,15 @@
                 </div>
 
                 <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
-                    <button type="button" onclick="openA4PalletPrintModalFromProductLots()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-1.5 touch-active" title="Imprimir Ficha A4 para identificar o Palete / Local">
-                        <i data-lucide="file-text" class="w-4 h-4"></i>
-                        <span>Ficha A4 (Palete)</span>
+                    <button type="button" onclick="openA4PalletPrintModalFromProductLots()" class="bg-[#002f6c] hover:bg-blue-900 text-white px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-1.5 touch-active cursor-pointer" title="Imprimir Ficha A4 para identificar o Palete / Material">
+                        <i data-lucide="printer" class="w-4 h-4"></i>
+                        <span>Imprimir Ficha A4</span>
                     </button>
-                    <button type="button" onclick="openNewValidadeModalForCurrentProduct()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-1.5 touch-active">
+                    <button type="button" onclick="openNewValidadeModalForCurrentProduct()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-1.5 touch-active cursor-pointer">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        <span>+ Novo Lote</span>
+                        <span>+ Novo Lote / Palete</span>
                     </button>
-                    <button type="button" onclick="closeProductLotsModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button type="button" onclick="closeProductLotsModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -953,7 +827,7 @@
                     </div>
                 </div>
                 <div id="plModalFillRemainingBtnContainer" class="hidden">
-                    <button type="button" onclick="fillRemainingBalanceFromModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3.5 py-2 rounded-xl text-xs font-black shadow-sm flex items-center gap-1.5 touch-active">
+                    <button type="button" onclick="fillRemainingBalanceFromModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3.5 py-2 rounded-xl text-xs font-black shadow-sm flex items-center gap-1.5 touch-active cursor-pointer">
                         <i data-lucide="zap" class="w-3.5 h-3.5"></i>
                         <span id="plModalFillRemainingLabel">Preencher Saldo Restante</span>
                     </button>
@@ -966,8 +840,8 @@
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-700 text-[10px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-wider sticky top-0 z-10 border-b border-slate-200 dark:border-slate-600">
                             <th class="px-3 py-2.5">Lote</th>
+                            <th class="px-3 py-2.5">Palete / Embalagem</th>
                             <th class="px-3 py-2.5 text-right">Quantidade</th>
-                            <th class="px-3 py-2.5">Embalagem</th>
                             <th class="px-3 py-2.5 text-center">Fabricação</th>
                             <th class="px-3 py-2.5 text-center">Validade (Mês/Ano)</th>
                             <th class="px-3 py-2.5 text-center">Status</th>
@@ -981,43 +855,139 @@
                 </table>
             </div>
 
-            <!-- RODAPÉ DO MODAL -->
+            <!-- RODAPÉ DO MODAL DE LOTES -->
             <div class="pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 font-bold">
-                <span id="plModalLotsCount">0 lote(s) cadastrado(s)</span>
-                <button type="button" onclick="closeProductLotsModal()" class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl font-bold">Fechar</button>
+                <span id="plModalLotsCount">0 lote/palete(s) cadastrado(s)</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="openA4PalletPrintModalFromProductLots()" class="bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-600 text-indigo-700 dark:text-indigo-300 hover:text-white px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer" title="Imprimir Ficha de Identificação de Palete A4">
+                        <i data-lucide="printer" class="w-4 h-4"></i>
+                        <span>Imprimir Ficha A4</span>
+                    </button>
+                    <button type="button" onclick="closeProductLotsModal()" class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl font-bold cursor-pointer">Fechar</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- ========================================== -->
-    <!-- MODAL IMPRESSÃO FICHA A4 (PALETE / ESTOQUE)-->
+    <!-- MODAL IMPRESSÃO DE FICHA DE PALETE (FOLHA A4) -->
     <!-- ========================================== -->
     <div id="a4PrintModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh]">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh] overflow-y-auto">
             
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
                 <div class="flex items-center space-x-2.5">
-                    <div class="w-9 h-9 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                    <div class="w-9 h-9 rounded-2xl bg-[#002f6c]/10 text-[#002f6c] dark:text-blue-400 flex items-center justify-center">
                         <i data-lucide="file-text" class="w-5 h-5"></i>
                     </div>
                     <div>
                         <h3 class="text-base font-black text-slate-900 dark:text-white">Ficha de Identificação de Palete (Folha A4)</h3>
-                        <p class="text-[10px] font-bold text-slate-400">Escolha quais lotes devem constar na impressão desta folha de palete</p>
+                        <p class="text-[10px] font-bold text-slate-400">Padrão Oficial Amazon Aço com QR Code e Código em Destaque</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeA4PrintModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">
+                <button type="button" onclick="closeA4PrintModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
+            </div>
+
+            <!-- DETALHES DO MATERIAL -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                    <span id="a4ModalCodigoDisplay" class="text-lg font-black font-mono text-[#002f6c] dark:text-blue-400 tracking-wider">39000081</span>
+                    <p id="a4ModalDescricaoDisplay" class="text-xs font-black uppercase text-slate-700 dark:text-slate-200 line-clamp-1">ELETRODO WELD WEST ARCO</p>
+                </div>
+                <div class="text-right">
+                    <span id="a4ModalArmazemDisplay" class="text-xs font-black text-slate-500">ARM: 01</span>
+                    <p id="a4ModalUnidadeDisplay" class="text-xs font-black text-indigo-600 dark:text-indigo-400">UN</p>
+                </div>
+            </div>
+
+            <!-- IDENTIFICAÇÃO DO PALETE / PRATELEIRA NO TOPO DA FOLHA -->
+            <div class="bg-indigo-50/60 dark:bg-slate-900/50 p-3.5 rounded-2xl border border-indigo-100 dark:border-slate-700 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="block text-xs font-black text-slate-800 dark:text-slate-200">Identificação deste Palete / Local:</label>
+                    <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">Destacado no cabeçalho da Folha A4</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input type="text" id="a4PalletHeaderInput" placeholder="Ex: PALETE 01 / 02, PRATELEIRA A-03..." class="w-full bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-600 rounded-xl py-2 px-3 text-xs font-black text-[#002f6c] dark:text-blue-300 uppercase">
+                    <select id="a4QuickPalletFilterSelect" onchange="onA4QuickPalletFilterChange()" class="w-full bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-600 rounded-xl py-2 px-3 text-xs font-bold text-slate-700 dark:text-slate-200">
+                        <option value="ALL">📋 Imprimir Todos os Lotes / Paletes</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- FRACIONAMENTO RÁPIDO DE QUANTIDADE POR LOTE / PALETE -->
+            <div class="bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <label class="block text-[10px] font-black uppercase text-slate-500 tracking-wider">Divisão de Quantidade em Paletes por Lote</label>
+                    <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">Separação por Lote / Capacidade</span>
+                </div>
+
+                <!-- SELETOR DE QUAL LOTE DIVIDIR -->
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Selecione o Lote a Dividir:</label>
+                    <select id="a4SplitLoteSelect" onchange="onA4SplitLoteSelectChange()" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2 text-xs font-black text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <option value="ALL">📦 Fracionar todos os lotes pela capacidade</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Qtd Total do Lote:</label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="a4InputTotalQtd" step="any" oninput="onA4QuantityInputsChange()" placeholder="Ex: 3500" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 text-xs font-black text-[#002f6c] dark:text-blue-300">
+                            <span id="a4UnidadeDisplay1" class="text-xs font-black text-slate-500">UN</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Qtd por Palete/Folha:</label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="a4InputQtdPorPallet" step="any" oninput="onA4QuantityInputsChange()" placeholder="Ex: 1000" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 text-xs font-black text-indigo-700 dark:text-indigo-300">
+                            <span id="a4UnidadeDisplay2" class="text-xs font-black text-slate-500">UN</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RESUMO DO FRACIONAMENTO -->
+                <div id="a4SplitSummaryCard" class="p-2.5 rounded-xl bg-indigo-50/80 dark:bg-slate-800 border border-indigo-200/80 dark:border-slate-700 text-xs flex items-center justify-between text-indigo-950 dark:text-indigo-200">
+                    <span id="a4SplitSummaryText" class="font-black text-[11px] leading-tight">
+                        📦 1 palete único com o total
+                    </span>
+                    <button type="button" onclick="applyA4AutoSplit()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] shadow-xs cursor-pointer">
+                        Aplicar Divisão no Lote
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODO DE IMPRESSÃO DA FOLHA A4 -->
+            <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
+                <label class="block text-[10px] font-black uppercase text-slate-500 tracking-wider">Formato da Folha A4</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <label class="flex items-center space-x-2 p-2.5 rounded-xl border bg-white dark:bg-slate-800 border-indigo-300 dark:border-slate-600 cursor-pointer shadow-xs">
+                        <input type="radio" name="a4PrintLayoutMode" value="CONSOLIDATED" checked class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="block font-black text-slate-900 dark:text-white">📋 Folha Geral / Tabela</span>
+                            <span class="text-[10px] text-slate-400 block leading-tight">1 folha A4 com todos os lotes/paletes</span>
+                        </div>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2.5 rounded-xl border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 cursor-pointer hover:border-indigo-200">
+                        <input type="radio" name="a4PrintLayoutMode" value="INDIVIDUAL" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="block font-black text-slate-900 dark:text-white">📄 1 Folha por Palete</span>
+                            <span class="text-[10px] text-slate-400 block leading-tight">Folhas individuais com quantidade gigante</span>
+                        </div>
+                    </label>
+                </div>
             </div>
 
             <!-- SELETOR DE LOTES DO PALETE -->
             <div class="space-y-2">
                 <div class="flex items-center justify-between">
-                    <label class="text-xs font-black text-slate-800 dark:text-slate-200">Lotes Presentes neste Palete / Local:</label>
+                    <label class="text-xs font-black text-slate-800 dark:text-slate-200">Lotes / Paletes que constarão nesta Folha A4:</label>
                     <div class="space-x-2">
-                        <button type="button" onclick="toggleAllA4LotCheckboxes(true)" class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline">Marcar Todos</button>
+                        <button type="button" onclick="toggleAllA4LotCheckboxes(true)" class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">Marcar Todos</button>
                         <span class="text-slate-300 dark:text-slate-600">|</span>
-                        <button type="button" onclick="toggleAllA4LotCheckboxes(false)" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:underline">Desmarcar Todos</button>
+                        <button type="button" onclick="toggleAllA4LotCheckboxes(false)" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:underline cursor-pointer">Desmarcar Todos</button>
                     </div>
                 </div>
 
@@ -1029,121 +999,28 @@
             <!-- OPÇÕES E QUANTIDADE DE CÓPIAS DA FOLHA A4 -->
             <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-600">
                 <div>
-                    <label class="block text-xs font-black text-slate-800 dark:text-slate-100">Quantidade de Cópias (Folhas A4)</label>
-                    <span class="text-[10px] text-slate-400 font-bold">Número de folhas a imprimir para colar nos paletes</span>
+                    <label class="block text-xs font-black text-slate-800 dark:text-slate-100">Quantidade de Cópias</label>
+                    <span class="text-[10px] text-slate-400 font-bold">Número de impressões da folha</span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <button type="button" onclick="adjustA4Copies(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">-</button>
+                    <button type="button" onclick="adjustA4Copies(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active cursor-pointer">-</button>
                     <input type="number" id="a4LabelCopiesInput" value="1" min="1" max="100" class="w-14 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl py-1 text-sm font-black text-slate-900 dark:text-white">
-                    <button type="button" onclick="adjustA4Copies(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">+</button>
+                    <button type="button" onclick="adjustA4Copies(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active cursor-pointer">+</button>
                 </div>
             </div>
 
             <!-- BOTÕES DE AÇÃO -->
             <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
-                <button type="button" onclick="closeA4PrintModal()" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs">Cancelar</button>
-                <button type="button" onclick="printA4PalletSheet()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 touch-active">
+                <button type="button" onclick="closeA4PrintModal()" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer">Cancelar</button>
+                <button type="button" onclick="printA4PalletSheet()" class="bg-[#002f6c] hover:bg-blue-900 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 touch-active cursor-pointer">
                     <i data-lucide="printer" class="w-4 h-4"></i>
-                    <span>Imprimir Folha A4</span>
+                    <span id="btnA4PrintSheetText">Imprimir Folha(s) A4</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL IMPRESSÃO DE ETIQUETA (PADRÃO ARGOX) -->
-    <!-- ========================================== -->
-    <div id="argoxLabelModal" class="hidden fixed inset-0 z-[160] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 no-print">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col space-y-4 max-h-[90vh] overflow-y-auto">
-            <!-- CABEÇALHO -->
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
-                <div class="flex items-center space-x-2.5">
-                    <div class="w-9 h-9 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                        <i data-lucide="printer" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-black text-slate-900 dark:text-white">Etiqueta Argox Almoxarifado</h3>
-                        <p class="text-[10px] font-bold text-slate-400">Layout padrão A5:F10 em modo retrato</p>
-                    </div>
-                </div>
-                <button type="button" onclick="closeArgoxLabelModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- PREVIEW DA ETIQUETA ARGOX -->
-            <div class="bg-slate-100 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
-                <p class="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-wider">Pré-visualização da Etiqueta (Térmica)</p>
-                
-                <!-- CONTAINER DA ETIQUETA -->
-                <div id="argoxPreviewBox" class="w-full max-w-[340px] bg-white text-black p-4 rounded-xl border-2 border-black shadow-lg flex flex-col justify-between" style="min-height: 240px; font-family: Arial, Helvetica, sans-serif;">
-                    <!-- TOPO: CÓDIGO GIGANTE -->
-                    <div class="text-center border-b-2 border-black pb-2">
-                        <span id="argoxLblCodigo" class="text-4xl sm:text-5xl font-black font-mono tracking-tight block text-black">53000003</span>
-                        <!-- SUB-INFO LOTE (SE APLICÁVEL) -->
-                        <div id="argoxLblLoteSubBadge" class="mt-1 flex items-center justify-center gap-1.5 text-[11px] font-black uppercase bg-slate-100 py-0.5 px-2 rounded border border-slate-300 text-black">
-                            <span id="argoxLblLoteText">LOTE: S/LOTE</span>
-                            <span>•</span>
-                            <span id="argoxLblValText">VAL: 12/2026</span>
-                        </div>
-                    </div>
-
-                    <!-- CORPO: DESCRIÇÃO + QR CODE -->
-                    <div class="grid grid-cols-12 gap-2 pt-2.5 items-center flex-grow">
-                        <div class="col-span-7 flex flex-col justify-center pr-1">
-                            <p id="argoxLblDescricao" class="text-base sm:text-lg font-black uppercase leading-tight text-black break-words">
-                                RODIZIO DUPLO 1POL
-                            </p>
-                            <p id="argoxLblArmazemQtd" class="text-[11px] font-extrabold text-slate-700 mt-1.5">
-                                ARM: <span id="argoxLblArmCode">01</span> | <span id="argoxLblQtd">100 UN</span>
-                            </p>
-                        </div>
-                        <div class="col-span-5 flex items-center justify-center">
-                            <div class="bg-white p-1 border border-black rounded flex items-center justify-center">
-                                <img id="argoxImgQR" src="" alt="QR Code" class="w-24 h-24 max-w-full object-contain" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- OPÇÕES E QUANTIDADE DE CÓPIAS -->
-            <div class="space-y-3 pt-1">
-                <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-600">
-                    <div>
-                        <label class="block text-xs font-black text-slate-800 dark:text-slate-100">Quantidade de Etiquetas</label>
-                        <span class="text-[10px] text-slate-400 font-bold">Número de impressões no rolo</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button type="button" onclick="adjustLabelCopies(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">-</button>
-                        <input type="number" id="argoxLabelCopiesInput" value="1" min="1" max="100" class="w-14 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl py-1 text-sm font-black text-slate-900 dark:text-white">
-                        <button type="button" onclick="adjustLabelCopies(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 font-black text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 flex items-center justify-center touch-active">+</button>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="setLabelCopies(1)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">1 cópia</button>
-                    <button type="button" onclick="setLabelCopies(2)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">2 cópias</button>
-                    <button type="button" onclick="setLabelCopies(5)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">5 cópias</button>
-                    <button type="button" onclick="setLabelCopies(10)" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200">10 cópias</button>
-                </div>
-            </div>
-
-            <!-- BOTÕES DE AÇÃO -->
-            <div class="flex gap-3 pt-2">
-                <button type="button" onclick="closeArgoxLabelModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-2xl transition-colors">
-                    Cancelar
-                </button>
-                <button type="button" onclick="printArgoxLabels()" class="flex-1 bg-[#002f6c] hover:bg-[#00204a] text-white font-black py-3 rounded-2xl shadow-md transition-all flex items-center justify-center space-x-2 touch-active">
-                    <i data-lucide="printer" class="w-4 h-4"></i>
-                    <span>Imprimir na Argox</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ÁREAS DE IMPRESSÃO (TÉRMICA ARGOX E FOLHA A4) -->
-    <div id="argoxPrintContainer" class="hidden"></div>
+    <!-- ÁREA DE IMPRESSÃO DA FOLHA DE IDENTIFICAÇÃO DE PALETE (A4) -->
     <div id="a4PrintContainer" class="hidden"></div>
 
     <!-- MODAL CONFIRMAÇÃO DE LOGOUT -->
@@ -1400,7 +1277,6 @@
 
             populateValidadeFiltersDropdowns();
             populateProductsDatalist();
-            populateEmbalagensDatalist();
             applyValidadeFilters();
             if (currentProductLotsData) {
                 renderProductLotsModal();
@@ -2262,12 +2138,12 @@
             // Renderiza linhas da tabela
             const tbody = document.getElementById('plModalTableBody');
             const elCount = document.getElementById('plModalLotsCount');
-            if (elCount) elCount.innerText = `${matchingLots.length} lote(s) cadastrado(s)`;
+            if (elCount) elCount.innerText = `${matchingLots.length} lote/palete(s) cadastrado(s)`;
 
             if (tbody) {
                 tbody.innerHTML = '';
                 if (matchingLots.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum lote registrado para este material neste armazém.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-xs font-bold text-slate-400">Nenhum lote ou palete registrado para este material neste armazém.</td></tr>`;
                 } else {
                     matchingLots.forEach(lot => {
                         const lotSt = getValidadeStatus(lot.data_validade);
@@ -2275,30 +2151,31 @@
                         if (lotSt === 'VENCIDO') badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">Vencido</span>`;
                         else if (lotSt === 'AVENCER') badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800">A Vencer</span>`;
 
+                        const palletDisplay = lot.embalagem ? lot.embalagem : 'PALETE PADRÃO';
+
                         const tr = document.createElement('tr');
                         tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/60 border-b border-slate-100 dark:border-slate-700";
                         tr.innerHTML = `
                             <td class="px-3 py-2.5 font-black text-slate-900 dark:text-white">
                                 <span class="bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded-lg text-xs font-black">${lot.lote || 'S/ LOTE'}</span>
                             </td>
-                            <td class="px-3 py-2.5 text-right font-black text-[#002f6c] dark:text-blue-400">${Number(lot.quantidade || 0).toLocaleString('pt-BR')}</td>
-                            <td class="px-3 py-2.5 font-bold text-slate-600 dark:text-slate-300">${lot.embalagem || '-'}</td>
-                            <td class="px-3 py-2.5 text-center font-bold text-slate-500">${formatAnoMesDisplay(lot.data_fabricacao)}</td>
-                            <td class="px-3 py-2.5 text-center font-black text-slate-900 dark:text-white">${formatAnoMesDisplay(lot.data_validade)}</td>
+                            <td class="px-3 py-2.5 font-extrabold text-indigo-700 dark:text-indigo-300">
+                                <span class="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 px-2 py-0.5 rounded-lg text-[11px] font-black">📦 ${palletDisplay}</span>
+                            </td>
+                            <td class="px-3 py-2.5 text-right font-black text-[#002f6c] dark:text-blue-400 text-xs">${Number(lot.quantidade || 0).toLocaleString('pt-BR')} <span class="text-[10px] text-slate-400 font-bold">${unidade}</span></td>
+                            <td class="px-3 py-2.5 text-center font-bold text-slate-500 text-xs">${formatAnoMesDisplay(lot.data_fabricacao)}</td>
+                            <td class="px-3 py-2.5 text-center font-black text-slate-900 dark:text-white text-xs">${formatAnoMesDisplay(lot.data_validade)}</td>
                             <td class="px-3 py-2.5 text-center">${badge}</td>
                             <td class="px-3 py-2.5 text-[11px] text-slate-500 dark:text-slate-400 italic">${lot.observacao || '-'}</td>
                             <td class="px-3 py-2.5 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <button type="button" onclick="openArgoxLabelModalFromValidade(${lot.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active" title="Imprimir Etiqueta Argox Individual">
-                                        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button type="button" onclick="openEditValidadeModal(${lot.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active" title="Editar este Lote">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button type="button" onclick="openEditValidadeModal(${lot.id})" class="bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active cursor-pointer" title="Editar este Palete/Lote">
                                         <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                                     </button>
-                                    <button type="button" onclick="openTransferValidadeModal(${lot.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active" title="Mover para Armazém 50 (Vencidos)">
+                                    <button type="button" onclick="openTransferValidadeModal(${lot.id})" class="bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active cursor-pointer" title="Mover para Armazém 50 (Vencidos)">
                                         <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                                     </button>
-                                    <button type="button" onclick="deleteValidadeEntry(${lot.id})" class="bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active" title="Excluir este Lote">
+                                    <button type="button" onclick="deleteValidadeEntry(${lot.id})" class="bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white p-1.5 rounded-xl transition-all shadow-sm touch-active cursor-pointer" title="Excluir este Palete/Lote">
                                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                     </button>
                                 </div>
@@ -2312,6 +2189,10 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
+        function openArgoxLabelsForAllProductPallets() {
+            openA4PalletPrintModalFromProductLots();
+        }
+
         function openNewValidadeModalForCurrentProduct() {
             if (!currentProductLotsData) return;
             openNewValidadeModal(currentProductLotsData.produto, currentProductLotsData.armazem);
@@ -2323,38 +2204,96 @@
             const comp = getBalanceComparison(filial, armazem, produto);
             if (comp.diff < 0) {
                 openNewValidadeModal(produto, armazem);
-                const qtdInput = document.getElementById('valInputQuantidade');
-                if (qtdInput) {
-                    qtdInput.value = String(Math.abs(comp.diff));
-                    updateValidadeQtdPreview();
-                }
+                const missingQtd = Math.abs(comp.diff);
+                addModalPalletRow({
+                    id: 'row_' + Date.now(),
+                    isNew: true,
+                    dbId: null,
+                    nome: `PALETE ${modalPalletRows.length + 1}`,
+                    qtd: missingQtd
+                });
             }
         }
 
-        // --- IMPRESSÃO DE FICHA DE PALETE EM FOLHA A4 COM SELETOR DE LOTES ---
+        // --- IMPRESSÃO DE FICHA DE PALETE EM FOLHA A4 COM SELETOR DE LOTES E FRACIONAMENTO ---
 
         function openA4PalletPrintModalFromProductLots() {
             if (!currentProductLotsData) return;
             openA4PalletPrintModal(currentProductLotsData.filial, currentProductLotsData.armazem, currentProductLotsData.produto);
         }
 
-        function openA4PalletPrintModal(filial, armazem, produto) {
+        function openA4PalletPrintModalWithSingleLot(lotId) {
+            const lot = rawValidadeDataset.find(v => String(v.id) === String(lotId) || Number(v.id) === Number(lotId));
+            if (!lot) return;
+            openA4PalletPrintModal(lot.filial || '01', lot.armazem || '01', lot.produto, lot.quantidade, lot.lote, lot.data_validade, lot.embalagem, lot.id);
+        }
+
+        function openA4PalletPrintModal(filial, armazem, produto, initialTotalQtd, initialLote, initialValidade, initialEmbalagem, targetLotId) {
             const f = String(filial || '01').padStart(2, '0');
             const a = String(armazem || '01').padStart(2, '0');
             const p = String(produto || '').trim().toUpperCase();
 
-            const matchingLots = rawValidadeDataset.filter(v => 
+            let matchingLots = rawValidadeDataset.filter(v => 
                 isFilialMatch(v.filial, f) && 
                 isArmMatch(v.armazem, a) && 
                 String(v.produto).trim().toUpperCase() === p
-            ).sort((lotA, lotB) => (lotA.data_validade || '').localeCompare(lotB.data_validade || ''));
+            ).map(lot => ({ ...lot })).sort((lotA, lotB) => (lotA.data_validade || '').localeCompare(lotB.data_validade || ''));
+
+            const sbMatch = rawSb1Dataset ? rawSb1Dataset.find(item => String(item.Codigo).trim().toUpperCase() === p) : null;
+            const desc = sbMatch ? (sbMatch['Descr.Espec.'] || p) : p;
+            const unidade = sbMatch && sbMatch.Unidade ? String(sbMatch.Unidade).trim().toUpperCase() : 'UN';
+
+            if (matchingLots.length === 0 && initialTotalQtd) {
+                matchingLots = [{
+                    id: 'custom_1',
+                    filial: f,
+                    armazem: a,
+                    produto: p,
+                    lote: initialLote || '',
+                    data_fabricacao: '',
+                    data_validade: initialValidade || '',
+                    quantidade: parseFloat(initialTotalQtd) || 0,
+                    embalagem: initialEmbalagem || 'PALETE 1/1',
+                    observacao: ''
+                }];
+            }
 
             currentA4PalletData = {
                 filial: f,
                 armazem: a,
                 produto: p,
+                descricao: desc,
+                unidade: unidade,
                 lotes: matchingLots
             };
+
+            const codEl = document.getElementById('a4ModalCodigoDisplay');
+            const descEl = document.getElementById('a4ModalDescricaoDisplay');
+            const armEl = document.getElementById('a4ModalArmazemDisplay');
+            const unEl = document.getElementById('a4ModalUnidadeDisplay');
+            const u1 = document.getElementById('a4UnidadeDisplay1');
+            const u2 = document.getElementById('a4UnidadeDisplay2');
+
+            if (codEl) codEl.innerText = p;
+            if (descEl) descEl.innerText = desc;
+            if (armEl) armEl.innerText = `FILIAL: ${f} | ARM: ${a}`;
+            if (unEl) unEl.innerText = unidade;
+            if (u1) u1.innerText = unidade;
+            if (u2) u2.innerText = unidade;
+
+            const inputPerPallet = document.getElementById('a4InputQtdPorPallet');
+            if (inputPerPallet) inputPerPallet.value = '';
+
+            // Popula o seletor de lote a fracionar
+            populateA4SplitLoteSelect(targetLotId);
+
+            // Popula o seletor de paletes para filtro rápido na folha A4
+            refreshA4QuickPalletFilterSelect();
+
+            const headerInput = document.getElementById('a4PalletHeaderInput');
+            if (headerInput) {
+                headerInput.value = matchingLots.length === 1 && matchingLots[0].embalagem ? matchingLots[0].embalagem : 'IDENTIFICAÇÃO DE PALETE / ESTOQUE';
+            }
 
             renderA4LotCheckboxes();
 
@@ -2363,22 +2302,294 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
+        function populateA4SplitLoteSelect(selectedLotId) {
+            const select = document.getElementById('a4SplitLoteSelect');
+            if (!select || !currentA4PalletData) return;
+
+            const lots = currentA4PalletData.lotes || [];
+            const u = currentA4PalletData.unidade || 'UN';
+
+            let optionsHtml = '';
+            if (lots.length > 1) {
+                optionsHtml += `<option value="ALL">📦 Fracionar todos os lotes pela capacidade</option>`;
+            }
+
+            lots.forEach((lot) => {
+                const loteLabel = lot.lote ? `Lote: ${lot.lote}` : 'S/ LOTE';
+                const valLabel = lot.data_validade ? ` • Val: ${lot.data_validade}` : '';
+                const embLabel = lot.embalagem ? ` [${lot.embalagem}]` : '';
+                const qtdLabel = `${Number(lot.quantidade || 0).toLocaleString('pt-BR')} ${u}`;
+                optionsHtml += `<option value="${lot.id}">🏷️ ${loteLabel}${embLabel} (${qtdLabel}${valLabel})</option>`;
+            });
+
+            select.innerHTML = optionsHtml;
+
+            if (selectedLotId && lots.some(l => String(l.id) === String(selectedLotId))) {
+                select.value = String(selectedLotId);
+            } else if (lots.length === 1) {
+                select.value = String(lots[0].id);
+            } else {
+                select.value = 'ALL';
+            }
+
+            onA4SplitLoteSelectChange();
+        }
+
+        function refreshA4QuickPalletFilterSelect() {
+            const palletFilterSelect = document.getElementById('a4QuickPalletFilterSelect');
+            if (!palletFilterSelect || !currentA4PalletData) return;
+
+            const lots = currentA4PalletData.lotes || [];
+            const uniquePallets = [...new Set(lots.map(l => (l.embalagem || 'PALETE').trim()).filter(Boolean))];
+            let opts = `<option value="ALL">📋 Imprimir Todos os Lotes / Paletes (${lots.length})</option>`;
+            uniquePallets.forEach(pal => {
+                opts += `<option value="${pal}">📦 ${pal}</option>`;
+            });
+            palletFilterSelect.innerHTML = opts;
+        }
+
+        function onA4SplitLoteSelectChange() {
+            if (!currentA4PalletData) return;
+            const select = document.getElementById('a4SplitLoteSelect');
+            const totalInput = document.getElementById('a4InputTotalQtd');
+            if (!select || !totalInput) return;
+
+            const val = select.value;
+            const lots = currentA4PalletData.lotes || [];
+
+            if (val === 'ALL') {
+                const totalQtdSum = lots.reduce((acc, l) => acc + (parseFloat(l.quantidade) || 0), 0);
+                totalInput.value = totalQtdSum > 0 ? totalQtdSum : '';
+            } else {
+                const targetLot = lots.find(l => String(l.id) === String(val));
+                if (targetLot) {
+                    totalInput.value = parseFloat(targetLot.quantidade) || '';
+                }
+            }
+
+            onA4QuantityInputsChange();
+        }
+
+        function onA4QuantityInputsChange() {
+            if (!currentA4PalletData) return;
+
+            const select = document.getElementById('a4SplitLoteSelect');
+            const totalInput = document.getElementById('a4InputTotalQtd');
+            const perPalletInput = document.getElementById('a4InputQtdPorPallet');
+            const summaryText = document.getElementById('a4SplitSummaryText');
+
+            const splitMode = select ? select.value : 'ALL';
+            const totalQtd = totalInput ? parseFloat(totalInput.value || 0) : 0;
+            const perPallet = perPalletInput ? parseFloat(perPalletInput.value || 0) : 0;
+            const u = currentA4PalletData.unidade || 'UN';
+
+            if (splitMode === 'ALL') {
+                if (perPallet > 0) {
+                    summaryText.innerHTML = `📦 Cada lote será fracionado em paletes com até <b>${perPallet.toLocaleString('pt-BR')} ${u}</b>`;
+                } else {
+                    summaryText.innerText = `📦 Mantém cada lote em 1 palete com suas quantidades atuais`;
+                }
+            } else {
+                const targetLot = currentA4PalletData.lotes.find(l => String(l.id) === String(splitMode));
+                const loteNome = targetLot && targetLot.lote ? `Lote ${targetLot.lote}` : 'Lote Selecionado';
+
+                if (totalQtd > 0 && perPallet > 0 && perPallet < totalQtd) {
+                    const fullCount = Math.floor(totalQtd / perPallet);
+                    const remainder = Math.round((totalQtd % perPallet) * 1000) / 1000;
+                    const totalSlices = fullCount + (remainder > 0.0001 ? 1 : 0);
+
+                    if (summaryText) {
+                        summaryText.innerHTML = `📦 <b>${loteNome} em ${totalSlices} paletes:</b> ${fullCount}x de <b>${perPallet.toLocaleString('pt-BR')} ${u}</b>${remainder > 0 ? ` + 1x de <b>${remainder.toLocaleString('pt-BR')} ${u}</b>` : ''} (Total: ${totalQtd.toLocaleString('pt-BR')} ${u})`;
+                    }
+                } else {
+                    if (summaryText) {
+                        summaryText.innerHTML = `📦 <b>${loteNome}:</b> 1 palete com o total de ${totalQtd.toLocaleString('pt-BR')} ${u}`;
+                    }
+                }
+            }
+        }
+
+        function applyA4AutoSplit() {
+            if (!currentA4PalletData || !currentA4PalletData.lotes || currentA4PalletData.lotes.length === 0) return;
+
+            const select = document.getElementById('a4SplitLoteSelect');
+            const totalInput = document.getElementById('a4InputTotalQtd');
+            const perPalletInput = document.getElementById('a4InputQtdPorPallet');
+
+            const splitMode = select ? select.value : 'ALL';
+            const totalQtd = totalInput ? parseFloat(totalInput.value || 0) : 0;
+            const perPallet = perPalletInput ? parseFloat(perPalletInput.value || 0) : 0;
+
+            if (perPallet <= 0) {
+                showAlert("Informe a Quantidade por Palete/Folha desejada.", "warning");
+                return;
+            }
+
+            if (splitMode === 'ALL') {
+                // Fraciona cada lote da lista pela capacidade
+                const newLots = [];
+
+                currentA4PalletData.lotes.forEach(lot => {
+                    const lotQtd = parseFloat(lot.quantidade || 0);
+                    if (lotQtd > perPallet) {
+                        const fullCount = Math.floor(lotQtd / perPallet);
+                        const remainder = Math.round((lotQtd % perPallet) * 1000) / 1000;
+                        const totalSlices = fullCount + (remainder > 0.0001 ? 1 : 0);
+
+                        for (let i = 1; i <= fullCount; i++) {
+                            newLots.push({
+                                ...lot,
+                                id: `${lot.id}_split_${i}_${Date.now()}`,
+                                quantidade: perPallet,
+                                embalagem: `PALETE ${i}/${totalSlices}`
+                            });
+                        }
+
+                        if (remainder > 0.0001) {
+                            newLots.push({
+                                ...lot,
+                                id: `${lot.id}_split_${totalSlices}_${Date.now()}`,
+                                quantidade: remainder,
+                                embalagem: `PALETE ${totalSlices}/${totalSlices} (RESTO)`
+                            });
+                        }
+                    } else {
+                        newLots.push(lot);
+                    }
+                });
+
+                currentA4PalletData.lotes = newLots;
+                populateA4SplitLoteSelect('ALL');
+                refreshA4QuickPalletFilterSelect();
+                renderA4LotCheckboxes();
+                showAlert(`Divisão por lote aplicada com sucesso!`, "success");
+
+            } else {
+                // Fraciona especificamente o lote selecionado no dropdown
+                const targetIdx = currentA4PalletData.lotes.findIndex(l => String(l.id) === String(splitMode));
+                if (targetIdx === -1) {
+                    showAlert("Lote selecionado não encontrado.", "error");
+                    return;
+                }
+
+                const targetLot = currentA4PalletData.lotes[targetIdx];
+                const finalTotal = totalQtd > 0 ? totalQtd : (parseFloat(targetLot.quantidade) || 0);
+
+                if (finalTotal <= 0) {
+                    showAlert("Informe uma quantidade total válida para este lote.", "warning");
+                    return;
+                }
+
+                const splitLots = [];
+
+                if (perPallet < finalTotal) {
+                    const fullCount = Math.floor(finalTotal / perPallet);
+                    const remainder = Math.round((finalTotal % perPallet) * 1000) / 1000;
+                    const totalSlices = fullCount + (remainder > 0.0001 ? 1 : 0);
+
+                    for (let i = 1; i <= fullCount; i++) {
+                        splitLots.push({
+                            ...targetLot,
+                            id: `${targetLot.id}_split_${i}_${Date.now()}`,
+                            quantidade: perPallet,
+                            embalagem: `PALETE ${i}/${totalSlices}`
+                        });
+                    }
+
+                    if (remainder > 0.0001) {
+                        splitLots.push({
+                            ...targetLot,
+                            id: `${targetLot.id}_split_${totalSlices}_${Date.now()}`,
+                            quantidade: remainder,
+                            embalagem: `PALETE ${totalSlices}/${totalSlices} (RESTO)`
+                        });
+                    }
+                } else {
+                    splitLots.push({
+                        ...targetLot,
+                        quantidade: finalTotal,
+                        embalagem: targetLot.embalagem || 'PALETE 1/1'
+                    });
+                }
+
+                // Substitui o lote fracionado na lista de lotes mantendo os outros lotes intactos
+                currentA4PalletData.lotes.splice(targetIdx, 1, ...splitLots);
+
+                const newSplitIds = splitLots.map(l => l.id);
+                populateA4SplitLoteSelect(splitLots[0].id);
+                refreshA4QuickPalletFilterSelect();
+                renderA4LotCheckboxes(newSplitIds);
+                showAlert(`Lote ${targetLot.lote || ''} dividido com sucesso em ${splitLots.length} paletes!`, "success");
+            }
+        }
+
+        function onA4QuickPalletFilterChange() {
+            const select = document.getElementById('a4QuickPalletFilterSelect');
+            const headerInput = document.getElementById('a4PalletHeaderInput');
+            if (!select || !currentA4PalletData) return;
+
+            const val = select.value;
+            const chks = document.querySelectorAll('.a4-lot-chk');
+
+            if (val === 'ALL') {
+                chks.forEach(c => c.checked = true);
+                if (headerInput) headerInput.value = 'IDENTIFICAÇÃO DE PALETE / ESTOQUE GERAL';
+            } else {
+                chks.forEach(c => {
+                    const lotId = c.value;
+                    const lot = currentA4PalletData.lotes.find(l => String(l.id) === String(lotId));
+                    c.checked = lot && String(lot.embalagem || 'PALETE').trim() === val;
+                });
+                if (headerInput) headerInput.value = val;
+            }
+
+            onA4LotCheckboxChange();
+        }
+
+        function onA4LotCheckboxChange() {
+            if (!currentA4PalletData) return;
+            const chks = Array.from(document.querySelectorAll('.a4-lot-chk:checked'));
+            const select = document.getElementById('a4SplitLoteSelect');
+            const totalInput = document.getElementById('a4InputTotalQtd');
+            if (!totalInput) return;
+
+            if (chks.length === 1) {
+                const checkedId = chks[0].value;
+                const lot = currentA4PalletData.lotes.find(l => String(l.id) === String(checkedId));
+                if (lot) {
+                    if (select) select.value = String(lot.id);
+                    totalInput.value = parseFloat(lot.quantidade) || '';
+                }
+            } else if (chks.length > 1) {
+                if (select) select.value = 'ALL';
+                const sumQtd = chks.reduce((acc, c) => {
+                    const lot = currentA4PalletData.lotes.find(l => String(l.id) === String(c.value));
+                    return acc + (lot ? (parseFloat(lot.quantidade) || 0) : 0);
+                }, 0);
+                totalInput.value = sumQtd > 0 ? sumQtd : '';
+            } else {
+                totalInput.value = '';
+            }
+
+            onA4QuantityInputsChange();
+        }
+
         function closeA4PrintModal() {
             const modal = document.getElementById('a4PrintModal');
             if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
         }
 
-        function renderA4LotCheckboxes() {
+        function renderA4LotCheckboxes(checkedIds) {
             const container = document.getElementById('a4LotCheckboxesContainer');
             if (!container || !currentA4PalletData) return;
 
             container.innerHTML = '';
             if (currentA4PalletData.lotes.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 font-bold p-2">Nenhum lote cadastrado para este material.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-400 font-bold p-2">Nenhum lote ou palete listado para este material.</p>`;
                 return;
             }
 
-            currentA4PalletData.lotes.forEach((lot, idx) => {
+            currentA4PalletData.lotes.forEach((lot) => {
                 const itemDiv = document.createElement('label');
                 itemDiv.className = "flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors";
                 
@@ -2387,17 +2598,21 @@
                 if (lotSt === 'VENCIDO') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800">Vencido</span>`;
                 else if (lotSt === 'AVENCER') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800">A Vencer</span>`;
 
+                const palletDisplay = lot.embalagem ? lot.embalagem : 'PALETE';
+                const isChecked = checkedIds ? checkedIds.includes(String(lot.id)) : true;
+
                 itemDiv.innerHTML = `
                     <div class="flex items-center space-x-3">
-                        <input type="checkbox" id="a4_lot_chk_${lot.id}" value="${lot.id}" checked class="a4-lot-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <input type="checkbox" id="a4_lot_chk_${lot.id}" value="${lot.id}" ${isChecked ? 'checked' : ''} onchange="onA4LotCheckboxChange()" class="a4-lot-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
                         <div>
                             <span class="font-black text-xs text-slate-900 dark:text-white">Lote: ${lot.lote || 'S/ LOTE'}</span>
-                            <span class="text-[11px] text-slate-500 font-bold ml-2">• Qtd: ${Number(lot.quantidade || 0).toLocaleString('pt-BR')} ${lot.embalagem || 'UN'}</span>
+                            <span class="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 ml-1.5">[${palletDisplay}]</span>
+                            <span class="text-[11px] text-slate-500 font-bold ml-1.5">• Qtd: ${Number(lot.quantidade || 0).toLocaleString('pt-BR')} ${currentA4PalletData.unidade || 'UN'}</span>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <span class="text-xs font-black text-slate-800 dark:text-slate-200 font-mono">Val: ${formatAnoMesDisplay(lot.data_validade)}</span>
-                        ${badge}
+                        <span class="text-xs font-black text-slate-800 dark:text-slate-200 font-mono">${lot.data_validade ? `Val: ${formatAnoMesDisplay(lot.data_validade)}` : ''}</span>
+                        ${lot.data_validade ? badge : ''}
                     </div>
                 `;
                 container.appendChild(itemDiv);
@@ -2407,6 +2622,7 @@
         function toggleAllA4LotCheckboxes(check) {
             const chks = document.querySelectorAll('.a4-lot-chk');
             chks.forEach(c => c.checked = check);
+            onA4LotCheckboxChange();
         }
 
         function adjustA4Copies(delta) {
@@ -2427,7 +2643,7 @@
             const selectedIds = Array.from(chks).map(c => String(c.value));
 
             if (selectedIds.length === 0) {
-                showAlert("Por favor, selecione ao menos um lote para sair na impressão da folha A4.", "warning");
+                showAlert("Por favor, selecione ao menos um lote/palete para sair na impressão da folha A4.", "warning");
                 return;
             }
 
@@ -2435,9 +2651,12 @@
             const copiesInput = document.getElementById('a4LabelCopiesInput');
             const copies = copiesInput ? (parseInt(copiesInput.value, 10) || 1) : 1;
 
+            const headerInput = document.getElementById('a4PalletHeaderInput');
+            const palletHeader = headerInput ? headerInput.value.trim() : 'IDENTIFICAÇÃO DE PALETE';
+
             const sbMatch = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === produto) : null;
             const desc = sbMatch ? (sbMatch['Descr.Espec.'] || produto) : produto;
-            const unidade = sbMatch && sbMatch.Unidade ? String(sbMatch.Unidade).trim().toUpperCase() : 'UN';
+            const unidade = sbMatch && sbMatch.Unidade ? String(sbMatch.Unidade).trim().toUpperCase() : (currentA4PalletData.unidade || 'UN');
 
             let totalSelectedQtd = 0;
             selectedLots.forEach(l => totalSelectedQtd += parseFloat(l.quantidade || 0));
@@ -2447,95 +2666,176 @@
             const printContainer = document.getElementById('a4PrintContainer');
             if (!printContainer) return;
 
+            const layoutModeRadio = document.querySelector('input[name="a4PrintLayoutMode"]:checked');
+            const isIndividualMode = layoutModeRadio && layoutModeRadio.value === 'INDIVIDUAL';
+
             let fullHtml = '';
-            for (let c = 0; c < copies; c++) {
-                let rowsHtml = '';
-                selectedLots.forEach(l => {
-                    const st = getValidadeStatus(l.data_validade);
-                    let stText = 'NO PRAZO';
-                    let stColor = '#059669';
-                    if (st === 'VENCIDO') {
-                        stText = 'VENCIDO';
-                        stColor = '#dc2626';
-                    } else if (st === 'AVENCER') {
-                        stText = 'A VENCER (60d)';
-                        stColor = '#d97706';
-                    }
 
-                    rowsHtml += `
-                        <tr>
-                            <td style="font-family: monospace, Courier, sans-serif; font-size: 13pt; font-weight: 900; word-break: break-word;">${l.lote || 'S/ LOTE'}</td>
-                            <td style="text-align: right; font-size: 13pt; font-weight: 900; white-space: nowrap;">${Number(l.quantidade || 0).toLocaleString('pt-BR')} ${l.embalagem || unidade}</td>
-                            <td style="text-align: center; font-size: 11pt; font-weight: 800; white-space: nowrap;">${formatAnoMesDisplay(l.data_fabricacao)}</td>
-                            <td style="text-align: center; font-size: 13pt; font-weight: 900; white-space: nowrap;">${formatAnoMesDisplay(l.data_validade)}</td>
-                            <td style="text-align: center; font-size: 10pt; font-weight: 900; color: ${stColor};">${stText}</td>
-                            <td style="font-size: 10pt; font-weight: 600; word-break: break-word;">${l.observacao || '-'}</td>
-                        </tr>
-                    `;
-                });
+            if (isIndividualMode) {
+                // 1 FOLHA A4 PARA CADA PALETE / VOLUME SELECIONADO (COM DESTAQUE GIGANTE)
+                for (let c = 0; c < copies; c++) {
+                    selectedLots.forEach((lot) => {
+                        const st = getValidadeStatus(lot.data_validade);
+                        let stText = 'NO PRAZO';
+                        let stColor = '#059669';
+                        if (st === 'VENCIDO') {
+                            stText = 'VENCIDO';
+                            stColor = '#dc2626';
+                        } else if (st === 'AVENCER') {
+                            stText = 'A VENCER (60d)';
+                            stColor = '#d97706';
+                        }
 
-                fullHtml += `
-                    <div class="a4-pallet-page">
-                        <div class="a4-pallet-card">
-                            <!-- CABEÇALHO COM LOGO E CÓDIGO GIGANTE -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000000; padding-bottom: 10px;">
-                                <div>
-                                    <h1 style="margin: 0; font-size: 20pt; font-weight: 900; color: #002f6c; text-transform: uppercase; letter-spacing: 0.5px;">AMAZON AÇO • CONTROLE DE ESTOQUE</h1>
-                                    <p style="margin: 4px 0 0 0; font-size: 13pt; font-weight: 900; color: #1e293b;">FICHA DE IDENTIFICAÇÃO DE PALETE / PRATELEIRA</p>
-                                    <p style="margin: 5px 0 0 0; font-size: 12pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                        fullHtml += `
+                            <div class="a4-pallet-page">
+                                <div class="a4-pallet-card">
+                                    <!-- CABEÇALHO COM LOGO E IDENTIFICAÇÃO DO PALETE -->
+                                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000000; padding-bottom: 10px;">
+                                        <div>
+                                            <h1 style="margin: 0; font-size: 19pt; font-weight: 900; color: #002f6c; text-transform: uppercase; letter-spacing: 0.5px;">AMAZON AÇO • CONTROLE DE ESTOQUE</h1>
+                                            <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                                <span style="font-size: 13pt; font-weight: 900; color: #1e293b;">FICHA DE IDENTIFICAÇÃO DE PALETE</span>
+                                                <span style="font-size: 13pt; font-weight: 900; color: #ffffff; background: #002f6c; padding: 2px 10px; border-radius: 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${lot.embalagem || palletHeader || 'PALETE'}</span>
+                                            </div>
+                                            <p style="margin: 5px 0 0 0; font-size: 11.5pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                                        </div>
+                                        <div style="text-align: right; flex-shrink: 0;">
+                                            <img src="${qrUrl}" alt="QR Code" style="width: 110px; height: 110px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
+                                        </div>
+                                    </div>
+
+                                    <!-- CÓDIGO DO MATERIAL EM DESTAQUE MÁXIMO -->
+                                    <div style="text-align: center; background: #002f6c; color: #ffffff; padding: 14px 8px; margin-top: 14px; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                        <span style="font-family: monospace, Courier, sans-serif; font-size: 44pt; font-weight: 900; letter-spacing: 3px; line-height: 1;">${produto}</span>
+                                    </div>
+
+                                    <!-- DESCRIÇÃO COMPLETA -->
+                                    <div style="margin-top: 14px; border: 2.5px solid #000000; padding: 12px 16px; border-radius: 8px; background: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                        <span style="font-size: 10pt; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Descrição do Material:</span>
+                                        <h2 style="margin: 4px 0 0 0; font-size: 18pt; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1.25;">${desc}</h2>
+                                    </div>
+
+                                    <!-- CARD DE QUANTIDADE GIGANTE DESTE PALETE -->
+                                    <div style="margin-top: 16px; border: 3.5px solid #002f6c; border-radius: 12px; padding: 18px 12px; text-align: center; background: #f0f7ff; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                        <span style="font-size: 13pt; font-weight: 900; color: #002f6c; text-transform: uppercase; letter-spacing: 1px;">QUANTIDADE NESTE PALETE / VOLUME:</span>
+                                        <div style="font-size: 46pt; font-weight: 900; color: #002f6c; line-height: 1.05; margin: 8px 0;">
+                                            ${Number(lot.quantidade || 0).toLocaleString('pt-BR')} <span style="font-size: 26pt;">${unidade}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; font-size: 13pt; font-weight: 900; color: #000000; margin-top: 8px; flex-wrap: wrap;">
+                                            <span>LOTE: <b>${lot.lote || 'S/ LOTE'}</b></span>
+                                            ${lot.data_fabricacao ? `<span>• FAB: <b>${formatAnoMesDisplay(lot.data_fabricacao)}</b></span>` : ''}
+                                            ${lot.data_validade ? `<span>• VAL: <b>${formatAnoMesDisplay(lot.data_validade)}</b></span>` : ''}
+                                            ${lot.data_validade ? `<span style="color: ${stColor};">• ${stText}</span>` : ''}
+                                        </div>
+                                    </div>
+
+                                    <!-- RODAPÉ DA FOLHA -->
+                                    <div style="margin-top: 24px; border-top: 2px dashed #64748b; padding-top: 10px; display: flex; justify-content: space-between; font-size: 9.5pt; font-weight: 700; color: #475569;">
+                                        <span>Emitido por: ${currentUser ? currentUser.nome : 'ALMOXARIFADO'}</span>
+                                        <span>Data/Hora: ${new Date().toLocaleString('pt-BR')}</span>
+                                        <span>Portal de Estoques Amazon Aço</span>
+                                    </div>
                                 </div>
-                                <div style="text-align: right; flex-shrink: 0;">
-                                    <img src="${qrUrl}" alt="QR Code" style="width: 105px; height: 105px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
+                            </div>
+                        `;
+                    });
+                }
+            } else {
+                // FOLHA A4 CONSOLIDADA (TABELA COM TODOS OS PALETES/LOTES)
+                for (let c = 0; c < copies; c++) {
+                    let rowsHtml = '';
+                    selectedLots.forEach(l => {
+                        const st = getValidadeStatus(l.data_validade);
+                        let stText = 'NO PRAZO';
+                        let stColor = '#059669';
+                        if (st === 'VENCIDO') {
+                            stText = 'VENCIDO';
+                            stColor = '#dc2626';
+                        } else if (st === 'AVENCER') {
+                            stText = 'A VENCER (60d)';
+                            stColor = '#d97706';
+                        }
+
+                        rowsHtml += `
+                            <tr>
+                                <td style="font-family: monospace, Courier, sans-serif; font-size: 12pt; font-weight: 900; word-break: break-word;">${l.lote || 'S/ LOTE'}</td>
+                                <td style="font-size: 11pt; font-weight: 900; color: #002f6c; text-transform: uppercase;">${l.embalagem || 'PALETE'}</td>
+                                <td style="text-align: right; font-size: 13pt; font-weight: 900; white-space: nowrap;">${Number(l.quantidade || 0).toLocaleString('pt-BR')} ${unidade}</td>
+                                <td style="text-align: center; font-size: 11pt; font-weight: 800; white-space: nowrap;">${formatAnoMesDisplay(l.data_fabricacao)}</td>
+                                <td style="text-align: center; font-size: 13pt; font-weight: 900; white-space: nowrap;">${formatAnoMesDisplay(l.data_validade)}</td>
+                                <td style="text-align: center; font-size: 10pt; font-weight: 900; color: ${stColor};">${l.data_validade ? stText : '-'}</td>
+                                <td style="font-size: 10pt; font-weight: 600; word-break: break-word;">${l.observacao || '-'}</td>
+                            </tr>
+                        `;
+                    });
+
+                    fullHtml += `
+                        <div class="a4-pallet-page">
+                            <div class="a4-pallet-card">
+                                <!-- CABEÇALHO COM LOGO E IDENTIFICAÇÃO DO PALETE -->
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000000; padding-bottom: 10px;">
+                                    <div>
+                                        <h1 style="margin: 0; font-size: 19pt; font-weight: 900; color: #002f6c; text-transform: uppercase; letter-spacing: 0.5px;">AMAZON AÇO • CONTROLE DE ESTOQUE</h1>
+                                        <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                            <span style="font-size: 13pt; font-weight: 900; color: #1e293b;">FICHA DE PALETE / PRATELEIRA</span>
+                                            ${palletHeader ? `<span style="font-size: 12pt; font-weight: 900; color: #ffffff; background: #002f6c; padding: 2px 8px; border-radius: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${palletHeader}</span>` : ''}
+                                        </div>
+                                        <p style="margin: 5px 0 0 0; font-size: 11.5pt; font-weight: 900; color: #000000;">FILIAL: ${filial} &nbsp;|&nbsp; ARMAZÉM: ${armazem}</p>
+                                    </div>
+                                    <div style="text-align: right; flex-shrink: 0;">
+                                        <img src="${qrUrl}" alt="QR Code" style="width: 105px; height: 105px; border: 2px solid #000000; padding: 2px; background: #ffffff;" />
+                                    </div>
                                 </div>
-                            </div>
 
-                            <!-- CÓDIGO DO MATERIAL EM DESTAQUE MÁXIMO -->
-                            <div style="text-align: center; background: #002f6c; color: #ffffff; padding: 12px 8px; margin-top: 12px; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                                <span style="font-family: monospace, Courier, sans-serif; font-size: 42pt; font-weight: 900; letter-spacing: 3px; line-height: 1;">${produto}</span>
-                            </div>
+                                <!-- CÓDIGO DO MATERIAL EM DESTAQUE MÁXIMO -->
+                                <div style="text-align: center; background: #002f6c; color: #ffffff; padding: 12px 8px; margin-top: 12px; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                    <span style="font-family: monospace, Courier, sans-serif; font-size: 42pt; font-weight: 900; letter-spacing: 3px; line-height: 1;">${produto}</span>
+                                </div>
 
-                            <!-- DESCRIÇÃO COMPLETA -->
-                            <div style="margin-top: 12px; border: 2.5px solid #000000; padding: 10px 14px; border-radius: 8px; background: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                                <span style="font-size: 9.5pt; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Descrição do Material:</span>
-                                <h2 style="margin: 3px 0 0 0; font-size: 17pt; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1.25;">${desc}</h2>
-                            </div>
+                                <!-- DESCRIÇÃO COMPLETA -->
+                                <div style="margin-top: 12px; border: 2.5px solid #000000; padding: 10px 14px; border-radius: 8px; background: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                    <span style="font-size: 9.5pt; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Descrição do Material:</span>
+                                    <h2 style="margin: 3px 0 0 0; font-size: 17pt; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 1.25;">${desc}</h2>
+                                </div>
 
-                            <!-- TABELA DE LOTES PRESENTES NESTE PALETE -->
-                            <div style="margin-top: 14px; width: 100%;">
-                                <h3 style="margin: 0 0 6px 0; font-size: 11.5pt; font-weight: 900; text-transform: uppercase; color: #000000;">Lotes e Validades deste Palete:</h3>
-                                <table class="a4-table" style="width: 100%; table-layout: fixed; border-collapse: collapse; box-sizing: border-box;">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 22%;">Lote</th>
-                                            <th style="width: 18%; text-align: right;">Quantidade</th>
-                                            <th style="width: 15%; text-align: center;">Fabricação</th>
-                                            <th style="width: 17%; text-align: center;">Validade</th>
-                                            <th style="width: 14%; text-align: center;">Status</th>
-                                            <th style="width: 14%;">Obs.</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${rowsHtml}
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td style="text-align: right; font-weight: 900; font-size: 11pt; text-transform: uppercase;">TOTAL:</td>
-                                            <td style="text-align: right; font-weight: 900; font-size: 14pt; color: #002f6c; -webkit-print-color-adjust: exact; print-color-adjust: exact; white-space: nowrap;">${totalSelectedQtd.toLocaleString('pt-BR')} ${unidade}</td>
-                                            <td colspan="4" style="text-align: right; font-size: 11pt; font-weight: 900; color: #334155;">${selectedLots.length} lote(s) selecionado(s)</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
+                                <!-- TABELA DE LOTES E PALETES -->
+                                <div style="margin-top: 14px; width: 100%;">
+                                    <h3 style="margin: 0 0 6px 0; font-size: 11.5pt; font-weight: 900; text-transform: uppercase; color: #000000;">Lotes e Paletes Presentes nesta Folha:</h3>
+                                    <table class="a4-table" style="width: 100%; table-layout: fixed; border-collapse: collapse; box-sizing: border-box;">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 18%;">Lote</th>
+                                                <th style="width: 18%;">Palete/Vol</th>
+                                                <th style="width: 18%; text-align: right;">Quantidade</th>
+                                                <th style="width: 13%; text-align: center;">Fabricação</th>
+                                                <th style="width: 15%; text-align: center;">Validade</th>
+                                                <th style="width: 11%; text-align: center;">Status</th>
+                                                <th style="width: 7%;">Obs.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${rowsHtml}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align: right; font-weight: 900; font-size: 11pt; text-transform: uppercase;">TOTAL:</td>
+                                                <td style="text-align: right; font-weight: 900; font-size: 14pt; color: #002f6c; -webkit-print-color-adjust: exact; print-color-adjust: exact; white-space: nowrap;">${totalSelectedQtd.toLocaleString('pt-BR')} ${unidade}</td>
+                                                <td colspan="4" style="text-align: right; font-size: 11pt; font-weight: 900; color: #334155;">${selectedLots.length} item(ns) selecionado(s)</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
 
-                            <!-- RODAPÉ DA FOLHA -->
-                            <div style="margin-top: 16px; border-top: 2px dashed #64748b; padding-top: 8px; display: flex; justify-content: space-between; font-size: 9pt; font-weight: 700; color: #475569;">
-                                <span>Emitido por: ${currentUser ? currentUser.nome : 'ALMOXARIFADO'}</span>
-                                <span>Data/Hora: ${new Date().toLocaleString('pt-BR')}</span>
-                                <span>Portal de Estoques Amazon Aço</span>
+                                <!-- RODAPÉ DA FOLHA -->
+                                <div style="margin-top: 16px; border-top: 2px dashed #64748b; padding-top: 8px; display: flex; justify-content: space-between; font-size: 9pt; font-weight: 700; color: #475569;">
+                                    <span>Emitido por: ${currentUser ? currentUser.nome : 'ALMOXARIFADO'}</span>
+                                    <span>Data/Hora: ${new Date().toLocaleString('pt-BR')}</span>
+                                    <span>Portal de Estoques Amazon Aço</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
 
             printContainer.innerHTML = fullHtml;
@@ -2568,152 +2868,179 @@
             }, 1000);
         }
 
-        // --- GESTÃO DE LOTES E VALIDADE (MODAL NOVO / EDIÇÃO) ---
+        // --- GESTÃO DE LOTES, PALETES E VALIDADE (MODAL NOVO / EDIÇÃO) ---
 
-        function toggleValidadeCalculator(show = null) {
-            const keypad = document.getElementById('valCalculatorKeypad');
-            const lbl = document.getElementById('lblToggleValCalc');
-            if (!keypad) return;
+        let modalPalletRows = [];
+        let deletedPalletDbIds = [];
 
-            const isHidden = keypad.classList.contains('hidden');
+        function toggleMultiPalletSplit(show = null) {
+            const box = document.getElementById('multiPalletSplitBox');
+            const lbl = document.getElementById('lblToggleMultiPallet');
+            if (!box) return;
+
+            const isHidden = box.classList.contains('hidden');
             const shouldShow = (show !== null) ? show : isHidden;
 
             if (shouldShow) {
-                keypad.classList.remove('hidden');
-                if (lbl) lbl.innerText = 'Ocultar';
+                box.classList.remove('hidden');
+                if (lbl) lbl.innerText = 'Fechar Divisão Rápida';
+                const totalInp = document.getElementById('valAutoSplitTotalQtd');
+                if (totalInp && (!totalInp.value || totalInp.value === '0')) {
+                    let curSum = 0;
+                    modalPalletRows.forEach(r => curSum += (parseFloat(r.qtd) || 0));
+                    totalInp.value = curSum > 0 ? curSum : '';
+                }
             } else {
-                keypad.classList.add('hidden');
-                if (lbl) lbl.innerText = 'Calculadora';
+                box.classList.add('hidden');
+                if (lbl) lbl.innerText = '⚡ Divisão Rápida';
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        function parseSmartMathExpression(exprStr, prevCount = 0) {
-            if (exprStr === null || exprStr === undefined) return null;
-            let s = String(exprStr).trim();
-            if (!s) return null;
-
-            s = s.replace(/,/g, '.');
-
-            if (s.startsWith('+')) {
-                s = `${prevCount}` + s;
-            }
-
-            const openCount = (s.match(/\(/g) || []).length;
-            const closeCount = (s.match(/\)/g) || []).length;
-            if (openCount > closeCount) {
-                s += ')'.repeat(openCount - closeCount);
-            }
-
-            s = s.replace(/(\d+(\.\d+)?)\s*\(/g, '$1*(');
-            s = s.replace(/\)\s*(\d+(\.\d+)?)/g, ')*$1');
-
-            if (!/^[0-9+\-*/.()\s]+$/.test(s)) return null;
-
-            try {
-                const val = Function(`'use strict'; return (${s});`)();
-                if (typeof val === 'number' && !isNaN(val) && isFinite(val)) {
-                    return val;
-                }
-            } catch(e) {
-                return null;
-            }
-            return null;
+        function addModalPalletRow(initialData = null) {
+            const nextNum = modalPalletRows.length + 1;
+            const newRow = initialData ? { ...initialData } : {
+                id: 'row_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
+                isNew: true,
+                dbId: null,
+                nome: `PALETE ${nextNum}`,
+                qtd: ''
+            };
+            modalPalletRows.push(newRow);
+            renderModalPalletRows();
+            return newRow;
         }
 
-        function updateValidadeQtdPreview() {
-            const inp = document.getElementById('valInputQuantidade');
-            const prev = document.getElementById('valQtdCalcPreview');
-            if (!inp || !prev) return;
+        function addMultiPalletRow(initialData = null) {
+            return addModalPalletRow(initialData);
+        }
 
-            const rawVal = inp.value.trim();
-            if (!rawVal) {
-                prev.innerText = '';
+        function removeModalPalletRow(rowId) {
+            const rowIdx = modalPalletRows.findIndex(r => String(r.id) === String(rowId));
+            if (rowIdx === -1) return;
+
+            const row = modalPalletRows[rowIdx];
+            if (row.dbId) {
+                deletedPalletDbIds.push(row.dbId);
+            }
+
+            modalPalletRows.splice(rowIdx, 1);
+
+            if (modalPalletRows.length === 0) {
+                modalPalletRows.push({
+                    id: 'row_' + Date.now(),
+                    isNew: true,
+                    dbId: null,
+                    nome: 'PALETE 1',
+                    qtd: ''
+                });
+            }
+
+            renderModalPalletRows();
+        }
+
+        function onModalPalletRowChange(rowId, field, val) {
+            const row = modalPalletRows.find(r => String(r.id) === String(rowId));
+            if (row) {
+                row[field] = val;
+                updateModalPalletTotalSum();
+                updateModalSaldoComparison();
+            }
+        }
+
+        function renderModalPalletRows() {
+            const container = document.getElementById('multiPalletRowsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (modalPalletRows.length === 0) {
+                modalPalletRows.push({
+                    id: 'row_init',
+                    isNew: true,
+                    dbId: null,
+                    nome: 'PALETE 1',
+                    qtd: ''
+                });
+            }
+
+            modalPalletRows.forEach((row, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs";
+                div.innerHTML = `
+                    <span class="w-6 text-center text-xs font-black text-indigo-600 dark:text-indigo-400">#${idx+1}</span>
+                    <input type="text" value="${row.nome || ''}" oninput="onModalPalletRowChange('${row.id}', 'nome', this.value.toUpperCase())" placeholder="Ex: PALETE ${idx+1}" class="w-2/5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-black text-slate-800 dark:text-white uppercase focus:ring-1 focus:ring-indigo-500">
+                    <input type="number" step="any" value="${row.qtd !== '' && row.qtd !== undefined ? row.qtd : ''}" oninput="onModalPalletRowChange('${row.id}', 'qtd', parseFloat(this.value) || 0)" placeholder="Quantidade (ex: 1000)" class="w-2/5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-black text-indigo-700 dark:text-indigo-300 focus:ring-1 focus:ring-indigo-500">
+                    <button type="button" onclick="removeModalPalletRow('${row.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer ml-auto transition-colors" title="Apagar este palete / volume">
+                        <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+
+            updateModalPalletTotalSum();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function updateModalPalletTotalSum() {
+            let sum = 0;
+            modalPalletRows.forEach(r => sum += (parseFloat(r.qtd) || 0));
+            const elSum = document.getElementById('multiPalletTotalSum');
+            if (elSum) elSum.innerText = sum.toLocaleString('pt-BR');
+        }
+
+        function autoSplitPalletsByCapacity() {
+            const inputTotal = document.getElementById('valAutoSplitTotalQtd');
+            const inputCap = document.getElementById('valAutoSplitQtdPerPallet');
+
+            const totalQtd = inputTotal ? parseFloat(inputTotal.value || 0) : 0;
+            const cap = inputCap ? parseFloat(inputCap.value || 0) : 0;
+
+            if (!totalQtd || totalQtd <= 0) {
+                showAlert("Informe a Quantidade Total a Fracionar.", "warning");
+                return;
+            }
+            if (!cap || cap <= 0) {
+                showAlert("Informe a Quantidade por Palete (Capacidade). Ex: 1000", "warning");
                 return;
             }
 
-            const val = parseSmartMathExpression(rawVal);
-            if (val !== null && !isNaN(val) && val >= 0) {
-                if (/[+\-*/()]/.test(rawVal)) {
-                    prev.innerText = `= ${val.toLocaleString('pt-BR')}`;
-                } else {
-                    prev.innerText = '';
-                }
-            } else {
-                prev.innerText = '...';
+            const fullCount = Math.floor(totalQtd / cap);
+            const remainder = Math.round((totalQtd % cap) * 1000) / 1000;
+            const totalPallets = fullCount + (remainder > 0.0001 ? 1 : 0);
+
+            if (totalPallets <= 0) {
+                showAlert("Valores inválidos para divisão.", "warning");
+                return;
             }
-        }
 
-        function valCalcKeypadPress(char) {
-            const inp = document.getElementById('valInputQuantidade');
-            if (!inp) return;
-
-            if (char === 'C') {
-                inp.value = '';
-                updateValidadeQtdPreview();
-            } else if (char === 'BACKSPACE') {
-                inp.value = inp.value.slice(0, -1);
-                updateValidadeQtdPreview();
-            } else if (char === '=') {
-                const rawVal = inp.value.trim();
-                if (rawVal) {
-                    const val = parseSmartMathExpression(rawVal);
-                    if (val !== null && !isNaN(val) && val >= 0) {
-                        inp.value = String(val);
-                        updateValidadeQtdPreview();
-                        toggleValidadeCalculator(false);
-                    } else {
-                        showAlert("Expressão de cálculo inválida. Corrija o valor.", "warning");
-                    }
-                }
-            } else {
-                inp.value += char;
-                updateValidadeQtdPreview();
-            }
-        }
-
-        let customEmbalagensList = [];
-
-        function populateEmbalagensDatalist() {
-            const datalist = document.getElementById('valEmbalagemDatalist');
-            if (!datalist) return;
-
-            // 1. Formatos operacionais padrão em MAIÚSCULO
-            const standardFormats = ['CAIXA', '1 PALETE', '2 PALETES', '3 PALETES', '4 PALETES', 'PALETE', 'UNIDADE', 'TAMBOR', 'BALDE', 'FRASCO', 'FARDO', 'SACO', 'BOBINA'];
-
-            // 2. Unidades de medida reais do SB1
-            const sb1Units = rawSb1Dataset ? [...new Set(rawSb1Dataset.map(p => String(p.Unidade || '').trim().toUpperCase()).filter(Boolean))] : [];
-
-            // 3. Embalagens já salvas nos registros de validade
-            const savedEmbalagens = rawValidadeDataset ? [...new Set(rawValidadeDataset.map(v => String(v.embalagem || '').trim().toUpperCase()).filter(Boolean))] : [];
-
-            // Consolidação completa e sem duplicidades
-            const allEmbalagens = [...new Set([...standardFormats, ...savedEmbalagens, ...sb1Units, ...customEmbalagensList])]
-                .filter(Boolean)
-                .sort((a,b) => a.localeCompare(b, undefined, { numeric: true }));
-
-            let html = '';
-            allEmbalagens.forEach(emb => {
-                html += `<option value="${emb}"></option>`;
+            // Marca linhas antigas do banco para exclusão se foram substituídas
+            modalPalletRows.forEach(r => {
+                if (r.dbId) deletedPalletDbIds.push(r.dbId);
             });
-            datalist.innerHTML = html;
-        }
 
-        function promptAddNewEmbalagem() {
-            const input = prompt("Digite a nova forma de embalagem ou unidade de medida:\n(Ex: CAIXA, 1 PALETE, FARDO, SACO, TAMBOR, KG, UN, PC)");
-            if (!input) return;
-            const clean = input.trim().toUpperCase();
-            if (!clean) return;
-
-            if (!customEmbalagensList.includes(clean)) {
-                customEmbalagensList.push(clean);
+            modalPalletRows = [];
+            for (let i = 1; i <= fullCount; i++) {
+                modalPalletRows.push({
+                    id: 'split_' + Date.now() + '_' + i,
+                    isNew: true,
+                    dbId: null,
+                    nome: `PALETE ${i}/${totalPallets}`,
+                    qtd: cap
+                });
             }
-            populateEmbalagensDatalist();
 
-            const inp = document.getElementById('valInputEmbalagem');
-            if (inp) {
-                inp.value = clean;
+            if (remainder > 0.0001) {
+                modalPalletRows.push({
+                    id: 'split_' + Date.now() + '_' + totalPallets,
+                    isNew: true,
+                    dbId: null,
+                    nome: `PALETE ${totalPallets}/${totalPallets} (RESTO)`,
+                    qtd: remainder
+                });
             }
+
+            renderModalPalletRows();
+            showAlert(`Divisão calculada com sucesso: ${totalPallets} paletes gerados!`, "success");
         }
 
         function openNewValidadeModal(codigo = '', armazem = '01') {
@@ -2722,25 +3049,22 @@
             const title = document.getElementById('newValidadeModalTitle');
             const banner = document.getElementById('valExistingLotBanner');
 
-            if (title) title.innerText = "Lançamento de Validade & Lote";
+            if (title) title.innerText = "Lançamento de Validade & Paletes";
             if (banner) banner.classList.add('hidden');
 
             document.getElementById('valEditId').value = '';
             if (inpCodigo) inpCodigo.value = codigo || '';
             document.getElementById('valInputArmazem').value = armazem || '01';
             document.getElementById('valInputLote').value = '';
-            document.getElementById('valInputQuantidade').value = '';
-            document.getElementById('valInputEmbalagem').value = '';
             document.getElementById('valInputFabricacao').value = '';
             document.getElementById('valInputValidade').value = '';
             document.getElementById('valInputObservacao').value = '';
 
-            toggleValidadeCalculator(false);
-            updateValidadeQtdPreview();
+            modalPalletRows = [];
+            deletedPalletDbIds = [];
 
             populateProductsDatalist();
-            populateEmbalagensDatalist();
-            onValidadeCodeInput();
+            onValidadeCodeOrLoteChange();
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
         }
 
@@ -2760,79 +3084,114 @@
         function closeNewValidadeModal() {
             const modal = document.getElementById('newValidadeModal');
             if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
-            toggleValidadeCalculator(false);
+            toggleMultiPalletSplit(false);
         }
 
         function onValidadeCodeOrLoteChange() {
-            const loteInp = document.getElementById('valInputLote');
-            if (loteInp && loteInp.value) {
-                loteInp.value = loteInp.value.toUpperCase();
-            }
             const codeInp = document.getElementById('valInputCodigo');
-            if (codeInp && codeInp.value) {
-                codeInp.value = codeInp.value.toUpperCase();
-            }
+            if (codeInp && codeInp.value) codeInp.value = codeInp.value.toUpperCase();
+            const loteInp = document.getElementById('valInputLote');
+            if (loteInp && loteInp.value) loteInp.value = loteInp.value.toUpperCase();
+
             onValidadeCodeInput();
-            const code = document.getElementById('valInputCodigo').value.trim().toUpperCase();
-            const lote = document.getElementById('valInputLote').value.trim().toUpperCase();
+            const code = codeInp ? codeInp.value.trim().toUpperCase() : '';
+            const lote = loteInp ? loteInp.value.trim().toUpperCase() : '';
             const armazem = document.getElementById('valInputArmazem').value.trim().padStart(2, '0');
-            const banner = document.getElementById('valExistingLotBanner');
-            const currentEditId = document.getElementById('valEditId').value;
+            const selFilial = document.getElementById('valFilterFilial');
+            const isGlobal = isGlobalFilial(currentUser);
+            const activeFilial = (isGlobal && selFilial && selFilial.value !== 'ALL' && selFilial.value !== '00') ? selFilial.value : getTargetFilialForSector();
+            const targetFilial = (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') ? String(activeFilial).padStart(2, '0') : '01';
 
             updateModalSaldoComparison();
 
-            if (!code || !lote) {
-                if (banner && !currentEditId) banner.classList.add('hidden');
+            if (!code) {
+                modalPalletRows = [{ id: 'row_init', isNew: true, dbId: null, nome: 'PALETE 1', qtd: '' }];
+                renderModalPalletRows();
                 return;
             }
 
-            // Procura se já existe esse produto com esse lote no mesmo armazém
-            const existing = rawValidadeDataset.find(v => 
-                v.produto.toUpperCase() === code && 
-                String(v.lote || '').trim().toUpperCase() === lote &&
-                v.armazem === armazem
+            // Procura lotes já existentes desse material nesse armazém
+            let existingLots = rawValidadeDataset.filter(v => 
+                isFilialMatch(v.filial, targetFilial) &&
+                isArmMatch(v.armazem, armazem) &&
+                String(v.produto).trim().toUpperCase() === code
             );
 
-            if (existing && String(existing.id) !== String(currentEditId)) {
-                // Redireciona e carrega dados para edição!
-                loadValidadeIntoModal(existing, true);
-            }
-        }
-
-        function loadValidadeIntoModal(item, isRedirected = false) {
-            document.getElementById('valEditId').value = item.id;
-            document.getElementById('valInputCodigo').value = item.produto;
-            document.getElementById('valInputArmazem').value = item.armazem;
-            document.getElementById('valInputLote').value = item.lote || '';
-            document.getElementById('valInputQuantidade').value = item.quantidade || '';
-            document.getElementById('valInputEmbalagem').value = (item.embalagem || '').toUpperCase();
-            document.getElementById('valInputFabricacao').value = item.data_fabricacao || '';
-            document.getElementById('valInputValidade').value = item.data_validade || '';
-            document.getElementById('valInputObservacao').value = item.observacao || '';
-
-            const title = document.getElementById('newValidadeModalTitle');
-            if (title) title.innerText = `Editar Lote: ${item.lote || item.produto}`;
-
-            const banner = document.getElementById('valExistingLotBanner');
-            if (banner) {
-                if (isRedirected) banner.classList.remove('hidden');
-                else banner.classList.add('hidden');
+            if (lote) {
+                const loteMatched = existingLots.filter(v => String(v.lote || '').trim().toUpperCase() === lote);
+                if (loteMatched.length > 0) {
+                    existingLots = loteMatched;
+                }
             }
 
-            toggleValidadeCalculator(false);
-            updateValidadeQtdPreview();
+            if (existingLots.length > 0) {
+                // Preenche dados do lote com o primeiro registro existente
+                const firstLot = existingLots[0];
+                if (!lote && firstLot.lote) {
+                    if (loteInp) loteInp.value = firstLot.lote;
+                }
+                const fabInp = document.getElementById('valInputFabricacao');
+                if (fabInp && !fabInp.value && firstLot.data_fabricacao) {
+                    fabInp.value = firstLot.data_fabricacao;
+                }
+                const valInp = document.getElementById('valInputValidade');
+                if (valInp && !valInp.value && firstLot.data_validade) {
+                    valInp.value = firstLot.data_validade;
+                }
+                const obsInp = document.getElementById('valInputObservacao');
+                if (obsInp && !obsInp.value && firstLot.observacao) {
+                    obsInp.value = firstLot.observacao;
+                }
 
-            populateProductsDatalist();
-            populateEmbalagensDatalist();
-            onValidadeCodeInput();
-            updateModalSaldoComparison();
+                // Carrega todos os paletes existentes desse lote/material na lista
+                modalPalletRows = existingLots.map((l, idx) => ({
+                    id: 'lot_' + l.id,
+                    isNew: false,
+                    dbId: l.id,
+                    nome: l.embalagem || `PALETE ${idx+1}`,
+                    qtd: l.quantidade
+                }));
+            } else {
+                if (modalPalletRows.length === 0 || modalPalletRows.every(r => !r.dbId)) {
+                    if (modalPalletRows.length === 0) {
+                        modalPalletRows = [{ id: 'row_init', isNew: true, dbId: null, nome: 'PALETE 1', qtd: '' }];
+                    }
+                }
+            }
+
+            renderModalPalletRows();
         }
 
         function openEditValidadeModal(id) {
             const item = rawValidadeDataset.find(v => String(v.id) === String(id) || Number(v.id) === Number(id));
             if (!item) return;
-            loadValidadeIntoModal(item, false);
+            
             const modal = document.getElementById('newValidadeModal');
+            const inpCodigo = document.getElementById('valInputCodigo');
+            const title = document.getElementById('newValidadeModalTitle');
+
+            if (title) title.innerText = `Editar Lote: ${item.lote || item.produto}`;
+            document.getElementById('valEditId').value = item.id;
+            if (inpCodigo) inpCodigo.value = item.produto;
+            document.getElementById('valInputArmazem').value = item.armazem;
+            document.getElementById('valInputLote').value = item.lote || '';
+            document.getElementById('valInputFabricacao').value = item.data_fabricacao || '';
+            document.getElementById('valInputValidade').value = item.data_validade || '';
+            document.getElementById('valInputObservacao').value = item.observacao || '';
+
+            deletedPalletDbIds = [];
+            modalPalletRows = [{
+                id: 'lot_' + item.id,
+                isNew: false,
+                dbId: item.id,
+                nome: item.embalagem || 'PALETE 1',
+                qtd: item.quantidade
+            }];
+
+            renderModalPalletRows();
+            populateProductsDatalist();
+            onValidadeCodeInput();
+            updateModalSaldoComparison();
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
         }
 
@@ -2851,10 +3210,6 @@
             const match = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === val) : null;
             if (match) {
                 preview.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 inline"></i> ${match['Descr.Espec.'] || 'Produto Localizado'}</span>`;
-                const embInp = document.getElementById('valInputEmbalagem');
-                if (embInp && !embInp.value) {
-                    embInp.value = match.Unidade ? String(match.Unidade).trim().toUpperCase() : 'UNIDADE';
-                }
             } else {
                 preview.innerHTML = `<span class="text-amber-600 dark:text-amber-400 flex items-center gap-1 font-bold"><i data-lucide="info" class="w-3.5 h-3.5 inline"></i> Código ${val} (Produto Novo / Personalizado)</span>`;
             }
@@ -2890,15 +3245,18 @@
             const comp = getBalanceComparison(targetFilial, armazem, code);
             card.classList.remove('hidden');
 
+            let currentRowsSum = 0;
+            modalPalletRows.forEach(r => currentRowsSum += (parseFloat(r.qtd) || 0));
+
             if (elSaldo) elSaldo.innerText = comp.saldoSistema.toLocaleString('pt-BR');
-            if (elSoma) elSoma.innerText = comp.totalLotes.toLocaleString('pt-BR');
+            if (elSoma) elSoma.innerText = currentRowsSum.toLocaleString('pt-BR');
             
             if (elRest) {
-                const diff = comp.diff;
-                if (comp.status === 'ALINHADO') {
+                const diff = currentRowsSum - comp.saldoSistema;
+                if (Math.abs(diff) < 0.001) {
                     elRest.innerText = "0 (Alinhado)";
                     elRest.className = "font-black text-emerald-600 dark:text-emerald-400 text-xs mt-0.5";
-                } else if (comp.status === 'FALTA_LOTE') {
+                } else if (diff < 0) {
                     elRest.innerText = `Falta ${Math.abs(diff).toLocaleString('pt-BR')}`;
                     elRest.className = "font-black text-amber-600 dark:text-amber-400 text-xs mt-0.5 animate-pulse";
                 } else {
@@ -2908,10 +3266,11 @@
             }
 
             if (elBadge) {
-                if (comp.status === 'ALINHADO') {
+                const diff = currentRowsSum - comp.saldoSistema;
+                if (Math.abs(diff) < 0.001) {
                     elBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800";
                     elBadge.innerText = "🟢 Saldo Alinhado";
-                } else if (comp.status === 'FALTA_LOTE') {
+                } else if (diff < 0) {
                     elBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900";
                     elBadge.innerText = "🟡 Falta Registrar Lote";
                 } else {
@@ -2921,12 +3280,13 @@
             }
 
             if (elExp) {
-                if (comp.status === 'ALINHADO') {
+                const diff = currentRowsSum - comp.saldoSistema;
+                if (Math.abs(diff) < 0.001) {
                     elExp.innerText = "A soma dos lotes cadastrados confere perfeitamente com o saldo atual no sistema.";
-                } else if (comp.status === 'FALTA_LOTE') {
-                    elExp.innerHTML = `O sistema possui <b>${comp.saldoSistema.toLocaleString('pt-BR')}</b> no Armazém ${armazem}, mas apenas <b>${comp.totalLotes.toLocaleString('pt-BR')}</b> estão divididos em lotes. Restam <b>${Math.abs(comp.diff).toLocaleString('pt-BR')}</b> sem lote. <span class="text-amber-700 font-bold underline cursor-pointer hover:text-amber-900" onclick="fillRemainingBalanceToInput()">Clique aqui para preencher</span>.`;
+                } else if (diff < 0) {
+                    elExp.innerHTML = `O sistema possui <b>${comp.saldoSistema.toLocaleString('pt-BR')}</b> no Armazém ${armazem}, mas apenas <b>${currentRowsSum.toLocaleString('pt-BR')}</b> estão divididos em lotes. Restam <b>${Math.abs(diff).toLocaleString('pt-BR')}</b> sem lote. <span class="text-amber-700 font-bold underline cursor-pointer hover:text-amber-900" onclick="fillRemainingBalanceToInput()">Clique aqui para preencher</span>.`;
                 } else {
-                    elExp.innerText = `Atenção: A soma dos lotes (${comp.totalLotes.toLocaleString('pt-BR')}) é maior que o saldo no sistema (${comp.saldoSistema.toLocaleString('pt-BR')}). Verifique se houve transferência sem lista ou se o físico precisa de recontagem.`;
+                    elExp.innerText = `Atenção: A soma dos lotes (${currentRowsSum.toLocaleString('pt-BR')}) é maior que o saldo no sistema (${comp.saldoSistema.toLocaleString('pt-BR')}). Verifique se houve transferência sem lista ou se o físico precisa de recontagem.`;
                 }
             }
 
@@ -2936,45 +3296,53 @@
         function fillRemainingBalanceToInput() {
             const codeInput = document.getElementById('valInputCodigo');
             const armazemInput = document.getElementById('valInputArmazem');
-            const qtdInput = document.getElementById('valInputQuantidade');
-            if (!codeInput || !armazemInput || !qtdInput) return;
+            if (!codeInput || !armazemInput) return;
 
             const code = codeInput.value.trim().toUpperCase();
             const armazem = armazemInput.value.trim().padStart(2, '0');
             const targetFilial = getTargetFilialForSector();
             const comp = getBalanceComparison(targetFilial, armazem, code);
 
-            if (comp.diff < 0) {
-                qtdInput.value = String(Math.abs(comp.diff));
-                updateValidadeQtdPreview();
-                showAlert(`Quantidade preenchida com a diferença de ${Math.abs(comp.diff).toLocaleString('pt-BR')}.`, "info");
+            let currentRowsSum = 0;
+            modalPalletRows.forEach(r => currentRowsSum += (parseFloat(r.qtd) || 0));
+            const diff = currentRowsSum - comp.saldoSistema;
+
+            if (diff < 0) {
+                const missingQtd = Math.abs(diff);
+                addModalPalletRow({
+                    id: 'row_' + Date.now(),
+                    isNew: true,
+                    dbId: null,
+                    nome: `PALETE ${modalPalletRows.length + 1}`,
+                    qtd: missingQtd
+                });
+                showAlert(`Novo palete adicionado com a quantidade restante de ${missingQtd.toLocaleString('pt-BR')}.`, "info");
             }
         }
 
         async function saveValidadeEntry(e) {
             if (e) e.preventDefault();
-            const editId = document.getElementById('valEditId').value;
             const produtoInput = document.getElementById('valInputCodigo');
             const produto = produtoInput ? produtoInput.value.trim().toUpperCase() : '';
             const armazem = document.getElementById('valInputArmazem').value.padStart(2, '0');
             const lote = document.getElementById('valInputLote').value.trim().toUpperCase();
-            
-            const rawQtd = document.getElementById('valInputQuantidade').value.trim();
-            const evaluatedQtd = parseSmartMathExpression(rawQtd);
-            const quantidade = (evaluatedQtd !== null && !isNaN(evaluatedQtd) && evaluatedQtd >= 0) ? evaluatedQtd : parseFloat(rawQtd || 0);
-
-            const embalagem = document.getElementById('valInputEmbalagem').value.trim().toUpperCase();
             const fabricacao = document.getElementById('valInputFabricacao').value;
             const validade = document.getElementById('valInputValidade').value;
             const obs = document.getElementById('valInputObservacao').value.trim();
 
             if (!produto) {
                 showAlert("Por favor, informe o código do produto.", "warning");
-                return;
+                return false;
             }
             if (!validade) {
                 showAlert("Por favor, informe a Data de Validade Final (Mês/Ano).", "warning");
-                return;
+                return false;
+            }
+
+            const validRows = modalPalletRows.filter(r => (parseFloat(r.qtd) || 0) > 0);
+            if (validRows.length === 0) {
+                showAlert("Informe a quantidade para ao menos um palete.", "warning");
+                return false;
             }
 
             const selFilial = document.getElementById('valFilterFilial');
@@ -2983,55 +3351,84 @@
             const targetFilial = (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') ? String(activeFilial).padStart(2, '0') : '01';
             const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
 
-            const payload = {
-                filial: targetFilial,
-                armazem: armazem,
-                produto: produto,
-                lote: lote || null,
-                quantidade: quantidade,
-                embalagem: embalagem || null,
-                data_fabricacao: fabricacao || null,
-                data_validade: validade,
-                quem_registrou: currentUser ? currentUser.nome : 'SISTEMA',
-                observacao: obs || null
-            };
-
             const btn = document.getElementById('btnSaveValidade');
+            const btnPrint = document.getElementById('btnSaveAndPrintValidade');
             if (btn) btn.disabled = true;
+            if (btnPrint) btnPrint.disabled = true;
 
             try {
-                if (editId) {
-                    const { error } = await supabaseClient.from(valTable).update(payload).eq('id', editId);
-                    if (error) throw error;
-                    showAlert("Lote de validade atualizado com sucesso!", "success");
-                } else {
-                    // Verifica novamente se já existe registro com filial + armazem + produto + lote
-                    const { data: existingRows } = await supabaseClient
-                        .from(valTable)
-                        .select('id')
-                        .eq('filial', targetFilial)
-                        .eq('armazem', armazem)
-                        .eq('produto', produto)
-                        .eq('lote', lote || '');
+                // 1. Deleta paletes removidos
+                if (deletedPalletDbIds.length > 0) {
+                    const { error: delErr } = await supabaseClient.from(valTable).delete().in('id', deletedPalletDbIds);
+                    if (delErr) console.error("Erro ao deletar paletes removidos:", delErr);
+                    deletedPalletDbIds = [];
+                }
 
-                    if (existingRows && existingRows.length > 0) {
-                        const { error } = await supabaseClient.from(valTable).update(payload).eq('id', existingRows[0].id);
-                        if (error) throw error;
-                        showAlert("Lote existente atualizado com sucesso!", "success");
+                // 2. Separa em inserts e updates
+                const inserts = [];
+                const updates = [];
+
+                validRows.forEach(r => {
+                    const payload = {
+                        filial: targetFilial,
+                        armazem: armazem,
+                        produto: produto,
+                        lote: lote || null,
+                        quantidade: parseFloat(r.qtd) || 0,
+                        embalagem: (r.nome || 'PALETE').trim().toUpperCase(),
+                        data_fabricacao: fabricacao || null,
+                        data_validade: validade,
+                        quem_registrou: currentUser ? currentUser.nome : 'SISTEMA',
+                        observacao: obs || null
+                    };
+
+                    if (r.dbId) {
+                        updates.push({ id: r.dbId, payload });
                     } else {
-                        const { error } = await supabaseClient.from(valTable).insert([payload]);
+                        inserts.push(payload);
+                    }
+                });
+
+                if (updates.length > 0) {
+                    for (const up of updates) {
+                        const { error } = await supabaseClient.from(valTable).update(up.payload).eq('id', up.id);
                         if (error) throw error;
-                        showAlert("Novo lote de validade cadastrado com sucesso!", "success");
                     }
                 }
+
+                if (inserts.length > 0) {
+                    const { error } = await supabaseClient.from(valTable).insert(inserts);
+                    if (error) throw error;
+                }
+
+                showAlert(`${validRows.length} palete(s) salvos com sucesso!`, "success");
                 closeNewValidadeModal();
                 await loadValidadeData();
+                return true;
             } catch(err) {
                 console.error("Erro ao salvar validade:", err);
                 showAlert(`Erro ao salvar validade: ${err.message}`, "error");
+                return false;
             } finally {
                 if (btn) btn.disabled = false;
+                if (btnPrint) btnPrint.disabled = false;
             }
+        }
+
+        async function saveAndPrintValidadeA4() {
+            const produtoInput = document.getElementById('valInputCodigo');
+            const produto = produtoInput ? produtoInput.value.trim().toUpperCase() : '';
+            const armazem = document.getElementById('valInputArmazem').value.padStart(2, '0');
+            const selFilial = document.getElementById('valFilterFilial');
+            const isGlobal = isGlobalFilial(currentUser);
+            const activeFilial = (isGlobal && selFilial && selFilial.value !== 'ALL' && selFilial.value !== '00') ? selFilial.value : getTargetFilialForSector();
+            const targetFilial = (activeFilial && activeFilial !== 'ALL' && activeFilial !== '00') ? String(activeFilial).padStart(2, '0') : '01';
+
+            const saved = await saveValidadeEntry();
+            if (!saved) return;
+
+            // Abre o modal oficial A4 com todos os lotes salvos
+            openA4PalletPrintModal(targetFilial, armazem, produto);
         }
 
         // --- IMPORTAÇÃO DE PLANILHA EXCEL (.XLSX) ---
@@ -3061,7 +3458,6 @@
         function parseExcelDate(serialOrStr) {
             if (serialOrStr === null || serialOrStr === undefined) return '';
             if (typeof serialOrStr === 'number') {
-                // Excel serial date (dias desde 1899-12-30)
                 const utcDays = Math.floor(serialOrStr - 25569);
                 const date = new Date(utcDays * 86400 * 1000);
                 const y = date.getUTCFullYear();
@@ -3442,177 +3838,8 @@
             showAlert("Planilha de validades exportada com sucesso!", "success");
         }
 
-        // --- IMPRESSÃO DE ETIQUETAS ARGOX ALMOXARIFADO QR (A5:F10) ---
-
-        let currentLabelItemData = null;
-
-        function openArgoxLabelModalFromValidade(id) {
-            const item = rawValidadeDataset.find(v => String(v.id) === String(id) || Number(v.id) === Number(id));
-            if (!item) return;
-
-            const sbMatch = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === String(item.produto).trim().toUpperCase()) : null;
-            const desc = sbMatch ? (sbMatch['Descr.Espec.'] || item.produto) : item.produto;
-
-            openArgoxLabelModal({
-                codigo: String(item.produto).trim().toUpperCase(),
-                descricao: desc,
-                lote: item.lote ? String(item.lote).trim().toUpperCase() : '',
-                validade: item.data_validade ? formatAnoMesDisplay(item.data_validade) : '',
-                armazem: String(item.armazem || '01').padStart(2, '0'),
-                quantidade: item.quantidade ? `${Number(item.quantidade).toLocaleString('pt-BR')} ${item.embalagem || 'UN'}` : ''
-            });
-        }
-
-        function openArgoxLabelModal(data) {
-            currentLabelItemData = data;
-            renderArgoxLabelPreview();
-            const modal = document.getElementById('argoxLabelModal');
-            if (modal) modal.classList.remove('hidden');
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        function renderArgoxLabelPreview() {
-            if (!currentLabelItemData) return;
-            const elCod = document.getElementById('argoxLblCodigo');
-            const elDesc = document.getElementById('argoxLblDescricao');
-            const elLoteBadge = document.getElementById('argoxLblLoteSubBadge');
-            const elLoteText = document.getElementById('argoxLblLoteText');
-            const elValText = document.getElementById('argoxLblValText');
-            const elArm = document.getElementById('argoxLblArmCode');
-            const elQtd = document.getElementById('argoxLblQtd');
-            const imgQR = document.getElementById('argoxImgQR');
-
-            if (elCod) elCod.innerText = currentLabelItemData.codigo;
-            if (elDesc) elDesc.innerText = currentLabelItemData.descricao;
-            if (elArm) elArm.innerText = currentLabelItemData.armazem || '01';
-            if (elQtd) elQtd.innerText = currentLabelItemData.quantidade || 'ESTOQUE';
-
-            if (currentLabelItemData.lote || currentLabelItemData.validade) {
-                if (elLoteBadge) elLoteBadge.classList.remove('hidden');
-                if (elLoteText) elLoteText.innerText = currentLabelItemData.lote ? `LOTE: ${currentLabelItemData.lote}` : 'S/ LOTE';
-                if (elValText) elValText.innerText = currentLabelItemData.validade ? `VAL: ${currentLabelItemData.validade}` : '';
-            } else {
-                if (elLoteBadge) elLoteBadge.classList.add('hidden');
-            }
-
-            if (imgQR && currentLabelItemData.codigo) {
-                imgQR.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentLabelItemData.codigo)}`;
-            }
-        }
-
-        function closeArgoxLabelModal() {
-            const modal = document.getElementById('argoxLabelModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function adjustLabelCopies(delta) {
-            const input = document.getElementById('argoxLabelCopiesInput');
-            if (!input) return;
-            let val = parseInt(input.value, 10) || 1;
-            val += delta;
-            if (val < 1) val = 1;
-            if (val > 100) val = 100;
-            input.value = val;
-        }
-
-        function setLabelCopies(num) {
-            const input = document.getElementById('argoxLabelCopiesInput');
-            if (!input) return;
-            input.value = num;
-        }
-
-        async function printArgoxLabels() {
-            if (!currentLabelItemData) return;
-            const input = document.getElementById('argoxLabelCopiesInput');
-            const copies = input ? (parseInt(input.value, 10) || 1) : 1;
-
-            const printContainer = document.getElementById('argoxPrintContainer');
-            if (!printContainer) return;
-
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentLabelItemData.codigo)}`;
-
-            let labelsHtml = '';
-            for (let i = 0; i < copies; i++) {
-                labelsHtml += `
-                    <div class="argox-label-page">
-                        <div class="argox-label-card">
-                            <div class="argox-label-header">
-                                <span class="argox-label-code">${currentLabelItemData.codigo}</span>
-                                ${currentLabelItemData.lote || currentLabelItemData.validade ? `
-                                    <div class="argox-label-lote-strip">
-                                        <span>${currentLabelItemData.lote ? `LOTE: ${currentLabelItemData.lote}` : ''}</span>
-                                        ${currentLabelItemData.lote && currentLabelItemData.validade ? `<span>•</span>` : ''}
-                                        <span>${currentLabelItemData.validade ? `VAL: ${currentLabelItemData.validade}` : ''}</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            <div class="argox-label-body">
-                                <div class="argox-label-desc-col">
-                                    <p class="argox-label-desc">${currentLabelItemData.descricao}</p>
-                                    <p class="argox-label-meta">ARM: ${currentLabelItemData.armazem} ${currentLabelItemData.quantidade ? `| ${currentLabelItemData.quantidade}` : ''}</p>
-                                </div>
-                                <div class="argox-label-qr-col">
-                                    <img src="${qrUrl}" class="argox-label-qr-img" alt="QR Code">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            printContainer.innerHTML = labelsHtml;
-
-            // Aguarda o download do QR code antes de abrir a impressão
-            const imgs = Array.from(printContainer.querySelectorAll('img'));
-            await Promise.all(imgs.map(img => {
-                if (img.complete) return Promise.resolve();
-                return new Promise(resolve => {
-                    img.onload = resolve;
-                    img.onerror = resolve;
-                    setTimeout(resolve, 1500);
-                });
-            }));
-
-            let pageStyle = document.getElementById('dynamicPrintPageStyle');
-            if (!pageStyle) {
-                pageStyle = document.createElement('style');
-                pageStyle.id = 'dynamicPrintPageStyle';
-                document.head.appendChild(pageStyle);
-            }
-            pageStyle.innerHTML = `@page { size: 100mm 50mm landscape !important; margin: 0 !important; }`;
-
-            document.body.classList.remove('printing-a4');
-            document.body.classList.add('printing-argox');
-
-            window.print();
-
-            setTimeout(() => {
-                document.body.classList.remove('printing-argox');
-            }, 1000);
-        }
-
         async function saveAndPrintArgoxLabel() {
-            const produtoInput = document.getElementById('valInputCodigo');
-            const produto = produtoInput ? produtoInput.value.trim().toUpperCase() : '';
-            const lote = document.getElementById('valInputLote').value.trim().toUpperCase();
-            const armazem = document.getElementById('valInputArmazem').value.padStart(2, '0');
-            const validade = document.getElementById('valInputValidade').value;
-            const rawQtd = document.getElementById('valInputQuantidade').value.trim();
-            const embalagem = document.getElementById('valInputEmbalagem').value.trim().toUpperCase();
-
-            const match = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo).trim().toUpperCase() === produto) : null;
-            const desc = match ? (match['Descr.Espec.'] || produto) : produto;
-
-            await saveValidadeEntry();
-
-            openArgoxLabelModal({
-                codigo: produto,
-                descricao: desc,
-                lote: lote,
-                validade: validade ? formatAnoMesDisplay(validade) : '',
-                armazem: armazem,
-                quantidade: rawQtd ? `${rawQtd} ${embalagem || 'UN'}` : ''
-            });
+            return saveAndPrintValidadeA4();
         }
 
         window.onload = async function() {
