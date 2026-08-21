@@ -1025,11 +1025,11 @@
             const isGlobal = isGlobalFilial(currentUser);
             const userFil = getUserAssignedFilial(currentUser, 'COMERCIO');
             
-            // Define a filial a filtrar: se o usuário tiver filial de comércio definida (ex: 01, 04, 05, 06, 12), filtra estritamente pela sua filial
+            // Define a filial a filtrar: se o usuário tiver filial definida (ex: 01, 04, 05, 06, 12), filtra estritamente por ela
             let filToFilter = userFil;
-            if (targetFilial) {
+            if (targetFilial && targetFilial !== 'Todos') {
                 filToFilter = String(targetFilial).trim().padStart(2, '0');
-            } else if (isGlobal) {
+            } else if (isGlobal && !targetFilial) {
                 filToFilter = 'Todos';
             }
 
@@ -1045,7 +1045,12 @@
                     const cFilAtual = u.filial_atual ? String(u.filial_atual).trim().padStart(2, '0') : null;
                     const cFil = cFilComercio || cFilAtual || '01';
                     
-                    return cFil === filToFilter || cFil === '00';
+                    const targetPad = String(filToFilter).trim().padStart(2, '0');
+                    const targetRaw = targetPad.replace(/^0+/, '') || '0';
+                    const cPad = cFil.padStart(2, '0');
+                    const cRaw = cPad.replace(/^0+/, '') || '0';
+
+                    return cPad === targetPad || cRaw === targetRaw;
                 });
             }
 
@@ -1056,11 +1061,8 @@
                 uniqueNames.forEach(c => {
                     opts += `<option value="${c}">${c}</option>`;
                 });
-            } else if (knownConferentes.length > 0) {
-                const uniqueNames = [...new Set(knownConferentes)].sort();
-                uniqueNames.forEach(c => { opts += `<option value="${c}">${c}</option>`; });
             } else {
-                opts += `<option value="CHRISTIANO">CHRISTIANO</option><option value="ADELSON">ADELSON</option>`;
+                opts += `<option value="" disabled>Nenhum conferente cadastrado nesta filial</option>`;
             }
 
             if (sel) {

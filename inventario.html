@@ -37,6 +37,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- QRCode.js -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- html5-qrcode (Camera Barcode & QR Reader) -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS Client -->
@@ -508,6 +510,10 @@
                             <input type="text" id="invSearch" onkeyup="handleSearchDebounce()" placeholder="Código, descrição ou tag..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002f6c]">
                         </div>
                     </div>
+                    <button type="button" onclick="scanBarcodeForInventario()" class="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-md active:scale-95 h-[38px] touch-active cursor-pointer" title="Bipar Código de Barras ou QR Code com a câmera">
+                        <i data-lucide="scan-barcode" class="w-4 h-4 text-white"></i>
+                        <span>📷 Bipar</span>
+                    </button>
                     <button type="button" id="btnImportSaldo" onclick="openImportSaldoModal()" class="hidden md:flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 h-[38px]" title="Importar arquivo CSV de saldos do ERP">
                         <i data-lucide="file-up" class="w-4 h-4"></i>
                         <span>Importar Saldo</span>
@@ -1847,6 +1853,46 @@
             const checkboxes = document.querySelectorAll('.fornecedor-checkbox');
             checkboxes.forEach(cb => cb.checked = select);
             applyInventoryFilters(true);
+        }
+
+        function scanBarcodeForInventario() {
+            openCameraScanner((decodedText) => {
+                if (!decodedText) return;
+                let scanned = String(decodedText).trim();
+                
+                // Se for QR Code estruturado de Palete (AMAZON_ACO|filial|armazem|produto|lote)
+                if (scanned.startsWith('AMAZON_ACO|')) {
+                    const parts = scanned.split('|');
+                    if (parts.length >= 4) {
+                        scanned = parts[3].trim();
+                    }
+                }
+
+                const cleanCode = scanned.toUpperCase();
+                
+                // 1. Procura no dataset de inventário carregado ou no SB1
+                let match = (typeof filteredInventoryDataset !== 'undefined' && Array.isArray(filteredInventoryDataset)) 
+                    ? filteredInventoryDataset.find(item => String(item.codigo).trim().toUpperCase() === cleanCode) 
+                    : null;
+
+                if (!match && typeof rawSb1Dataset !== 'undefined' && Array.isArray(rawSb1Dataset)) {
+                    match = rawSb1Dataset.find(item => String(item.codigo || item.Codigo).trim().toUpperCase() === cleanCode);
+                }
+                
+                const searchInput = document.getElementById('invSearch');
+                if (searchInput) {
+                    searchInput.value = cleanCode;
+                    applyInventoryFilters(true);
+                }
+
+                if (match) {
+                    const desc = match.descricao || match['Descr.Espec.'] || cleanCode;
+                    showAlert(`Material bipado com sucesso: ${cleanCode} - ${desc}`, "success");
+                    openCountModal(cleanCode, desc);
+                } else {
+                    showAlert(`Nenhum material encontrado com o código "${cleanCode}".`, "warning");
+                }
+            }, { title: "Bipar Material / Inventário" });
         }
 
         function applyInventoryFilters(resetPage = false) {

@@ -637,6 +637,200 @@ async function processOfflineQueue() {
     }
 }
 
+// ==========================================
+// LEITOR DE CÓDIGO DE BARRAS & QR CODE (CÂMERA)
+// ==========================================
+
+let globalHtml5QrCode = null;
+let globalScannerCallback = null;
+let isScannerTorchOn = false;
+
+function playScannerBeep() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+    } catch (e) {}
+}
+
+async function ensureHtml5QrCodeLoaded() {
+    if (typeof Html5Qrcode !== 'undefined') return true;
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => reject(new Error('Falha ao carregar biblioteca de scanner'));
+        document.head.appendChild(script);
+    });
+}
+
+function ensureScannerModalInDOM() {
+    let modal = document.getElementById('globalBarcodeScannerModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'globalBarcodeScannerModal';
+    modal.className = "fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[300] flex items-center justify-center p-3 opacity-0 pointer-events-none transition-opacity duration-300 no-print";
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+            <!-- HEADER -->
+            <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-blue-600/30 text-blue-400 flex items-center justify-center">
+                        <i data-lucide="scan-barcode" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 id="globalScannerModalTitle" class="text-sm font-black tracking-tight">Leitor de Código / QR Code</h3>
+                        <p class="text-[10px] font-bold text-slate-400">Aponte a câmera para a etiqueta ou Ficha A4</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCameraScanner()" class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- VIEWPORT DA CÂMERA -->
+            <div class="relative bg-black flex-1 min-h-[280px] sm:min-h-[340px] flex items-center justify-center overflow-hidden">
+                <div id="globalCameraReader" class="w-full h-full"></div>
+                
+                <!-- GUIA VISUAL DE MIRA (RETÍCULA) -->
+                <div class="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+                    <div class="w-64 h-52 sm:w-72 sm:h-56 border-2 border-emerald-400/80 rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] flex items-center justify-center">
+                        <div class="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_#34d399] animate-pulse"></div>
+                        <div class="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-emerald-400"></div>
+                        <div class="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-emerald-400"></div>
+                        <div class="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-emerald-400"></div>
+                        <div class="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-emerald-400"></div>
+                    </div>
+                </div>
+
+                <!-- MENSAGEM DE STATUS DA CÂMERA -->
+                <div id="globalScannerStatusMessage" class="absolute bottom-3 left-4 right-4 bg-slate-900/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl text-center text-xs font-bold pointer-events-none">
+                    Iniciando câmera...
+                </div>
+            </div>
+
+            <!-- CONTROLES DO SCANNER -->
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-800/90 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
+                <button type="button" id="btnScannerTorch" onclick="toggleScannerTorch()" class="px-3 py-2 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 hover:bg-slate-100 cursor-pointer shadow-xs">
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+                    <span>Lanterna</span>
+                </button>
+                <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400 text-center flex-1 truncate">
+                    Suporta QR Code, EAN-13, Code 128
+                </div>
+                <button type="button" onclick="closeCameraScanner()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white text-xs font-black uppercase hover:bg-slate-300 cursor-pointer">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return modal;
+}
+
+async function openCameraScanner(onSuccessCallback, options = {}) {
+    globalScannerCallback = onSuccessCallback;
+    const modal = ensureScannerModalInDOM();
+    const titleEl = document.getElementById('globalScannerModalTitle');
+    const statusEl = document.getElementById('globalScannerStatusMessage');
+
+    if (titleEl && options.title) titleEl.innerText = options.title;
+    if (statusEl) statusEl.innerText = "Acessando câmera...";
+
+    modal.classList.remove('pointer-events-none', 'opacity-0');
+
+    try {
+        await ensureHtml5QrCodeLoaded();
+    } catch (err) {
+        showAlert("Erro ao carregar módulo do scanner.", "error");
+        closeCameraScanner();
+        return;
+    }
+
+    try {
+        if (globalHtml5QrCode) {
+            try { await globalHtml5QrCode.stop(); } catch (e) {}
+        }
+        
+        globalHtml5QrCode = new Html5Qrcode("globalCameraReader");
+        
+        const config = {
+            fps: 15,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+        };
+
+        await globalHtml5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText, decodedResult) => {
+                onScanSuccess(decodedText, decodedResult);
+            },
+            (errorMessage) => {
+                // scanning frame...
+            }
+        );
+
+        if (statusEl) statusEl.innerText = "Centralize o código na mira";
+    } catch (err) {
+        console.error("Erro ao iniciar câmera:", err);
+        if (statusEl) statusEl.innerText = "Permissão da câmera negada ou não disponível.";
+        showAlert("Não foi possível acessar a câmera. Verifique as permissões do navegador.", "warning");
+    }
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    playScannerBeep();
+    if (navigator.vibrate) {
+        navigator.vibrate(80);
+    }
+    const cb = globalScannerCallback;
+    closeCameraScanner();
+    if (typeof cb === 'function') {
+        cb(decodedText, decodedResult);
+    }
+}
+
+async function closeCameraScanner() {
+    const modal = document.getElementById('globalBarcodeScannerModal');
+    if (modal) {
+        modal.classList.add('pointer-events-none', 'opacity-0');
+    }
+    if (globalHtml5QrCode) {
+        try {
+            await globalHtml5QrCode.stop();
+            await globalHtml5QrCode.clear();
+        } catch (e) {}
+        globalHtml5QrCode = null;
+    }
+    isScannerTorchOn = false;
+}
+
+async function toggleScannerTorch() {
+    if (!globalHtml5QrCode) return;
+    try {
+        isScannerTorchOn = !isScannerTorchOn;
+        await globalHtml5QrCode.applyVideoConstraints({
+            advanced: [{ torch: isScannerTorchOn }]
+        });
+        showAlert(isScannerTorchOn ? "Lanterna ligada" : "Lanterna desligada", "info");
+    } catch (e) {
+        showAlert("Lanterna não suportada neste dispositivo.", "info");
+    }
+}
+
 window.addEventListener('online', () => {
     updateStatusIndicators(true);
     processOfflineQueue();
