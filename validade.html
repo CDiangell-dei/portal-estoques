@@ -3092,12 +3092,6 @@
                 
                 // 1. Verifica se há lotes para este material
                 const matchingLots = (rawValidadeDataset || []).filter(v => String(v.produto).trim().toUpperCase() === cleanCode);
-                
-                const searchInput = document.getElementById('valFilterSearch');
-                if (searchInput) {
-                    searchInput.value = cleanCode;
-                    applyValidadeFilters();
-                }
 
                 if (matchingLots.length > 0) {
                     const first = matchingLots[0];

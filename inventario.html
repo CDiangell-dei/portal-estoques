@@ -1414,6 +1414,7 @@
             localCountsMap = {};
             currentPage = 1;
             loadInventoryData();
+            initInventoryRealtime();
         }
 
         function handleSearchDebounce() {
@@ -1443,10 +1444,10 @@
             return matches[0] || null;
         }
 
-        async function loadInventoryData() {
+        async function loadInventoryData(silent = false) {
             if (!supabaseClient) return;
             const loader = document.getElementById('globalLoader');
-            if (loader) loader.classList.remove('hidden');
+            if (loader && !silent) loader.classList.remove('hidden');
 
             const refreshBtnIcon = document.querySelector('#btnRefreshInventory i');
             if (refreshBtnIcon) refreshBtnIcon.classList.add('animate-spin');
@@ -1656,7 +1657,7 @@
                 console.error("Erro ao carregar inventário:", err);
                 showAlert("Falha ao carregar dados do inventário.", "warning");
             } finally {
-                if (loader) loader.classList.add('hidden');
+                if (loader && !silent) loader.classList.add('hidden');
                 if (refreshBtnIcon) refreshBtnIcon.classList.remove('animate-spin');
             }
         }
@@ -1927,27 +1928,22 @@
 
                 const cleanCode = scanned.toUpperCase();
                 
-                // 1. Procura no dataset de inventário carregado ou no SB1
-                let match = (typeof filteredInventoryDataset !== 'undefined' && Array.isArray(filteredInventoryDataset)) 
-                    ? filteredInventoryDataset.find(item => String(item.codigo).trim().toUpperCase() === cleanCode) 
+                // 1. Procura no catálogo SB1 ou no inventário carregado
+                let match = (typeof rawSb1Dataset !== 'undefined' && Array.isArray(rawSb1Dataset))
+                    ? rawSb1Dataset.find(item => String(item.codigo || item.Codigo).trim().toUpperCase() === cleanCode)
                     : null;
 
-                if (!match && typeof rawSb1Dataset !== 'undefined' && Array.isArray(rawSb1Dataset)) {
-                    match = rawSb1Dataset.find(item => String(item.codigo || item.Codigo).trim().toUpperCase() === cleanCode);
-                }
-                
-                const searchInput = document.getElementById('invSearch');
-                if (searchInput) {
-                    searchInput.value = cleanCode;
-                    applyInventoryFilters(true);
+                if (!match && typeof filteredInventoryDataset !== 'undefined' && Array.isArray(filteredInventoryDataset)) {
+                    match = filteredInventoryDataset.find(item => String(item.codigo).trim().toUpperCase() === cleanCode);
                 }
 
                 if (match) {
                     const desc = match.descricao || match['Descr.Espec.'] || cleanCode;
-                    showAlert(`Material bipado com sucesso: ${cleanCode} - ${desc}`, "success");
+                    showAlert(`Material identificado: ${cleanCode} - ${desc}`, "success");
                     openCountModal(cleanCode, desc);
                 } else {
-                    showAlert(`Nenhum material encontrado com o código "${cleanCode}".`, "warning");
+                    showAlert(`Material bipado: ${cleanCode}. Abrindo contagem...`, "info");
+                    openCountModal(cleanCode, cleanCode);
                 }
             }, { title: "Bipar Material / Inventário" });
         }
@@ -2204,6 +2200,7 @@
                 const lastDate = productLastDateMap[cod] || null;
                 let daysSinceCount = null;
                 let isOutdated = false;
+                let isCountedToday = false;
 
                 if (lastDate) {
                     const now = new Date();
@@ -2212,9 +2209,17 @@
                     if (daysSinceCount >= 14) {
                         isOutdated = true;
                     }
+                    const todayStr = now.toISOString().slice(0, 10);
+                    const lastDateStr = new Date(lastDate).toISOString().slice(0, 10);
+                    if (todayStr === lastDateStr || daysSinceCount === 0) {
+                        isCountedToday = true;
+                    }
                 }
 
-                const isDailyGoalItem = (sysQty > 0 && !hasCount) || isOutdated || (status === 'GANHO' || status === 'PERDA');
+                if (localCountsMap) {
+                    const hasLocalCount = Object.keys(localCountsMap).some(k => k.endsWith(`_${cod}`));
+                    if (hasLocalCount) isCountedToday = true;
+                }
 
                 return {
                     codigo: cod,
@@ -2233,29 +2238,13 @@
                     lastCountDate: lastDate,
                     daysSinceCount: daysSinceCount,
                     isOutdated: isOutdated,
-                    isDailyGoalItem: isDailyGoalItem
+                    isCountedToday: isCountedToday,
+                    isDailyGoalItem: false
                 };
             });
 
-            // Atualiza Card de Meta do Dia
-            const pendingGoalItems = allMapped.filter(i => i.isDailyGoalItem && (!i.hasCount || i.isOutdated));
-            const goalDoneCount = allMapped.filter(i => i.hasCount && (i.daysSinceCount === 0 || i.daysSinceCount === null)).length;
-            const totalGoalPool = pendingGoalItems.length + goalDoneCount;
-            const goalPct = totalGoalPool > 0 ? Math.min(100, Math.round((goalDoneCount / totalGoalPool) * 100)) : 100;
-
-            const goalCountEl = document.getElementById('dailyGoalCountLabel');
-            const goalDateEl = document.getElementById('dailyGoalDateLabel');
-            const goalProgressEl = document.getElementById('dailyGoalProgressBar');
-            const goalTextEl = document.getElementById('dailyGoalProgressText');
-
-            if (goalCountEl) goalCountEl.innerText = `${pendingGoalItems.length} itens prioritários pendentes`;
-            if (goalDateEl) goalDateEl.innerText = `Hoje, ${new Date().toLocaleDateString('pt-BR')}`;
-            if (goalProgressEl) goalProgressEl.style.width = `${goalPct}%`;
-            if (goalTextEl) goalTextEl.innerText = `${goalPct}% concluído (${goalDoneCount} contados hoje)`;
-
-            filteredInventoryDataset = allMapped.filter(item => {
-                if (isDailyGoalFilterActive && !item.isDailyGoalItem) return false;
-                if (!selectedStatuses.includes(item.status)) return false;
+            // 1. Aplica primeiro os filtros de escopo do usuário (Tags, Fornecedores, Saldo Zero)
+            const userScopedItems = allMapped.filter(item => {
                 if (!showZeroSaldo) {
                     if (Math.abs(item.quantidade) < 0.0001 && item.status !== 'GANHO' && item.status !== 'PERDA') {
                         return false;
@@ -2291,6 +2280,71 @@
                         if (!matchNoForn && !matchSpecificForn) return false;
                     }
                 }
+
+                return true;
+            });
+
+            // 2. META FIXA DE 15 ITENS DO DIA DENTRO DO ESCOPO FILTRADO DO USUÁRIO
+            const DAILY_GOAL_TARGET = 15;
+
+            // Priorização dos 15 itens da meta:
+            // Prioridade 5: Divergências ativas (Ganho ou Perda)
+            // Prioridade 4: Desatualizados (>= 14 dias sem contagem)
+            // Prioridade 3: Com saldo no sistema e sem contagem
+            // Prioridade 2: Itens contados hoje (para manter o lote da meta estável)
+            // Prioridade 1: Sem contagem
+            // Prioridade 0: Demais itens
+            const priorityGoalItems = [...userScopedItems].sort((a, b) => {
+                const getScore = (item) => {
+                    if (item.status === 'GANHO' || item.status === 'PERDA') return 5;
+                    if (item.isOutdated) return 4;
+                    if (item.quantidade > 0 && !item.hasCount) return 3;
+                    if (item.isCountedToday) return 2;
+                    if (!item.hasCount) return 1;
+                    return 0;
+                };
+                const scoreDiff = getScore(b) - getScore(a);
+                if (scoreDiff !== 0) return scoreDiff;
+                return String(a.codigo).localeCompare(String(b.codigo));
+            });
+
+            const targetGoalCount = Math.min(DAILY_GOAL_TARGET, userScopedItems.length);
+            const dailyGoalItems = priorityGoalItems.slice(0, targetGoalCount > 0 ? targetGoalCount : DAILY_GOAL_TARGET);
+            const dailyGoalCodesSet = new Set(dailyGoalItems.map(i => i.codigo));
+
+            userScopedItems.forEach(i => {
+                i.isDailyGoalItem = dailyGoalCodesSet.has(i.codigo);
+            });
+            allMapped.forEach(i => {
+                i.isDailyGoalItem = dailyGoalCodesSet.has(i.codigo);
+            });
+
+            const goalDoneCount = dailyGoalItems.filter(i => i.isCountedToday || (i.hasCount && (i.daysSinceCount === 0 || i.daysSinceCount === null))).length;
+            const goalPct = targetGoalCount > 0 ? Math.min(100, Math.round((goalDoneCount / targetGoalCount) * 100)) : 100;
+
+            const goalCountEl = document.getElementById('dailyGoalCountLabel');
+            const goalDateEl = document.getElementById('dailyGoalDateLabel');
+            const goalProgressEl = document.getElementById('dailyGoalProgressBar');
+            const goalTextEl = document.getElementById('dailyGoalProgressText');
+
+            if (goalCountEl) {
+                const pendentesCount = Math.max(0, targetGoalCount - goalDoneCount);
+                goalCountEl.innerText = `${targetGoalCount} itens prioritários (${pendentesCount > 0 ? pendentesCount + ' pendente(s)' : 'tudo contado!'})`;
+            }
+            if (goalDateEl) goalDateEl.innerText = `Hoje, ${new Date().toLocaleDateString('pt-BR')}`;
+            if (goalProgressEl) goalProgressEl.style.width = `${goalPct}%`;
+            if (goalTextEl) {
+                if (goalDoneCount >= targetGoalCount && targetGoalCount > 0) {
+                    goalTextEl.innerText = `🎉 Meta de ${targetGoalCount} itens Concluída! (100%)`;
+                } else {
+                    goalTextEl.innerText = `${goalDoneCount} de ${targetGoalCount} contados hoje (${goalPct}%)`;
+                }
+            }
+
+            // 3. Filtra a listagem final para a tabela / cards
+            filteredInventoryDataset = userScopedItems.filter(item => {
+                if (isDailyGoalFilterActive && !item.isDailyGoalItem) return false;
+                if (!selectedStatuses.includes(item.status)) return false;
 
                 if (term) {
                     const inCode = item.codigo.toLowerCase().includes(term);
@@ -4768,12 +4822,50 @@
             }, 1000);
         }
 
+        let inventoryRealtimeChannel = null;
+        function initInventoryRealtime() {
+            if (!supabaseClient) return;
+            if (inventoryRealtimeChannel) {
+                try { supabaseClient.removeChannel(inventoryRealtimeChannel); } catch(e) {}
+            }
+            
+            const countTable = currentSector === 'INDUSTRIA' ? 'contagem_industria' : 'contagem_comercio';
+            
+            inventoryRealtimeChannel = supabaseClient
+                .channel(`inventory_realtime_${currentSector}_${Date.now()}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: countTable }, (payload) => {
+                    console.log("[Realtime] Nova contagem sincronizada:", payload);
+                    loadInventoryData(true);
+                })
+                .subscribe();
+        }
+
         window.onload = async function() {
             const user = await checkAuth('inventario');
             if (!user) return;
 
             initFilialFilterUI();
             await loadInventoryData();
+            initInventoryRealtime();
+
+            // Auto-atualização ao reativar aba/janela no PC
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && navigator.onLine) {
+                    loadInventoryData(true);
+                }
+            });
+            window.addEventListener('focus', () => {
+                if (navigator.onLine) {
+                    loadInventoryData(true);
+                }
+            });
+
+            // Polling de sincronização em segundo plano a cada 20 segundos
+            setInterval(() => {
+                if (!document.hidden && navigator.onLine) {
+                    loadInventoryData(true);
+                }
+            }, 20000);
         };
     </script>
 </body>
