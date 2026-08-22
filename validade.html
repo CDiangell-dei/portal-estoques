@@ -1264,7 +1264,7 @@
                 let sb1Data = [];
                 let fromSb1 = 0, stepSb1 = 1000, fetchMoreSb1 = true;
                 while (fetchMoreSb1) {
-                    const { data, error } = await supabaseClient.from(sb1Table).select('codigo, descricao, unidade').range(fromSb1, fromSb1 + stepSb1 - 1);
+                    const { data, error } = await supabaseClient.from(sb1Table).select('codigo, descricao, unidade, endereco').range(fromSb1, fromSb1 + stepSb1 - 1);
                     if (error || !data || data.length === 0) fetchMoreSb1 = false;
                     else {
                         sb1Data = sb1Data.concat(data);
@@ -1273,8 +1273,13 @@
                 }
                 rawSb1Dataset = sb1Data.map(p => ({
                     Codigo: String(p.codigo || '').trim(),
+                    codigo: String(p.codigo || '').trim(),
                     'Descr.Espec.': p.descricao || '-',
-                    Unidade: p.unidade || 'UN'
+                    descricao: p.descricao || '-',
+                    Unidade: p.unidade || 'UN',
+                    unidade: p.unidade || 'UN',
+                    endereco: p.endereco || '',
+                    Endereco: p.endereco || ''
                 }));
 
                 const targetFilial = getTargetFilialForSector();

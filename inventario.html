@@ -703,10 +703,11 @@
                     <div class="flex items-center justify-between">
                         <p class="text-[10px] font-bold text-slate-400 uppercase">Produto</p>
                         <div class="flex items-center gap-1.5">
-                            <span id="countProductAddressBadge" class="text-[10px] font-black px-2 py-0.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1">
+                            <button type="button" onclick="openEditAddressModal(document.getElementById('countProductCode').value, document.getElementById('countProductName').innerText)" id="countProductAddressBadge" class="text-[10px] font-black px-2 py-0.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 flex items-center gap-1 transition-all cursor-pointer shadow-2xs" title="Clique para cadastrar ou alterar o endereço físico no galpão">
                                 <i data-lucide="map-pin" class="w-3 h-3 text-amber-700"></i>
                                 <span id="countProductAddressText">Sem endereço</span>
-                            </span>
+                                <i data-lucide="edit-2" class="w-2.5 h-2.5 text-amber-700 ml-0.5"></i>
+                            </button>
                             <button type="button" onclick="openItemAuditHistoryModal(document.getElementById('countProductCode').value, document.getElementById('countProductName').innerText)" class="text-[10px] font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-lg border border-indigo-200 flex items-center gap-1 transition-all cursor-pointer shadow-2xs" title="Ver trilha de auditoria e histórico de alterações">
                                 <i data-lucide="history" class="w-3 h-3 text-indigo-600"></i>
                                 <span>Histórico</span>
@@ -981,6 +982,63 @@
                 <button type="button" onclick="closeTagsModal()" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs">Cancelar</button>
                 <button type="button" onclick="saveTagsModalChanges()" id="btnSaveTags" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md">Salvar Tags</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL GERENCIAR ENDEREÇO FÍSICO DO MATERIAL -->
+    <div id="editAddressModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[170] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white">Endereçamento no Galpão</h3>
+                        <p class="text-[10px] text-slate-400 font-semibold">Localização física do material no estoque</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeEditAddressModal()" class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="handleSaveAddress(event)" class="space-y-3.5">
+                <input type="hidden" id="editAddressProductCode" value="">
+                
+                <div>
+                    <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Material Selecionado</span>
+                    <p id="editAddressProductTitle" class="text-xs font-black text-[#002f6c] dark:text-blue-400 bg-blue-50 dark:bg-slate-900 p-2.5 rounded-xl border border-blue-100 dark:border-slate-700 leading-tight">---</p>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Endereço / Local Físico <span class="text-amber-600 font-normal">(Rua, Prateleira, Nível, Box)</span></label>
+                    <div class="relative">
+                        <i data-lucide="map-pin" class="w-4 h-4 absolute left-3 top-3 text-amber-600"></i>
+                        <input type="text" id="editAddressInput" placeholder="Ex: RUA 02 - PRAT 04 - NIVEL 01" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase">
+                    </div>
+                </div>
+
+                <div>
+                    <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Atalhos Rápidos de Formatação</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="appendAddressToken('RUA ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ RUA</button>
+                        <button type="button" onclick="appendAddressToken('PRAT ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ PRAT</button>
+                        <button type="button" onclick="appendAddressToken('NIVEL ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ NÍVEL</button>
+                        <button type="button" onclick="appendAddressToken('BOX ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ BOX</button>
+                        <button type="button" onclick="appendAddressToken('CORREDOR ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ CORREDOR</button>
+                        <button type="button" onclick="appendAddressToken('PALETE ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ PALETE</button>
+                        <button type="button" onclick="document.getElementById('editAddressInput').value = ''; document.getElementById('editAddressInput').focus();" class="px-2 py-1 rounded-lg text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer ml-auto">Limpar</button>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeEditAddressModal()" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer">Cancelar</button>
+                    <button type="submit" id="btnSaveAddress" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md cursor-pointer flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>Salvar Endereço</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1563,7 +1621,7 @@
                         for (let i = 0; i < activeCodes.length; i += chunkSize) {
                             const chunk = activeCodes.slice(i, i + chunkSize);
                             const { data, error } = await supabaseClient.from('sb1_industria')
-                                .select('codigo, descricao, unidade, fator_conv, tags, fornecedores')
+                                .select('codigo, descricao, unidade, fator_conv, tags, fornecedores, endereco')
                                 .in('codigo', chunk);
                             if (data) sb1All = sb1All.concat(data);
                         }
@@ -1572,7 +1630,7 @@
                     let from1 = 0, step1 = 1000, fetchMore1 = true;
                     while (fetchMore1) {
                         const { data, error } = await supabaseClient.from('sb1_comercio')
-                            .select('codigo, descricao, unidade, fator_conv, tags, fornecedores')
+                            .select('codigo, descricao, unidade, fator_conv, tags, fornecedores, endereco')
                             .range(from1, from1 + step1 - 1);
                         if (error || !data || data.length === 0) { fetchMore1 = false; } 
                         else {
@@ -1601,6 +1659,7 @@
                     const fc = p.fator_conv !== undefined ? Number(p.fator_conv) : (p['Fator Conv.'] !== undefined ? Number(p['Fator Conv.']) : 1);
                     const tg = p.tags || '';
                     const forn = p.fornecedores || '';
+                    const endr = p.endereco || p.Endereco || '';
 
                     if (!uniqueSb1Map[cod]) {
                         uniqueSb1Map[cod] = {
@@ -1614,7 +1673,9 @@
                             'Fator Conv.': fc,
                             fatorConv: fc,
                             tags: tg,
-                            fornecedores: forn
+                            fornecedores: forn,
+                            endereco: endr,
+                            Endereco: endr
                         };
                     }
                 });
@@ -2676,6 +2737,8 @@
                 }
 
                 const contadaDisplay = item.hasCount ? item.qtd_contada.toLocaleString('pt-BR') : '-';
+                const escapedDesc = (item.descricao || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const escapedTags = (item.tags || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
                 let factorBadge = '';
                 if (item.fatorConv && Number(item.fatorConv) > 0) {
@@ -2684,7 +2747,9 @@
 
                 let enderecoBadge = '';
                 if (item.endereco) {
-                    enderecoBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-900 border border-amber-200/80 flex items-center gap-0.5" title="Endereço no Galpão: ${item.endereco}"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-amber-700"></i> ${item.endereco}</span>`;
+                    enderecoBadge = `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}')" class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-900 border border-amber-200/80 flex items-center gap-0.5 hover:bg-amber-100 transition-colors cursor-pointer" title="Clique para alterar endereço no Galpão: ${item.endereco}"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-amber-700"></i> ${item.endereco}</button>`;
+                } else {
+                    enderecoBadge = `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}')" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-0.5 hover:bg-amber-50 hover:text-amber-800 transition-colors cursor-pointer" title="Clique para cadastrar localização física (Rua/Prateleira)"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-slate-400"></i> + Endereço</button>`;
                 }
 
                 let tagsBadges = '';
@@ -2700,9 +2765,6 @@
                         tList.map(t => `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-100">${t}</span>`).join('') +
                         `</div>`;
                 }
-
-                const escapedDesc = item.descricao.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                const escapedTags = (item.tags || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
                 if (tbody) {
                     const tr = document.createElement('tr');
@@ -3767,6 +3829,121 @@
                 showAlert(`Falha: ${err.message || err}`, "error");
             } finally {
                 if (btn) { btn.innerText = origText; btn.disabled = false; }
+            }
+        }
+
+        // --- GESTÃO DE ENDEREÇAMENTO NO GALPÃO ---
+        function openEditAddressModal(code, desc) {
+            const cleanCode = String(code).trim().toUpperCase();
+            const product = filteredInventoryDataset.find(p => String(p.codigo).trim().toUpperCase() === cleanCode) 
+                         || (rawSb1Dataset && rawSb1Dataset.find(p => String(p.codigo || p.Codigo).trim().toUpperCase() === cleanCode));
+            
+            const currentAddr = product ? (product.endereco || product.Endereco || '') : '';
+            const productDesc = desc || (product ? (product.descricao || product['Descr.Espec.'] || '') : '');
+
+            document.getElementById('editAddressProductCode').value = cleanCode;
+            document.getElementById('editAddressProductTitle').innerText = `${cleanCode} - ${productDesc}`;
+            document.getElementById('editAddressInput').value = currentAddr;
+
+            const modal = document.getElementById('editAddressModal');
+            if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
+            setTimeout(() => {
+                const inp = document.getElementById('editAddressInput');
+                if (inp) { inp.focus(); inp.select(); }
+            }, 100);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function closeEditAddressModal() {
+            const modal = document.getElementById('editAddressModal');
+            if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
+        }
+
+        function appendAddressToken(token) {
+            const inp = document.getElementById('editAddressInput');
+            if (!inp) return;
+            let val = inp.value.trim();
+            if (val && !val.endsWith('-') && !val.endsWith(' ')) {
+                val += ' - ' + token;
+            } else {
+                val += (val.endsWith(' ') ? '' : ' ') + token;
+            }
+            inp.value = val.toUpperCase();
+            inp.focus();
+        }
+
+        async function handleSaveAddress(event) {
+            if (event) event.preventDefault();
+            const code = document.getElementById('editAddressProductCode').value.trim().toUpperCase();
+            const newAddress = document.getElementById('editAddressInput').value.trim().toUpperCase();
+
+            if (!code) return;
+
+            const btn = document.getElementById('btnSaveAddress');
+            const origText = btn ? btn.innerHTML : 'Salvar Endereço';
+            if (btn) { btn.innerHTML = `<span>Salvando...</span>`; btn.disabled = true; }
+
+            const sb1Table = currentSector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
+
+            try {
+                if (supabaseClient && navigator.onLine) {
+                    let { error } = await supabaseClient
+                        .from(sb1Table)
+                        .update({ 'endereco': newAddress || null })
+                        .eq('codigo', code);
+
+                    if (error) {
+                        const res2 = await supabaseClient
+                            .from(sb1Table)
+                            .update({ 'endereco': newAddress || null })
+                            .eq('Codigo', code);
+                        error = res2.error;
+                    }
+
+                    if (error) {
+                        showAlert(`Erro ao salvar endereço: ${error.message}`, "error");
+                        return;
+                    }
+                } else {
+                    saveOfflineAction('update', sb1Table, [{ codigo: code, endereco: newAddress || null }]);
+                }
+
+                // Atualiza datasets locais
+                if (rawSb1Dataset) {
+                    const sbItem = rawSb1Dataset.find(p => String(p.codigo || p.Codigo).trim().toUpperCase() === code);
+                    if (sbItem) {
+                        sbItem.endereco = newAddress;
+                        sbItem.Endereco = newAddress;
+                    }
+                }
+                if (filteredInventoryDataset) {
+                    const invItem = filteredInventoryDataset.find(p => String(p.codigo).trim().toUpperCase() === code);
+                    if (invItem) {
+                        invItem.endereco = newAddress;
+                    }
+                }
+
+                // Atualiza badge no modal de contagem se estiver aberto para o mesmo produto
+                const addrEl = document.getElementById('countProductAddressText');
+                if (addrEl && document.getElementById('countProductCode').value === code) {
+                    addrEl.innerText = newAddress || 'Sem endereço cadastrado';
+                }
+
+                logAuditAction({
+                    produto: code,
+                    acao: 'ALTERACAO_ENDERECO',
+                    detalhes: `Endereço físico atualizado para: ${newAddress || 'Sem endereço'} (Setor: ${currentSector})`,
+                    modulo: 'INVENTARIO'
+                });
+
+                showAlert(`Endereço do material ${code} atualizado com sucesso!`, "success");
+                closeEditAddressModal();
+                renderInventoryPage();
+
+            } catch(e) {
+                showAlert(`Erro ao salvar endereço: ${e.message}`, "error");
+            } finally {
+                if (btn) { btn.innerHTML = origText; btn.disabled = false; }
             }
         }
 
