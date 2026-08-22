@@ -1846,11 +1846,47 @@
             } catch (err) { showAlert('Erro de rede.', 'error'); }
         }
 
+        let minutasRealtimeChannel = null;
+        function initMinutasRealtime() {
+            if (!supabaseClient) return;
+            if (minutasRealtimeChannel) {
+                try { supabaseClient.removeChannel(minutasRealtimeChannel); } catch(e) {}
+            }
+            
+            minutasRealtimeChannel = supabaseClient
+                .channel(`minutas_realtime_${Date.now()}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'minutas' }, (payload) => {
+                    console.log("[Realtime Minutas] Atualização recebida:", payload);
+                    fetchMinutasRecords(false);
+                })
+                .subscribe();
+        }
+
         window.onload = async function() {
             const user = await checkAuth('almox');
             if (!user) return;
             setNowDate();
             await fetchMinutasRecords();
+            initMinutasRealtime();
+
+            // Auto-atualização ao reativar aba/janela no PC ou Celular
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && navigator.onLine) {
+                    fetchMinutasRecords(false);
+                }
+            });
+            window.addEventListener('focus', () => {
+                if (navigator.onLine) {
+                    fetchMinutasRecords(false);
+                }
+            });
+
+            // Polling de sincronização em segundo plano a cada 20 segundos
+            setInterval(() => {
+                if (!document.hidden && navigator.onLine) {
+                    fetchMinutasRecords(false);
+                }
+            }, 20000);
         };
     </script>
 </body>

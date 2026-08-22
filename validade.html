@@ -1248,12 +1248,36 @@
                 if (btnI) btnI.className = "px-4 py-2 rounded-xl text-xs font-black transition-all bg-[#002f6c] text-white shadow-sm flex items-center gap-1.5 touch-active";
             }
             await loadValidadeData();
+            initValidadeRealtime();
         }
 
-        async function loadValidadeData() {
+        let validadeRealtimeChannel = null;
+        function initValidadeRealtime() {
+            if (!supabaseClient) return;
+            if (validadeRealtimeChannel) {
+                try { supabaseClient.removeChannel(validadeRealtimeChannel); } catch(e) {}
+            }
+            
+            const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
+            const saldoTable = currentSector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
+
+            validadeRealtimeChannel = supabaseClient
+                .channel(`validade_realtime_${currentSector}_${Date.now()}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: valTable }, (payload) => {
+                    console.log("[Realtime Validade] Atualização recebida:", payload);
+                    loadValidadeData(true);
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: saldoTable }, (payload) => {
+                    console.log("[Realtime Validade] Saldo atualizado:", payload);
+                    loadValidadeData(true);
+                })
+                .subscribe();
+        }
+
+        async function loadValidadeData(silent = false) {
             if (!supabaseClient) return;
             const loader = document.getElementById('globalLoader');
-            if (loader) loader.classList.remove('hidden');
+            if (!silent && loader) loader.classList.remove('hidden');
 
             const valTable = currentSector === 'INDUSTRIA' ? 'validade_industria' : 'validade_comercio';
             const sb1Table = currentSector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
@@ -1344,7 +1368,7 @@
                 rawValidadeDataset = [];
                 rawSaldoDataset = [];
             } finally {
-                if (loader) loader.classList.add('hidden');
+                if (!silent && loader) loader.classList.add('hidden');
             }
 
             populateValidadeFiltersDropdowns();
@@ -4180,6 +4204,26 @@
             if (!user) return;
             
             await loadValidadeData();
+            initValidadeRealtime();
+
+            // Auto-atualização ao reativar aba/janela no PC ou Celular
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && navigator.onLine) {
+                    loadValidadeData(true);
+                }
+            });
+            window.addEventListener('focus', () => {
+                if (navigator.onLine) {
+                    loadValidadeData(true);
+                }
+            });
+
+            // Polling de sincronização em segundo plano a cada 20 segundos
+            setInterval(() => {
+                if (!document.hidden && navigator.onLine) {
+                    loadValidadeData(true);
+                }
+            }, 20000);
 
             // Verifica query params de filtro (vindo da tela inicial)
             const urlParams = new URLSearchParams(window.location.search);

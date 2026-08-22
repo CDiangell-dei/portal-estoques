@@ -587,10 +587,10 @@
         let adminUsersList = [];
         let currentAdminPassword = '';
 
-        async function loadAdminUsers() {
+        async function loadAdminUsers(silent = false) {
             if (!supabaseClient || !currentUser || !currentUser.eh_admin) return;
             const loader = document.getElementById('globalLoader');
-            if (loader) loader.classList.remove('hidden');
+            if (!silent && loader) loader.classList.remove('hidden');
             
             try {
                 await fetchFiliais(true);
@@ -621,12 +621,12 @@
                     p_admin_senha: window.currentAdminPassword
                 });
                 if (error) {
-                    showAlert(`Erro ao carregar usuários: ${error.message}`, "error");
+                    if (!silent) showAlert(`Erro ao carregar usuários: ${error.message}`, "error");
                     window.currentAdminPassword = '';
                     sessionStorage.removeItem('amazon_user_pwd');
                     setTimeout(() => window.location.href = 'index.html', 1500);
                 } else if (!data || data.length === 0) {
-                    showAlert("Senha incorreta ou acesso negado.", "error");
+                    if (!silent) showAlert("Senha incorreta ou acesso negado.", "error");
                     window.currentAdminPassword = '';
                     sessionStorage.removeItem('amazon_user_pwd');
                     setTimeout(() => window.location.href = 'index.html', 1500);
@@ -636,9 +636,9 @@
                 }
             } catch (err) { 
                 console.error("Erro admin:", err); 
-                showAlert("Erro de conexão ao carregar usuários.", "error");
+                if (!silent) showAlert("Erro de conexão ao carregar usuários.", "error");
             } finally {
-                if (loader) loader.classList.add('hidden');
+                if (!silent && loader) loader.classList.add('hidden');
             }
         }
 
@@ -880,9 +880,9 @@
             }
         }
 
-        async function loadAdminAuditLogs() {
+        async function loadAdminAuditLogs(silent = false) {
             const tbody = document.getElementById('adminAuditTableBody');
-            if (tbody) {
+            if (!silent && tbody) {
                 tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-xs font-bold text-slate-400"><div class="flex items-center justify-center gap-2"><svg class="animate-spin h-4 w-4 text-indigo-600" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Carregando trilha de auditoria...</span></div></td></tr>`;
             }
 
@@ -900,8 +900,8 @@
                 renderAdminAuditLogs();
             } catch (err) {
                 console.error("Erro ao carregar auditoria:", err);
-                showAlert("Erro ao carregar trilha de auditoria: " + err.message, "error");
-                if (tbody) {
+                if (!silent) showAlert("Erro ao carregar trilha de auditoria: " + err.message, "error");
+                if (!silent && tbody) {
                     tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-xs font-bold text-rose-500">Erro ao carregar trilha de auditoria.</td></tr>`;
                 }
             }
@@ -1034,10 +1034,57 @@
             showAlert("Exportação CSV concluída com sucesso!", "success");
         }
 
+        let adminRealtimeChannel = null;
+        function initAdminRealtime() {
+            if (!supabaseClient) return;
+            if (adminRealtimeChannel) {
+                try { supabaseClient.removeChannel(adminRealtimeChannel); } catch(e) {}
+            }
+            
+            adminRealtimeChannel = supabaseClient
+                .channel(`admin_realtime_${Date.now()}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'auditoria_estoque' }, (payload) => {
+                    console.log("[Realtime Admin] Novo log de auditoria recebido:", payload);
+                    if (currentAdminTab === 'audit') {
+                        loadAdminAuditLogs(true);
+                    }
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, (payload) => {
+                    console.log("[Realtime Admin] Usuários atualizados:", payload);
+                    if (currentAdminTab === 'users' && window.currentAdminPassword) {
+                        loadAdminUsers(true);
+                    }
+                })
+                .subscribe();
+        }
+
         window.onload = async function() {
             const user = await checkAuth('admin');
             if (!user) return;
             await loadAdminUsers();
+            initAdminRealtime();
+
+            // Auto-atualização ao reativar aba/janela no PC ou Celular
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && navigator.onLine) {
+                    if (currentAdminTab === 'audit') loadAdminAuditLogs(true);
+                    else if (currentAdminTab === 'users' && window.currentAdminPassword) loadAdminUsers(true);
+                }
+            });
+            window.addEventListener('focus', () => {
+                if (navigator.onLine) {
+                    if (currentAdminTab === 'audit') loadAdminAuditLogs(true);
+                    else if (currentAdminTab === 'users' && window.currentAdminPassword) loadAdminUsers(true);
+                }
+            });
+
+            // Polling de sincronização em segundo plano a cada 20 segundos
+            setInterval(() => {
+                if (!document.hidden && navigator.onLine) {
+                    if (currentAdminTab === 'audit') loadAdminAuditLogs(true);
+                    else if (currentAdminTab === 'users' && window.currentAdminPassword) loadAdminUsers(true);
+                }
+            }, 20000);
         };
     </script>
 </body>
