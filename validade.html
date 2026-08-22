@@ -517,15 +517,21 @@
 
     <!-- MODAL NOVO REGISTRO / EDIÇÃO DE VALIDADE -->
     <div id="newValidadeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
-        <div class="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh] overflow-y-auto">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 flex flex-col max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
                 <div class="flex items-center space-x-2">
                     <i data-lucide="calendar-plus" class="w-5 h-5 text-amber-600"></i>
-                    <h3 class="text-sm font-black text-slate-900" id="newValidadeModalTitle">Lançamento de Validade & Lote</h3>
+                    <h3 class="text-sm font-black text-slate-900 dark:text-white" id="newValidadeModalTitle">Lançamento de Validade & Lote</h3>
                 </div>
-                <button type="button" onclick="closeNewValidadeModal()" class="p-1 text-slate-400 hover:text-slate-700">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="toggleValidadeCalculator()" id="btnToggleCalcValidade" class="text-[11px] font-black text-[#002f6c] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900 px-2.5 py-1 rounded-xl border border-blue-200/80 dark:border-blue-800 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs" title="Abrir ou fechar calculadora inteligente">
+                        <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                        <span id="labelToggleCalcValidade">Abrir Calculadora</span>
+                    </button>
+                    <button type="button" onclick="closeNewValidadeModal()" class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
 
             <form id="valForm" onsubmit="saveValidadeEntry(event)" class="space-y-3.5">
@@ -643,6 +649,48 @@
                             <span class="text-[10px] text-slate-500 font-bold uppercase">Soma dos Paletes:</span>
                             <span id="multiPalletTotalSum" class="font-black text-sm text-indigo-700 dark:text-indigo-300 ml-1">0</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- TECLADO CALCULADORA INTELIGENTE DO MODAL DE VALIDADE -->
+                <div id="validadeCalculatorKeypad" class="hidden bg-slate-900 dark:bg-slate-950 text-white rounded-2xl p-3 shadow-2xl space-y-2 border border-slate-800 transition-all duration-300">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <span class="text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1">
+                            🧮 Calculadora Inteligente
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <span id="validadeCalcTargetLabel" class="text-[10px] font-bold text-slate-400">Palete selecionado</span>
+                            <button type="button" onclick="toggleValidadeCalculator(false)" class="text-slate-400 hover:text-white p-0.5 rounded-lg text-xs" title="Minimizar Calculadora">
+                                <i data-lucide="chevron-up" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-1.5 font-bold text-xs select-none">
+                        <button type="button" onclick="calcKeypadPressValidade('(')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-slate-200 p-2.5 rounded-xl transition-all shadow-sm font-black">(</button>
+                        <button type="button" onclick="calcKeypadPressValidade(')')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-slate-200 p-2.5 rounded-xl transition-all shadow-sm font-black">)</button>
+                        <button type="button" onclick="calcKeypadPressValidade('C')" class="bg-rose-900/80 hover:bg-rose-800 text-rose-200 p-2.5 rounded-xl transition-all shadow-sm font-black">C</button>
+                        <button type="button" onclick="calcKeypadPressValidade('BACKSPACE')" class="bg-amber-900/80 hover:bg-amber-800 text-amber-200 p-2.5 rounded-xl transition-all shadow-sm font-black">⌫</button>
+
+                        <button type="button" onclick="calcKeypadPressValidade('7')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">7</button>
+                        <button type="button" onclick="calcKeypadPressValidade('8')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">8</button>
+                        <button type="button" onclick="calcKeypadPressValidade('9')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">9</button>
+                        <button type="button" onclick="calcKeypadPressValidade('/')" class="bg-amber-900/90 hover:bg-amber-800 text-amber-200 p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">÷</button>
+
+                        <button type="button" onclick="calcKeypadPressValidade('4')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">4</button>
+                        <button type="button" onclick="calcKeypadPressValidade('5')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">5</button>
+                        <button type="button" onclick="calcKeypadPressValidade('6')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">6</button>
+                        <button type="button" onclick="calcKeypadPressValidade('*')" class="bg-amber-900/90 hover:bg-amber-800 text-amber-200 p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">×</button>
+
+                        <button type="button" onclick="calcKeypadPressValidade('1')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">1</button>
+                        <button type="button" onclick="calcKeypadPressValidade('2')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">2</button>
+                        <button type="button" onclick="calcKeypadPressValidade('3')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">3</button>
+                        <button type="button" onclick="calcKeypadPressValidade('-')" class="bg-amber-900/90 hover:bg-amber-800 text-amber-200 p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">−</button>
+
+                        <button type="button" onclick="calcKeypadPressValidade('0')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">0</button>
+                        <button type="button" onclick="calcKeypadPressValidade('.')" class="bg-slate-800 hover:bg-slate-700 active:bg-amber-600 text-white p-2.5 rounded-xl transition-all shadow-sm text-sm">.</button>
+                        <button type="button" onclick="calcKeypadPressValidade('+')" class="bg-amber-900/90 hover:bg-amber-800 text-amber-200 p-2.5 rounded-xl transition-all shadow-sm font-black text-sm">+</button>
+                        <button type="button" onclick="calcKeypadPressValidade('=')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 p-2.5 rounded-xl transition-all shadow-md font-black text-sm">=</button>
                     </div>
                 </div>
 
@@ -2230,13 +2278,10 @@
             if (comp.diff < 0) {
                 openNewValidadeModal(produto, armazem);
                 const missingQtd = Math.abs(comp.diff);
-                addModalPalletRow({
-                    id: 'row_' + Date.now(),
-                    isNew: true,
-                    dbId: null,
-                    nome: `PALETE ${modalPalletRows.length + 1}`,
-                    qtd: missingQtd
-                });
+                if (modalPalletRows.length > 0) {
+                    modalPalletRows[0].qtd = missingQtd;
+                    renderModalPalletRows();
+                }
             }
         }
 
@@ -2876,7 +2921,6 @@
                     setTimeout(resolve, 1500);
                 });
             }));
-
             let pageStyle = document.getElementById('dynamicPrintPageStyle');
             if (!pageStyle) {
                 pageStyle = document.createElement('style');
@@ -2898,6 +2942,125 @@
 
         let modalPalletRows = [];
         let deletedPalletDbIds = [];
+        let activeValidadeCalcRowId = null;
+
+        function getProductUnit(codigo) {
+            if (!codigo) return 'UN';
+            const c = String(codigo).trim().toUpperCase();
+            const match = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.Codigo || p.codigo).trim().toUpperCase() === c) : null;
+            return (match && (match.Unidade || match.unidade)) ? String(match.Unidade || match.unidade).trim().toUpperCase() : 'UN';
+        }
+
+        function parseSmartMathExpression(exprStr) {
+            if (exprStr === null || exprStr === undefined) return null;
+            let s = String(exprStr).trim();
+            if (!s) return null;
+
+            s = s.replace(/,/g, '.');
+
+            const openCount = (s.match(/\(/g) || []).length;
+            const closeCount = (s.match(/\)/g) || []).length;
+            if (openCount > closeCount) {
+                s += ')'.repeat(openCount - closeCount);
+            }
+
+            s = s.replace(/(\d+(\.\d+)?)\s*\(/g, '$1*(');
+            s = s.replace(/\)\s*(\d+(\.\d+)?)/g, ')*$1');
+
+            if (!/^[0-9+\-*/.()\s]+$/.test(s)) return null;
+
+            try {
+                const val = Function(`'use strict'; return (${s});`)();
+                if (typeof val === 'number' && !isNaN(val) && isFinite(val)) {
+                    return val;
+                }
+            } catch(e) {
+                return null;
+            }
+            return null;
+        }
+
+        function toggleValidadeCalculator(show = null) {
+            const keypad = document.getElementById('validadeCalculatorKeypad');
+            const label = document.getElementById('labelToggleCalcValidade');
+            if (!keypad) return;
+
+            const isHidden = keypad.classList.contains('hidden');
+            const shouldShow = (show !== null) ? show : isHidden;
+
+            if (shouldShow) {
+                keypad.classList.remove('hidden');
+                if (label) label.innerText = 'Fechar Calculadora';
+                if (!activeValidadeCalcRowId && modalPalletRows.length > 0) {
+                    setActiveValidadeCalcTarget(modalPalletRows[0].id);
+                }
+            } else {
+                keypad.classList.add('hidden');
+                if (label) label.innerText = 'Abrir Calculadora';
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function setActiveValidadeCalcTarget(rowId) {
+            activeValidadeCalcRowId = rowId;
+            const label = document.getElementById('validadeCalcTargetLabel');
+            const rowIdx = modalPalletRows.findIndex(r => String(r.id) === String(rowId));
+            if (label) {
+                label.innerText = rowIdx !== -1 ? `Linha #${rowIdx + 1} (${modalPalletRows[rowIdx].nome || 'Palete'})` : 'Toque no campo para digitar';
+            }
+
+            document.querySelectorAll('[id^="palletCard_"]').forEach(card => {
+                card.classList.remove('border-amber-500', 'ring-2', 'ring-amber-400/30');
+                card.classList.add('border-slate-200');
+            });
+
+            if (rowId) {
+                const activeCard = document.getElementById(`palletCard_${rowId}`);
+                if (activeCard) {
+                    activeCard.classList.remove('border-slate-200');
+                    activeCard.classList.add('border-amber-500', 'ring-2', 'ring-amber-400/30');
+                }
+            }
+        }
+
+        function calcKeypadPressValidade(char) {
+            if (!activeValidadeCalcRowId) {
+                if (modalPalletRows.length > 0) {
+                    setActiveValidadeCalcTarget(modalPalletRows[0].id);
+                } else {
+                    return;
+                }
+            }
+
+            const inp = document.getElementById(`valPalletQtdInput_${activeValidadeCalcRowId}`);
+            if (!inp) return;
+
+            if (char === 'C') {
+                inp.value = '';
+                onModalPalletRowChange(activeValidadeCalcRowId, 'qtd', '');
+            } else if (char === 'BACKSPACE') {
+                inp.value = inp.value.slice(0, -1);
+                const calcVal = parseSmartMathExpression(inp.value);
+                onModalPalletRowChange(activeValidadeCalcRowId, 'qtd', calcVal !== null ? calcVal : (parseFloat(inp.value) || 0));
+            } else if (char === '=') {
+                const rawVal = inp.value.trim();
+                if (rawVal) {
+                    const val = parseSmartMathExpression(rawVal);
+                    if (val !== null && !isNaN(val) && val >= 0) {
+                        inp.value = String(val);
+                        onModalPalletRowChange(activeValidadeCalcRowId, 'qtd', val);
+                        toggleValidadeCalculator(false);
+                    } else {
+                        showAlert("Expressão de cálculo inválida. Corrija o valor digitado.", "warning");
+                    }
+                }
+                return;
+            } else {
+                inp.value += char;
+                const calcVal = parseSmartMathExpression(inp.value);
+                onModalPalletRowChange(activeValidadeCalcRowId, 'qtd', calcVal !== null ? calcVal : (parseFloat(inp.value) || 0));
+            }
+        }
 
         function toggleMultiPalletSplit(show = null) {
             const box = document.getElementById('multiPalletSplitBox');
@@ -2924,12 +3087,16 @@
         }
 
         function addModalPalletRow(initialData = null) {
+            const code = document.getElementById('valInputCodigo') ? document.getElementById('valInputCodigo').value : '';
+            const unit = getProductUnit(code);
             const nextNum = modalPalletRows.length + 1;
+            const defaultName = nextNum === 1 ? unit : `${unit} ${nextNum}`;
+
             const newRow = initialData ? { ...initialData } : {
                 id: 'row_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
                 isNew: true,
                 dbId: null,
-                nome: `PALETE ${nextNum}`,
+                nome: defaultName,
                 qtd: ''
             };
             modalPalletRows.push(newRow);
@@ -2953,11 +3120,13 @@
             modalPalletRows.splice(rowIdx, 1);
 
             if (modalPalletRows.length === 0) {
+                const code = document.getElementById('valInputCodigo') ? document.getElementById('valInputCodigo').value : '';
+                const unit = getProductUnit(code);
                 modalPalletRows.push({
                     id: 'row_' + Date.now(),
                     isNew: true,
                     dbId: null,
-                    nome: 'PALETE 1',
+                    nome: unit,
                     qtd: ''
                 });
             }
@@ -2974,29 +3143,48 @@
             }
         }
 
+        function onModalPalletQtdInputChange(rowId, rawVal) {
+            const calcVal = parseSmartMathExpression(rawVal);
+            const finalVal = calcVal !== null ? calcVal : (parseFloat(rawVal) || 0);
+            onModalPalletRowChange(rowId, 'qtd', rawVal.trim() === '' ? '' : finalVal);
+        }
+
         function renderModalPalletRows() {
             const container = document.getElementById('multiPalletRowsContainer');
             if (!container) return;
             container.innerHTML = '';
+
+            const code = document.getElementById('valInputCodigo') ? document.getElementById('valInputCodigo').value : '';
+            const unit = getProductUnit(code);
 
             if (modalPalletRows.length === 0) {
                 modalPalletRows.push({
                     id: 'row_init',
                     isNew: true,
                     dbId: null,
-                    nome: 'PALETE 1',
+                    nome: unit,
                     qtd: ''
                 });
             }
 
             modalPalletRows.forEach((row, idx) => {
+                const isTarget = (activeValidadeCalcRowId === row.id);
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs";
+                div.id = `palletCard_${row.id}`;
+                div.className = `flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border ${isTarget ? 'border-amber-500 ring-2 ring-amber-400/30' : 'border-slate-200 dark:border-slate-700'} shadow-2xs transition-all`;
+                
+                const rowDisplayName = row.nome || (idx === 0 ? unit : `${unit} ${idx+1}`);
+
                 div.innerHTML = `
                     <span class="w-6 text-center text-xs font-black text-indigo-600 dark:text-indigo-400">#${idx+1}</span>
-                    <input type="text" value="${row.nome || ''}" oninput="onModalPalletRowChange('${row.id}', 'nome', this.value.toUpperCase())" placeholder="Ex: PALETE ${idx+1}" class="w-2/5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-black text-slate-800 dark:text-white uppercase focus:ring-1 focus:ring-indigo-500">
-                    <input type="number" step="any" value="${row.qtd !== '' && row.qtd !== undefined ? row.qtd : ''}" oninput="onModalPalletRowChange('${row.id}', 'qtd', parseFloat(this.value) || 0)" placeholder="Quantidade (ex: 1000)" class="w-2/5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-black text-indigo-700 dark:text-indigo-300 focus:ring-1 focus:ring-indigo-500">
-                    <button type="button" onclick="removeModalPalletRow('${row.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer ml-auto transition-colors" title="Apagar este palete / volume">
+                    <input type="text" value="${rowDisplayName}" oninput="onModalPalletRowChange('${row.id}', 'nome', this.value.toUpperCase())" placeholder="Ex: ${unit}" class="w-2/5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-black text-slate-800 dark:text-white uppercase focus:ring-1 focus:ring-amber-500">
+                    <div class="relative w-2/5 flex items-center">
+                        <input type="text" inputmode="decimal" id="valPalletQtdInput_${row.id}" value="${row.qtd !== '' && row.qtd !== undefined ? row.qtd : ''}" onfocus="setActiveValidadeCalcTarget('${row.id}')" onclick="setActiveValidadeCalcTarget('${row.id}')" oninput="onModalPalletQtdInputChange('${row.id}', this.value)" placeholder="Qtd (${unit})" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 pr-7 text-xs font-black text-indigo-700 dark:text-indigo-300 focus:ring-1 focus:ring-amber-500">
+                        <button type="button" onclick="setActiveValidadeCalcTarget('${row.id}'); toggleValidadeCalculator(true);" class="absolute right-1 text-slate-400 hover:text-amber-600 p-1 cursor-pointer" title="Abrir calculadora para esta linha">
+                            <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                    <button type="button" onclick="removeModalPalletRow('${row.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer ml-auto transition-colors" title="Apagar esta linha">
                         <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
                     </button>
                 `;
@@ -3044,13 +3232,16 @@
                 if (r.dbId) deletedPalletDbIds.push(r.dbId);
             });
 
+            const code = document.getElementById('valInputCodigo') ? document.getElementById('valInputCodigo').value : '';
+            const unit = getProductUnit(code);
+
             modalPalletRows = [];
             for (let i = 1; i <= fullCount; i++) {
                 modalPalletRows.push({
                     id: 'split_' + Date.now() + '_' + i,
                     isNew: true,
                     dbId: null,
-                    nome: `PALETE ${i}/${totalPallets}`,
+                    nome: `${unit} ${i}/${totalPallets}`,
                     qtd: cap
                 });
             }
@@ -3060,7 +3251,7 @@
                     id: 'split_' + Date.now() + '_' + totalPallets,
                     isNew: true,
                     dbId: null,
-                    nome: `PALETE ${totalPallets}/${totalPallets} (RESTO)`,
+                    nome: `${unit} ${totalPallets}/${totalPallets} (RESTO)`,
                     qtd: remainder
                 });
             }
@@ -3097,12 +3288,12 @@
                     const first = matchingLots[0];
                     const fil = targetFilial || first.filial;
                     const arm = targetArmazem || first.armazem;
-                    showAlert(`Material encontrado: ${cleanCode}. Abrindo gerenciamento de lotes...`, "success");
+                    showAlert(`Material encontrado: ${cleanCode}. Abrindo lista de lotes...`, "success");
                     openProductLotsModal(fil, arm, cleanCode);
                 } else {
                     // 2. Verifica no catálogo SB1 ou abre cadastro direto
                     const arm = targetArmazem || (rawKnownWarehouses.length > 0 ? rawKnownWarehouses[0] : '01');
-                    showAlert(`Código ${cleanCode} bipado. Abrindo novo cadastro de validade...`, "info");
+                    showAlert(`Código ${cleanCode} bipado. Abrindo novo cadastro de lote...`, "info");
                     openNewValidadeModal(cleanCode, arm);
                 }
             }, { title: "Bipar Validade / Ficha A4" });
@@ -3132,10 +3323,8 @@
             const modal = document.getElementById('newValidadeModal');
             const inpCodigo = document.getElementById('valInputCodigo');
             const title = document.getElementById('newValidadeModalTitle');
-            const banner = document.getElementById('valExistingLotBanner');
 
-            if (title) title.innerText = "Lançamento de Validade & Paletes";
-            if (banner) banner.classList.add('hidden');
+            if (title) title.innerText = "Lançamento de Novo Lote";
 
             document.getElementById('valEditId').value = '';
             if (inpCodigo) inpCodigo.value = codigo || '';
@@ -3145,11 +3334,21 @@
             document.getElementById('valInputValidade').value = '';
             document.getElementById('valInputObservacao').value = '';
 
-            modalPalletRows = [];
+            const unit = getProductUnit(codigo);
+            modalPalletRows = [{
+                id: 'row_' + Date.now(),
+                isNew: true,
+                dbId: null,
+                nome: unit,
+                qtd: ''
+            }];
             deletedPalletDbIds = [];
 
             populateProductsDatalist();
-            onValidadeCodeOrLoteChange();
+            onValidadeCodeInput();
+            updateModalSaldoComparison();
+            renderModalPalletRows();
+            toggleValidadeCalculator(false);
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
         }
 
@@ -3170,6 +3369,7 @@
             const modal = document.getElementById('newValidadeModal');
             if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
             toggleMultiPalletSplit(false);
+            toggleValidadeCalculator(false);
         }
 
         function onValidadeCodeOrLoteChange() {
@@ -3189,8 +3389,20 @@
 
             updateModalSaldoComparison();
 
+            const unit = getProductUnit(code);
+
+            // Se for novo lote (valEditId vazio): mantém limpo para preenchimento com a unidade do produto
+            const isEditing = Boolean(document.getElementById('valEditId').value);
+            if (!isEditing) {
+                if (modalPalletRows.length === 1 && modalPalletRows[0].isNew && !modalPalletRows[0].qtd) {
+                    modalPalletRows[0].nome = unit;
+                }
+                renderModalPalletRows();
+                return;
+            }
+
             if (!code) {
-                modalPalletRows = [{ id: 'row_init', isNew: true, dbId: null, nome: 'PALETE 1', qtd: '' }];
+                modalPalletRows = [{ id: 'row_init', isNew: true, dbId: null, nome: unit, qtd: '' }];
                 renderModalPalletRows();
                 return;
             }
@@ -3233,15 +3445,9 @@
                     id: 'lot_' + l.id,
                     isNew: false,
                     dbId: l.id,
-                    nome: l.embalagem || `PALETE ${idx+1}`,
+                    nome: l.embalagem || (idx === 0 ? unit : `${unit} ${idx+1}`),
                     qtd: l.quantidade
                 }));
-            } else {
-                if (modalPalletRows.length === 0 || modalPalletRows.every(r => !r.dbId)) {
-                    if (modalPalletRows.length === 0) {
-                        modalPalletRows = [{ id: 'row_init', isNew: true, dbId: null, nome: 'PALETE 1', qtd: '' }];
-                    }
-                }
             }
 
             renderModalPalletRows();
@@ -3264,12 +3470,13 @@
             document.getElementById('valInputValidade').value = item.data_validade || '';
             document.getElementById('valInputObservacao').value = item.observacao || '';
 
+            const unit = getProductUnit(item.produto);
             deletedPalletDbIds = [];
             modalPalletRows = [{
                 id: 'lot_' + item.id,
                 isNew: false,
                 dbId: item.id,
-                nome: item.embalagem || 'PALETE 1',
+                nome: item.embalagem || unit,
                 qtd: item.quantidade
             }];
 
