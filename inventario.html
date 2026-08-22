@@ -985,57 +985,68 @@
         </div>
     </div>
 
-    <!-- MODAL GERENCIAR ENDEREÇO FÍSICO DO MATERIAL -->
+    <!-- MODAL GERENCIAR ENDEREÇO FÍSICO POR ARMAZÉM -->
     <div id="editAddressModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[170] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300 no-print">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-700 p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3 flex-shrink-0">
                 <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
                         <i data-lucide="map-pin" class="w-4 h-4"></i>
                     </div>
                     <div>
-                        <h3 class="text-sm font-black text-slate-900 dark:text-white">Endereçamento no Galpão</h3>
-                        <p class="text-[10px] text-slate-400 font-semibold">Localização física do material no estoque</p>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white">Endereçamento por Armazém</h3>
+                        <p class="text-[10px] text-slate-400 font-semibold">Defina o local físico em cada armazém/galpão</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeEditAddressModal()" class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <form onsubmit="handleSaveAddress(event)" class="space-y-3.5">
+            
+            <form onsubmit="handleSaveAddress(event)" class="space-y-3.5 overflow-y-auto flex-1 pr-1">
                 <input type="hidden" id="editAddressProductCode" value="">
                 
-                <div>
+                <div class="flex-shrink-0">
                     <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Material Selecionado</span>
                     <p id="editAddressProductTitle" class="text-xs font-black text-[#002f6c] dark:text-blue-400 bg-blue-50 dark:bg-slate-900 p-2.5 rounded-xl border border-blue-100 dark:border-slate-700 leading-tight">---</p>
                 </div>
 
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Endereço / Local Físico <span class="text-amber-600 font-normal">(Rua, Prateleira, Nível, Box)</span></label>
-                    <div class="relative">
-                        <i data-lucide="map-pin" class="w-4 h-4 absolute left-3 top-3 text-amber-600"></i>
-                        <input type="text" id="editAddressInput" placeholder="Ex: RUA 02 - PRAT 04 - NIVEL 01" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase">
+                <!-- LISTA DE ARMAZÉNS DO PRODUTO PARA ENDEREÇAMENTO -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase">Endereço por Armazém (Rua / Prateleira / Nível / Box)</label>
+                        <button type="button" onclick="addWarehouseToAddressModal()" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-black hover:underline flex items-center gap-0.5 cursor-pointer">
+                            <i data-lucide="plus" class="w-3 h-3"></i>
+                            <span>+ Outro Armazém</span>
+                        </button>
+                    </div>
+
+                    <div id="editAddressWarehousesContainer" class="space-y-2">
+                        <!-- Campos de armazéns gerados dinamicamente -->
                     </div>
                 </div>
 
-                <div>
-                    <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Atalhos Rápidos de Formatação</span>
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1.5 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <span class="block text-[9px] font-black text-slate-400 uppercase">Atalhos Rápidos (insere no campo focado)</span>
+                        <span id="activeAddressArmLabel" class="text-[9px] font-bold text-amber-600">Armazém 01</span>
+                    </div>
                     <div class="flex flex-wrap gap-1.5">
-                        <button type="button" onclick="appendAddressToken('RUA ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ RUA</button>
-                        <button type="button" onclick="appendAddressToken('PRAT ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ PRAT</button>
-                        <button type="button" onclick="appendAddressToken('NIVEL ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ NÍVEL</button>
-                        <button type="button" onclick="appendAddressToken('BOX ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ BOX</button>
-                        <button type="button" onclick="appendAddressToken('CORREDOR ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ CORREDOR</button>
-                        <button type="button" onclick="appendAddressToken('PALETE ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer">+ PALETE</button>
-                        <button type="button" onclick="document.getElementById('editAddressInput').value = ''; document.getElementById('editAddressInput').focus();" class="px-2 py-1 rounded-lg text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer ml-auto">Limpar</button>
+                        <button type="button" onclick="appendAddressToken('RUA ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-2xs">+ RUA</button>
+                        <button type="button" onclick="appendAddressToken('PRAT ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-2xs">+ PRAT</button>
+                        <button type="button" onclick="appendAddressToken('NIVEL ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-2xs">+ NÍVEL</button>
+                        <button type="button" onclick="appendAddressToken('BOX ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-2xs">+ BOX</button>
+                        <button type="button" onclick="appendAddressToken('CORREDOR ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-2xs">+ CORREDOR</button>
+                        <button type="button" onclick="appendAddressToken('PALETE ')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-amber-100 hover:text-amber-900 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-2xs">+ PALETE</button>
+                        <button type="button" onclick="clearActiveAddressInput()" class="px-2 py-1 rounded-lg text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer ml-auto shadow-2xs">Limpar</button>
                     </div>
                 </div>
 
-                <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2 flex-shrink-0">
                     <button type="button" onclick="closeEditAddressModal()" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer">Cancelar</button>
                     <button type="submit" id="btnSaveAddress" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md cursor-pointer flex items-center gap-1.5">
                         <i data-lucide="check" class="w-4 h-4"></i>
-                        <span>Salvar Endereço</span>
+                        <span>Salvar Endereços</span>
                     </button>
                 </div>
             </form>
@@ -1523,7 +1534,7 @@
                 let saldoAll = [];
                 let from2 = 0, step2 = 1000, fetchMore2 = true;
                 while (fetchMore2) {
-                    let query = supabaseClient.from(saldoTable).select('produto, filial, armazem, quantidade');
+                    let query = supabaseClient.from(saldoTable).select('produto, filial, armazem, quantidade, endereco');
                     if (!isGlobal && userFilial && userFilial !== 'ALL' && userFilial !== '00') {
                         query = query.eq('filial', userFilial);
                     }
@@ -1689,7 +1700,8 @@
                         produto: String(s.produto).trim(),
                         filial: rawFil.padStart(2, '0'),
                         armazem: rawArm.padStart(2, '0'),
-                        quantidade: parseFloat(s.quantidade || 0)
+                        quantidade: parseFloat(s.quantidade || 0),
+                        endereco: s.endereco || ''
                     };
                 });
 
@@ -2411,8 +2423,9 @@
                     const inCode = item.codigo.toLowerCase().includes(term);
                     const inDesc = item.descricao.toLowerCase().includes(term);
                     const inTags = item.tags.toLowerCase().includes(term);
-                    const inForn = item.fornecedores.toLowerCase().includes(term);
-                    const inEnd = item.endereco ? item.endereco.toLowerCase().includes(term) : false;
+                    const addrMap = getProductAddressMap(item.codigo);
+                    const allAddrs = Object.values(addrMap).join(' ').toLowerCase();
+                    const inEnd = allAddrs.includes(term);
                     if (!inCode && !inDesc && !inTags && !inForn && !inEnd) return false;
                 }
 
@@ -2420,9 +2433,10 @@
             });
 
             if (isRouteSortActive) {
+                const activeArmFilter = document.getElementById('invFilterArmazem') ? document.getElementById('invFilterArmazem').value : 'ALL';
                 filteredInventoryDataset.sort((a, b) => {
-                    const endA = String(a.endereco || '').trim().toUpperCase();
-                    const endB = String(b.endereco || '').trim().toUpperCase();
+                    const endA = getProductAddressForArmazem(a.codigo, activeArmFilter, true).trim().toUpperCase();
+                    const endB = getProductAddressForArmazem(b.codigo, activeArmFilter, true).trim().toUpperCase();
                     if (!endA && endB) return 1;
                     if (endA && !endB) return -1;
                     if (endA && endB && endA !== endB) {
@@ -2745,21 +2759,38 @@
                     factorBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200" title="Fator de Conversão Peso/Unidade">Fator: ${item.fatorConv}</span>`;
                 }
 
-                let enderecoBadge = '';
-                if (item.endereco) {
-                    enderecoBadge = `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}')" class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-900 border border-amber-200/80 flex items-center gap-0.5 hover:bg-amber-100 transition-colors cursor-pointer" title="Clique para alterar endereço no Galpão: ${item.endereco}"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-amber-700"></i> ${item.endereco}</button>`;
+                let enderecoBadgesHtml = '';
+                const addrMap = getProductAddressMap(item.codigo);
+                const activeArmFilter = document.getElementById('invFilterArmazem') ? document.getElementById('invFilterArmazem').value : 'ALL';
+
+                if (activeArmFilter && activeArmFilter !== 'ALL') {
+                    const armFormatted = String(activeArmFilter).padStart(2, '0');
+                    const specificAddr = addrMap[armFormatted];
+                    if (specificAddr) {
+                        enderecoBadgesHtml = `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}', '${armFormatted}')" class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-900 border border-amber-200/80 flex items-center gap-0.5 hover:bg-amber-100 transition-colors cursor-pointer" title="Clique para editar endereço no Armazém ${armFormatted}: ${specificAddr}"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-amber-700"></i> Arm ${armFormatted}: ${specificAddr}</button>`;
+                    } else {
+                        enderecoBadgesHtml = `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}', '${armFormatted}')" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-0.5 hover:bg-amber-50 hover:text-amber-800 transition-colors cursor-pointer" title="Clique para cadastrar localização no Armazém ${armFormatted}"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-slate-400"></i> + Endereço (Arm ${armFormatted})</button>`;
+                    }
                 } else {
-                    enderecoBadge = `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}')" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-0.5 hover:bg-amber-50 hover:text-amber-800 transition-colors cursor-pointer" title="Clique para cadastrar localização física (Rua/Prateleira)"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-slate-400"></i> + Endereço</button>`;
+                    const entries = Object.entries(addrMap).filter(([k, v]) => Boolean(v));
+                    if (entries.length === 0) {
+                        enderecoBadgesHtml = `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}')" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-0.5 hover:bg-amber-50 hover:text-amber-800 transition-colors cursor-pointer" title="Clique para cadastrar localização física por armazém"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-slate-400"></i> + Endereço</button>`;
+                    } else if (entries.length === 1) {
+                        const [arm, end] = entries[0];
+                        enderecoBadgesHtml = `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}', '${arm}')" class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-900 border border-amber-200/80 flex items-center gap-0.5 hover:bg-amber-100 transition-colors cursor-pointer" title="Clique para editar endereço no Armazém ${arm}: ${end}"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-amber-700"></i> Arm ${arm}: ${end}</button>`;
+                    } else {
+                        enderecoBadgesHtml = entries.map(([arm, end]) => `<button type="button" onclick="event.stopPropagation(); openEditAddressModal('${item.codigo}', '${escapedDesc}', '${arm}')" class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-50 text-amber-900 border border-amber-200/80 flex items-center gap-0.5 hover:bg-amber-100 transition-colors cursor-pointer" title="Armazém ${arm}: ${end} (Clique para editar)"><i data-lucide="map-pin" class="w-2.5 h-2.5 text-amber-700"></i> [${arm}] ${end}</button>`).join(' ');
+                    }
                 }
 
                 let tagsBadges = '';
-                if (item.tags || factorBadge || item.fornecedores || enderecoBadge) {
+                if (item.tags || factorBadge || item.fornecedores || enderecoBadgesHtml) {
                     const tList = item.tags ? item.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
                     const fornBadge = item.fornecedores 
                         ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-0.5" title="Fornecedor: ${item.fornecedores}"><i data-lucide="truck" class="w-2.5 h-2.5"></i> ${item.fornecedores}</span>` 
                         : '';
                     tagsBadges = `<div class="flex flex-wrap gap-1 mt-1">` +
-                        (enderecoBadge ? enderecoBadge : '') +
+                        (enderecoBadgesHtml ? enderecoBadgesHtml : '') +
                         (factorBadge ? factorBadge : '') +
                         (fornBadge ? fornBadge : '') +
                         tList.map(t => `<span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-100">${t}</span>`).join('') +
@@ -3027,12 +3058,19 @@
             }
 
             const sysQtyDisplay = `<span class="text-slate-700">${sysQty.toLocaleString('pt-BR')}</span>`;
+            const armAddress = getProductAddressForArmazem(codigo, armazemCode, false);
 
             const cardHtml = `
                 <div id="armCard_${armazemCode}" class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-2">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Armazém <span class="text-[#002f6c] text-xs font-black">${armazemCode}</span></p>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Armazém <span class="text-[#002f6c] text-xs font-black">${armazemCode}</span></p>
+                                <button type="button" onclick="event.stopPropagation(); openEditAddressModal('${codigo}', '', '${armazemCode}')" class="px-1.5 py-0.5 rounded text-[9px] font-extrabold ${armAddress ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 text-slate-500 border border-slate-200'} flex items-center gap-0.5 hover:bg-amber-200 transition-colors cursor-pointer" title="Clique para editar endereço no Armazém ${armazemCode}">
+                                    <i data-lucide="map-pin" class="w-2.5 h-2.5 text-amber-700"></i>
+                                    <span id="armCardAddressText_${armazemCode}">${armAddress || '+ Endereço'}</span>
+                                </button>
+                            </div>
                             <p class="text-[10px] font-bold text-slate-400 mt-0.5">Saldo Sis: ${sysQtyDisplay}</p>
                         </div>
                         <div class="w-40 text-right">
@@ -3832,35 +3870,189 @@
             }
         }
 
-        // --- GESTÃO DE ENDEREÇAMENTO NO GALPÃO ---
-        function openEditAddressModal(code, desc) {
-            const cleanCode = String(code).trim().toUpperCase();
+        // --- GESTÃO DE ENDEREÇAMENTO POR ARMAZÉM NO GALPÃO ---
+        let activeAddressFocusArm = '01';
+        let currentModalAddressList = [];
+
+        function getProductAddressMap(code) {
+            const cleanCode = String(code || '').trim().toUpperCase();
+            const map = {};
+
+            // 1. Pega do SB1
+            const sbMatch = rawSb1Dataset ? rawSb1Dataset.find(p => String(p.codigo || p.Codigo).trim().toUpperCase() === cleanCode) : null;
+            if (sbMatch) {
+                const raw = sbMatch.endereco || sbMatch.Endereco || '';
+                if (raw && raw.startsWith('{') && raw.endsWith('}')) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        Object.keys(parsed).forEach(k => {
+                            const a = String(k).trim().padStart(2, '0');
+                            if (parsed[k]) map[a] = String(parsed[k]).trim();
+                        });
+                    } catch(e) {}
+                } else if (raw) {
+                    map['01'] = raw.trim();
+                }
+            }
+
+            // 2. Mescla com dados de rawSaldoDataset
+            if (rawSaldoDataset) {
+                rawSaldoDataset.filter(s => String(s.produto).trim().toUpperCase() === cleanCode).forEach(s => {
+                    const a = String(s.armazem || '01').trim().padStart(2, '0');
+                    if (s.endereco && !map[a]) {
+                        map[a] = String(s.endereco).trim();
+                    } else if (map[a] && !s.endereco) {
+                        s.endereco = map[a];
+                    }
+                });
+            }
+
+            return map;
+        }
+
+        function getProductAddressForArmazem(code, armazem, fallbackAll = false) {
+            const map = getProductAddressMap(code);
+            const a = String(armazem || '01').trim().padStart(2, '0');
+            if (map[a]) return map[a];
+            if (fallbackAll) {
+                const vals = Object.values(map).filter(Boolean);
+                if (vals.length > 0) return vals[0];
+            }
+            return '';
+        }
+
+        function openEditAddressModal(code, desc, targetArmazem = null) {
+            const cleanCode = String(code || '').trim().toUpperCase();
             const product = filteredInventoryDataset.find(p => String(p.codigo).trim().toUpperCase() === cleanCode) 
                          || (rawSb1Dataset && rawSb1Dataset.find(p => String(p.codigo || p.Codigo).trim().toUpperCase() === cleanCode));
             
-            const currentAddr = product ? (product.endereco || product.Endereco || '') : '';
             const productDesc = desc || (product ? (product.descricao || product['Descr.Espec.'] || '') : '');
 
             document.getElementById('editAddressProductCode').value = cleanCode;
             document.getElementById('editAddressProductTitle').innerText = `${cleanCode} - ${productDesc}`;
-            document.getElementById('editAddressInput').value = currentAddr;
+
+            const addrMap = getProductAddressMap(cleanCode);
+
+            // Identifica todos os armazéns onde o produto tem saldo ou contagem
+            const knownArmsSet = new Set(['01']);
+            if (rawSaldoDataset) {
+                rawSaldoDataset.filter(s => String(s.produto).trim().toUpperCase() === cleanCode).forEach(s => {
+                    knownArmsSet.add(String(s.armazem || '01').trim().padStart(2, '0'));
+                });
+            }
+            if (rawConfDataset) {
+                rawConfDataset.filter(c => String(c.produto).trim().toUpperCase() === cleanCode).forEach(c => {
+                    knownArmsSet.add(String(c.armazem || '01').trim().padStart(2, '0'));
+                });
+            }
+            Object.keys(addrMap).forEach(a => knownArmsSet.add(a.padStart(2, '0')));
+            if (targetArmazem) knownArmsSet.add(String(targetArmazem).trim().padStart(2, '0'));
+
+            const sortedArms = Array.from(knownArmsSet).sort((a,b) => parseInt(a,10) - parseInt(b,10));
+            currentModalAddressList = sortedArms.map(arm => ({
+                armazem: arm,
+                endereco: addrMap[arm] || ''
+            }));
+
+            activeAddressFocusArm = targetArmazem ? String(targetArmazem).trim().padStart(2, '0') : sortedArms[0];
+
+            renderAddressWarehouseRows();
 
             const modal = document.getElementById('editAddressModal');
             if (modal) modal.classList.remove('pointer-events-none', 'opacity-0');
+
             setTimeout(() => {
-                const inp = document.getElementById('editAddressInput');
-                if (inp) { inp.focus(); inp.select(); }
+                const targetInput = document.getElementById(`addrInput_${activeAddressFocusArm}`);
+                if (targetInput) {
+                    targetInput.focus();
+                    targetInput.select();
+                }
             }, 100);
+
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        function closeEditAddressModal() {
-            const modal = document.getElementById('editAddressModal');
-            if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
+        function renderAddressWarehouseRows() {
+            const container = document.getElementById('editAddressWarehousesContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            currentModalAddressList.forEach(item => {
+                const arm = item.armazem;
+                const end = item.endereco || '';
+                const isFocus = (arm === activeAddressFocusArm);
+
+                const div = document.createElement('div');
+                div.id = `addrRow_${arm}`;
+                div.className = `p-2.5 rounded-2xl border ${isFocus ? 'border-amber-500 bg-amber-50/30 dark:bg-amber-950/20 ring-2 ring-amber-400/30' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'} space-y-1 transition-all`;
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-black text-[#002f6c] dark:text-blue-400 uppercase flex items-center gap-1">
+                            <i data-lucide="warehouse" class="w-3.5 h-3.5"></i>
+                            <span>Armazém ${arm}</span>
+                        </span>
+                        <span class="text-[9px] font-bold text-slate-400">Localização física</span>
+                    </div>
+                    <div class="relative">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-amber-600"></i>
+                        <input type="text" id="addrInput_${arm}" value="${end}" onfocus="setActiveAddressFocus('${arm}')" onclick="setActiveAddressFocus('${arm}')" oninput="onAddressRowInputChange('${arm}', this.value)" placeholder="Ex: RUA 02 - PRAT 04 - NIVEL 01" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-8 pr-3 text-xs font-bold text-slate-900 dark:text-white uppercase focus:ring-1 focus:ring-amber-500">
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            updateActiveAddressArmLabel();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function setActiveAddressFocus(arm) {
+            activeAddressFocusArm = String(arm).padStart(2, '0');
+            updateActiveAddressArmLabel();
+            document.querySelectorAll('[id^="addrRow_"]').forEach(el => {
+                el.classList.remove('border-amber-500', 'bg-amber-50/30', 'dark:bg-amber-950/20', 'ring-2', 'ring-amber-400/30');
+                el.classList.add('border-slate-200');
+            });
+            const targetEl = document.getElementById(`addrRow_${activeAddressFocusArm}`);
+            if (targetEl) {
+                targetEl.classList.remove('border-slate-200');
+                targetEl.classList.add('border-amber-500', 'bg-amber-50/30', 'dark:bg-amber-950/20', 'ring-2', 'ring-amber-400/30');
+            }
+        }
+
+        function updateActiveAddressArmLabel() {
+            const lbl = document.getElementById('activeAddressArmLabel');
+            if (lbl) lbl.innerText = `Armazém ${activeAddressFocusArm}`;
+        }
+
+        function onAddressRowInputChange(arm, val) {
+            const item = currentModalAddressList.find(i => i.armazem === arm);
+            if (item) {
+                item.endereco = val.toUpperCase();
+            }
+        }
+
+        function addWarehouseToAddressModal() {
+            const arm = prompt("Digite o número do armazém para adicionar endereço (Ex: 01, 04, 50):");
+            if (!arm) return;
+            const cleanArm = String(arm).trim().padStart(2, '0');
+            if (!currentModalAddressList.some(i => i.armazem === cleanArm)) {
+                currentModalAddressList.push({ armazem: cleanArm, endereco: '' });
+                currentModalAddressList.sort((a,b) => parseInt(a.armazem,10) - parseInt(b.armazem,10));
+                activeAddressFocusArm = cleanArm;
+                renderAddressWarehouseRows();
+                setTimeout(() => {
+                    const inp = document.getElementById(`addrInput_${cleanArm}`);
+                    if (inp) inp.focus();
+                }, 100);
+            } else {
+                setActiveAddressFocus(cleanArm);
+                const inp = document.getElementById(`addrInput_${cleanArm}`);
+                if (inp) inp.focus();
+            }
         }
 
         function appendAddressToken(token) {
-            const inp = document.getElementById('editAddressInput');
+            const inp = document.getElementById(`addrInput_${activeAddressFocusArm}`);
             if (!inp) return;
             let val = inp.value.trim();
             if (val && !val.endsWith('-') && !val.endsWith(' ')) {
@@ -3869,14 +4061,27 @@
                 val += (val.endsWith(' ') ? '' : ' ') + token;
             }
             inp.value = val.toUpperCase();
+            onAddressRowInputChange(activeAddressFocusArm, inp.value);
             inp.focus();
+        }
+
+        function clearActiveAddressInput() {
+            const inp = document.getElementById(`addrInput_${activeAddressFocusArm}`);
+            if (inp) {
+                inp.value = '';
+                onAddressRowInputChange(activeAddressFocusArm, '');
+                inp.focus();
+            }
+        }
+
+        function closeEditAddressModal() {
+            const modal = document.getElementById('editAddressModal');
+            if (modal) modal.classList.add('pointer-events-none', 'opacity-0');
         }
 
         async function handleSaveAddress(event) {
             if (event) event.preventDefault();
             const code = document.getElementById('editAddressProductCode').value.trim().toUpperCase();
-            const newAddress = document.getElementById('editAddressInput').value.trim().toUpperCase();
-
             if (!code) return;
 
             const btn = document.getElementById('btnSaveAddress');
@@ -3884,18 +4089,32 @@
             if (btn) { btn.innerHTML = `<span>Salvando...</span>`; btn.disabled = true; }
 
             const sb1Table = currentSector === 'INDUSTRIA' ? 'sb1_industria' : 'sb1_comercio';
+            const saldoTable = currentSector === 'INDUSTRIA' ? 'saldo_industria' : 'saldo_comercio';
+
+            const finalMap = {};
+            currentModalAddressList.forEach(item => {
+                const cleanArm = String(item.armazem).trim().padStart(2, '0');
+                const cleanEnd = String(item.endereco || '').trim().toUpperCase();
+                if (cleanEnd) {
+                    finalMap[cleanArm] = cleanEnd;
+                }
+            });
+
+            const jsonStr = Object.keys(finalMap).length > 0 ? JSON.stringify(finalMap) : null;
+            const defaultSingleAddr = Object.values(finalMap)[0] || '';
 
             try {
                 if (supabaseClient && navigator.onLine) {
+                    // 1. Atualiza SB1 com o mapa JSON
                     let { error } = await supabaseClient
                         .from(sb1Table)
-                        .update({ 'endereco': newAddress || null })
+                        .update({ 'endereco': jsonStr })
                         .eq('codigo', code);
 
                     if (error) {
                         const res2 = await supabaseClient
                             .from(sb1Table)
-                            .update({ 'endereco': newAddress || null })
+                            .update({ 'endereco': jsonStr })
                             .eq('Codigo', code);
                         error = res2.error;
                     }
@@ -3904,39 +4123,62 @@
                         showAlert(`Erro ao salvar endereço: ${error.message}`, "error");
                         return;
                     }
+
+                    // 2. Atualiza endereço individual nos saldos por armazém
+                    for (const arm of Object.keys(finalMap)) {
+                        await supabaseClient
+                            .from(saldoTable)
+                            .update({ 'endereco': finalMap[arm] })
+                            .eq('produto', code)
+                            .eq('armazem', arm);
+                    }
                 } else {
-                    saveOfflineAction('update', sb1Table, [{ codigo: code, endereco: newAddress || null }]);
+                    saveOfflineAction('update', sb1Table, [{ codigo: code, endereco: jsonStr }]);
                 }
 
                 // Atualiza datasets locais
                 if (rawSb1Dataset) {
                     const sbItem = rawSb1Dataset.find(p => String(p.codigo || p.Codigo).trim().toUpperCase() === code);
                     if (sbItem) {
-                        sbItem.endereco = newAddress;
-                        sbItem.Endereco = newAddress;
+                        sbItem.endereco = jsonStr || '';
+                        sbItem.Endereco = jsonStr || '';
                     }
+                }
+                if (rawSaldoDataset) {
+                    rawSaldoDataset.filter(s => String(s.produto).trim().toUpperCase() === code).forEach(s => {
+                        const a = String(s.armazem || '01').trim().padStart(2, '0');
+                        s.endereco = finalMap[a] || '';
+                    });
                 }
                 if (filteredInventoryDataset) {
                     const invItem = filteredInventoryDataset.find(p => String(p.codigo).trim().toUpperCase() === code);
                     if (invItem) {
-                        invItem.endereco = newAddress;
+                        invItem.endereco = jsonStr || '';
                     }
                 }
 
-                // Atualiza badge no modal de contagem se estiver aberto para o mesmo produto
-                const addrEl = document.getElementById('countProductAddressText');
-                if (addrEl && document.getElementById('countProductCode').value === code) {
-                    addrEl.innerText = newAddress || 'Sem endereço cadastrado';
+                // Atualiza visualização no modal de contagem se aberto
+                const currentCountCode = document.getElementById('countProductCode') ? document.getElementById('countProductCode').value : '';
+                if (currentCountCode === code) {
+                    const addrEl = document.getElementById('countProductAddressText');
+                    if (addrEl) {
+                        addrEl.innerText = defaultSingleAddr || 'Sem endereço';
+                    }
+                    Object.keys(finalMap).forEach(arm => {
+                        const armBadgeText = document.getElementById(`armCardAddressText_${arm}`);
+                        if (armBadgeText) armBadgeText.innerText = finalMap[arm] || '+ Endereço';
+                    });
                 }
 
+                const auditDetails = Object.entries(finalMap).map(([a, e]) => `Arm ${a}: ${e}`).join(' | ') || 'Endereços removidos';
                 logAuditAction({
                     produto: code,
                     acao: 'ALTERACAO_ENDERECO',
-                    detalhes: `Endereço físico atualizado para: ${newAddress || 'Sem endereço'} (Setor: ${currentSector})`,
+                    detalhes: `Endereços por armazém atualizados: ${auditDetails} (Setor: ${currentSector})`,
                     modulo: 'INVENTARIO'
                 });
 
-                showAlert(`Endereço do material ${code} atualizado com sucesso!`, "success");
+                showAlert(`Endereços por armazém do material ${code} salvos com sucesso!`, "success");
                 closeEditAddressModal();
                 renderInventoryPage();
 
